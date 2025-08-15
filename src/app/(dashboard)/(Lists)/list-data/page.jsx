@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useState, useEffect } from "react";
 import {
   LineChart,
@@ -23,18 +22,18 @@ import {
   Info,
 } from "lucide-react";
 import { FaArrowLeft } from "react-icons/fa";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link"; 
+import { useRouter, useSearchParams } from "next/navigation"; 
 import { motion, AnimatePresence } from "framer-motion";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Loader from "@/app/component/Loader";
-import { useToast } from "@/app/component/customtoast/page";
-import AddListDataForm from "@/app/(dashboard)/(Lists)/AddListForm/page";
+import Loader from "@/app/component/Loader"; 
+import { useToast } from "@/app/component/customtoast/page"; 
+import AddListDataForm from "@/app/(dashboard)/(Lists)/AddListForm/page"; 
 
 const ListData = () => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const router = useRouter(); // Next.js router
+  const searchParams = useSearchParams(); // To access query parameters
   const { addToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [addDataFormOpen, setAddDataFormOpen] = useState(false);
@@ -52,8 +51,6 @@ const ListData = () => {
   const [headers, setHeaders] = useState([]);
   const [showCsvData, setShowCsvData] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(true);
-  const [showFallback, setShowFallback] = useState(false);
   const [pieData, setPieData] = useState([
     { name: "Active", value: 0, color: "#10b981" },
     { name: "Unconfirmed", value: 0, color: "#9ca3af" },
@@ -64,22 +61,19 @@ const ListData = () => {
   const [filters, setFilters] = useState([
     { name: "All", count: 0, color: "bg-blue-500" },
     { name: "Active", count: 0, color: "bg-green-500" },
+    // { name: "Unconfirmed", count: 0, color: "bg-gray-400" },
     { name: "Unsubscribed", count: 0, color: "bg-red-500" },
+    // { name: "Bounced", count: 0, color: "bg-gray-600" },
+    // { name: "Marked as spam", count: 0, color: "bg-gray-700" },
   ]);
   const [userID, setUserID] = useState("");
-  const [userData, setUserData] = useState(null);
 
   useEffect(() => {
-    // Check if we're in browser environment
-    if (typeof window === 'undefined') return;
-
-    const storedUserData = JSON.parse(sessionStorage.getItem("userData") || 'null');
-    if (!storedUserData || !storedUserData.pic) {
-      router.push("/login");
-      return;
+    const userData = JSON.parse(sessionStorage.getItem("userData"));
+    if (!userData || !userData.pic) {
+      router.push("/work/login"); // Use router.push for navigation
     } else {
-      setUserData(storedUserData);
-      setUserID(storedUserData.userID);
+      setUserID(userData.userID);
     }
   }, [router]);
 
@@ -99,90 +93,25 @@ const ListData = () => {
     { date: "May 25", subscribers: 305 },
   ];
 
-  // Fixed useEffect with proper error handling and no infinite loops
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (!userData) return; // Wait for userData to be loaded
-
-    setIsInitializing(true);
-
-    try {
-      // Get list data from URL parameters or sessionStorage
-      const listIDParam = searchParams.get('listID');
-      const listNameParam = searchParams.get('listName');
-      
-      // Try to get from sessionStorage if not in URL
-      let storedListData = null;
-      try {
-        const stored = sessionStorage.getItem('currentListData');
-        if (stored) {
-          storedListData = JSON.parse(stored);
-        }
-      } catch (parseError) {
-        console.warn("Failed to parse stored list data:", parseError);
-        // Clear corrupted data
-        sessionStorage.removeItem('currentListData');
-      }
-      
-      let currentListData = null;
-      
-      if (listIDParam && listNameParam) {
-        currentListData = {
-          listID: listIDParam,
-          name: listNameParam
-        };
-        // Store in sessionStorage for future use
-        try {
-          sessionStorage.setItem('currentListData', JSON.stringify(currentListData));
-        } catch (storageError) {
-          console.warn("Failed to store list data:", storageError);
-        }
-      } else if (storedListData && storedListData.listID) {
-        currentListData = storedListData;
-      }
-
-      if (currentListData && currentListData.listID) {
-        setListData(currentListData);
-        const listID = parseInt(currentListData.listID);
-        if (!isNaN(listID) && listID > 0) {
-          fetchSubscribers(listID);
-        } else {
-          console.warn("Invalid listID:", currentListData.listID);
-          if (addToast) {
-            addToast("Invalid list ID. Please select a valid list.", "error");
-          }
-          // Don't redirect immediately, give user a chance to see the error
-          setTimeout(() => {
-            router.push("/manage-lists");
-          }, 2000);
-        }
-        setIsInitializing(false);
+    // In Next.js, we can get passed state via query parameters or props
+    // Assuming listData is passed via query params or fetched server-side
+    const state = JSON.parse(searchParams.get("item") || "{}"); // Adjust based on how you pass data
+    if (state && state.listID) {
+      setListData(state);
+      const listID = parseInt(state.listID);
+      if (!isNaN(listID)) {
+        fetchSubscribers(listID);
       } else {
-        console.warn("No valid listData found - missing URL parameters and sessionStorage data");
-        if (addToast) {
-          addToast("Please select a list to view its data.", "info");
-        }
-        // Delay redirect to allow user to see the message
-        setTimeout(() => {
-          router.push("/manage-lists");
-        }, 1500);
-        // Show fallback after 3 seconds
-        setTimeout(() => {
-          setShowFallback(true);
-          setIsInitializing(false);
-        }, 3000);
+        console.error("Invalid listID:", state.listID);
+        addToast("Invalid list ID. Redirecting to lists page.", "error");
+        
       }
-    } catch (error) {
-      console.error("Error in listData useEffect:", error);
-      if (addToast) {
-        addToast("An error occurred while loading list data.", "error");
-      }
-      setTimeout(() => {
-        router.push("/manage-lists");
-      }, 2000);
-      setIsInitializing(false);
+    } else {
+      console.error("No valid listData found");
+      addToast("No valid list data found. Redirecting to lists page.", "error");
     }
-  }, [searchParams, router, userData]); // Removed addToast from dependencies to prevent infinite loops
+  }, [searchParams, router]);
 
   // Fetch subscribers from API
   const fetchSubscribers = async (listID) => {
@@ -200,28 +129,22 @@ const ListData = () => {
       );
       const data = await response.json();
       if (response.ok) {
-        const subscriberData = data.Data || [];
+        const subscriberData = data.Data;
         if (subscriberData.length > 0) {
           setSubscribers(subscriberData);
           updateCharts(subscriberData);
         } else {
           console.warn("No subscribers found for listID:", listID);
           setSubscribers([]);
-          if (addToast) {
-            addToast("No subscribers found for this list.", "info");
-          }
+          addToast("No subscribers found for this list.", "info");
         }
       } else {
         setSubscribers([]);
-        if (addToast) {
-          addToast(data.message || "Failed to fetch subscribers", "error");
-        }
+        addToast(data.message || "Failed to fetch subscribers", "error");
       }
     } catch (error) {
       console.error("Error fetching subscribers:", error);
-      if (addToast) {
-        addToast("Error fetching subscribers: " + error.message, "error");
-      }
+      addToast("Error fetching subscribers: " + error.message, "error");
       setSubscribers([]);
     } finally {
       setIsLoading(false);
@@ -238,11 +161,9 @@ const ListData = () => {
       },
       { All: subscribers.length }
     );
-    
     const all = subscribers.length;
     const subscribed = subscribers.filter((item) => item.status).length;
     const unsubscribed = subscribers.filter((item) => !item.status).length;
-    
     const newPieData = [
       { name: "Active", value: statusCounts["Active"] || 0, color: "#10b981" },
       {
@@ -279,11 +200,31 @@ const ListData = () => {
         count: subscribed || 0,
         color: "bg-green-500",
       },
+      // {
+      //   name: "Unconfirmed",
+      //   count: 0,
+      //   color: "bg-gray-400",
+      // },
       {
         name: "Unsubscribed",
         count: unsubscribed || 0,
         color: "bg-red-500",
       },
+      // {
+      //   name: "Bounced",
+      //   count: statusCounts["Bounced"] || 0,
+      //   color: "bg-gray-600",
+      // },
+      // {
+      //   name: "Marked as spam",
+      //   count: statusCounts["Marked as spam"] || 0,
+      //   color: "bg-gray-700",
+      // },
+      // {
+      //   name: "Unknown",
+      //   count: statusCounts["Unknown"] || 0,
+      //   color: "bg-gray-500",
+      // },
     ];
 
     setPieData(newPieData.length > 0 ? newPieData : pieData);
@@ -291,7 +232,7 @@ const ListData = () => {
   };
 
   const handleBack = () => {
-    router.back();
+    router.back(); // Use Next.js router.back for navigation
   };
 
   const handleUnsubscribe = async (id) => {
@@ -309,15 +250,11 @@ const ListData = () => {
       const data = await response.json();
       if (response.ok) {
         await fetchSubscribers(listData.listID);
-        if (addToast) {
-          addToast(data.message, "success");
-        }
+        addToast(data.message, "success");
       }
     } catch (error) {
-      console.error("Unsubscribe error:", error);
-      if (addToast) {
-        addToast(error.message || "Unknown Error, try again later", "error");
-      }
+      console.log(error);
+      addToast(error.message || "Unknown Error, try again later", "error");
     }
   };
 
@@ -375,7 +312,7 @@ const ListData = () => {
   };
 
   const handleRecordsPerPageChange = (e) => {
-    const value = parseInt(e.target.value);
+    const value = e.target.value;
     setCurrentPage(1);
     if (value) {
       if (value < 1) {
@@ -386,7 +323,7 @@ const ListData = () => {
         setRecordsPerPage(value);
       }
     } else {
-      setRecordsPerPage(10);
+      setRecordsPerPage(0);
     }
   };
 
@@ -414,7 +351,7 @@ const ListData = () => {
       const filter = selectedRows.filter((item) => item !== row);
       setSelectedRows(filter);
     } else {
-      setSelectedRows((pre) => [...pre, row]);
+      setSelectedRows((prev) => [...prev, row]);
     }
   };
 
@@ -458,13 +395,13 @@ const ListData = () => {
             setHeaders([]);
             return;
           }
-          const formattedData = data.map((item) => ({
-            ...item,
-            name: formatName(item.name),
-          }));
+          data.map((item) => {
+            item.name = formatName(item.name);
+            return item;
+          });
 
           setHeaders(fileHeaders);
-          setCsvData(formattedData);
+          setCsvData(data);
           setShowCsvData(true);
         },
       });
@@ -489,22 +426,16 @@ const ListData = () => {
       const data = await response.json();
       if (response.ok) {
         setLoading(false);
-        if (addToast) {
-          addToast(data.message, "success");
-        }
+        addToast(data.message, "success");
         fetchSubscribers(listData.listID);
       } else {
-        if (addToast) {
-          addToast(data.message, "error");
-        }
+        addToast(data.message, "error");
       }
     } catch (error) {
-      console.error("CSV upload error:", error);
+      console.log(error);
       setShowCsvData(false);
       setLoading(false);
-      if (addToast) {
-        addToast(error.message || "Upload failed", "error");
-      }
+      addToast(error, "error");
     } finally {
       setLoading(false);
     }
@@ -536,18 +467,6 @@ const ListData = () => {
     }),
   };
 
-  // Show loading during initialization or if user data is not loaded yet
-  if (!userData || isInitializing) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <div>Loading list data...</div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen mt-4">
       <ToastContainer
@@ -562,24 +481,6 @@ const ListData = () => {
         pauseOnHover
       />
       {loading && <Loader />}
-
-      {/* Fallback Modal for when no list data is found */}
-      {showFallback && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg text-center max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Unable to Load List Data</h3>
-            <p className="text-gray-600 mb-4">
-              No valid list data was found. Please return to the lists page and select a list.
-            </p>
-            <button
-              onClick={() => router.push("/work/manage-lists")}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              Go to Lists
-            </button>
-          </div>
-        </div>
-      )}
 
       <div className="border-b border-gray-200 px-6 py-4">
         <div className="relative flex justify-center items-center mb-4">
@@ -600,24 +501,40 @@ const ListData = () => {
           <div className="flex items-center space-x-3">
             <button
               onClick={() => setAddDataFormOpen(true)}
-              className="flex items-center px-4 py-2 bg-white text-sm border border-gray-300 rounded-md shadow-sm hover:scale-105 transition-transform"
+              className="flex items-center px-4 py-2 bg-white text-sm border border-gray-300 rounded-md shadow-sm hover:scale-105"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add List Data
             </button>
             <button
-              onClick={() => document.getElementById("csv-upload")?.click()}
-              className="flex items-center px-4 py-2 bg-white text-sm border border-gray-300 rounded-md shadow-sm hover:scale-105 transition-transform"
+              onClick={() => document.getElementById("csv-upload").click()}
+              className="flex items-center px-4 py-2 bg-white text-sm border border-gray-300 rounded-md shadow-sm hover:scale-105"
             >
               <Plus className="w-4 h-4 mr-2" />
               Upload CSV
             </button>
             <button
               onClick={downloadSample}
-              className="flex items-center px-4 py-2 bg-white text-sm border border-gray-300 rounded-md shadow-sm hover:scale-105 transition-transform"
+              className="flex items-center px-4 py-2 bg-white text-sm border border-gray-300 rounded-md shadow-sm hover:scale-105"
             >
               Sample CSV
             </button>
+            {/* <Link href="/mailing/delete-subscribers">
+              <button className="flex items-center px-4 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:scale-105">
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete subscribers
+              </button>
+            </Link>
+            <Link href="/mailing/mass-unsubscribe">
+              <button className="flex items-center px-4 py-2 bg-white text-sm border border-gray-300 rounded-md shadow-sm hover:scale-105">
+                <Users className="w-4 h-4 mr-2" />
+                Mass unsubscribe
+              </button>
+            </Link>
+            <button className="flex items-center px-4 py-2 text-sm bg-green-600 text-white rounded hover:scale-105">
+              <Download className="w-4 h-4 mr-2" />
+              Export all subscribers
+            </button> */}
           </div>
 
           <div className="relative">
@@ -651,7 +568,7 @@ const ListData = () => {
 
           <div className="flex items-center space-x-4">
             <Link href="#">
-              <button className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:scale-105 transition-transform">
+              <button className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:scale-105">
                 <Settings className="w-4 h-4 mr-2" />
                 Custom fields
                 <span className="ml-2 px-2 py-0.5 bg-gray-100 text-xs rounded-full">
@@ -668,7 +585,7 @@ const ListData = () => {
             />
             <button
               onClick={() => setShowAutorespondersModal(true)}
-              className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:scale-105 transition-transform"
+              className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:scale-105"
             >
               Autoresponders
               <span className="ml-2 px-2 py-0.5 bg-gray-100 text-xs rounded-full">
@@ -676,7 +593,7 @@ const ListData = () => {
               </span>
             </button>
             <Link href="#">
-              <button className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:scale-105 transition-transform">
+              <button className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:scale-105">
                 Segments
                 <span className="ml-2 px-2 py-0.5 bg-gray-100 text-xs rounded-full">
                   0
@@ -685,7 +602,7 @@ const ListData = () => {
             </Link>
             <button
               onClick={() => setShowSubscribeFormModal(true)}
-              className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:scale-105 transition-transform"
+              className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:scale-105"
             >
               Subscribe form
               <span className="ml-2 px-2 py-0.5 bg-gray-100 text-xs rounded-full">
@@ -693,7 +610,7 @@ const ListData = () => {
               </span>
             </button>
             <Link href="#">
-              <button className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:scale-105 transition-transform">
+              <button className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:scale-105">
                 <Settings className="w-4 h-4 mr-2" />
                 List settings
               </button>
@@ -703,6 +620,70 @@ const ListData = () => {
       </div>
 
       <div className="px-6 py-6">
+        {/* Subscribers Activity Chart */}
+        {/* <div className="mb-8">
+          <div className="flex items-center mb-4">
+            <h2 className="text-lg font-medium text-gray-700">
+              Subscribers Activity Chart
+            </h2>
+            <Info className="w-4 h-4 ml-2 text-gray-400" />
+          </div>
+
+          <div className="bg-white border border-gray-200 rounded-lg p-6 w-full min-h-[300px]">
+            <div className="flex items-center mb-6">
+    
+              <div className="w-32 h-32 mr-8">
+                {hasData ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={20}
+                        outerRadius={60}
+                        paddingAngle={2}
+                        dataKey="value"
+                      >
+                        {pieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center">
+                    <span className="text-gray-400 text-sm">No Data</span>
+                  </div>
+                )}
+              </div>
+
+       
+              <div className="flex-1 min-h-[200px]">
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={chartDataStatic}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis
+                      dataKey="date"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 12, fill: "#6b7280" }}
+                    />
+                    <YAxis hide />
+                    <Line
+                      type="monotone"
+                      dataKey="subscribers"
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        </div> */}
+
         <div className="flex gap-6 mb-8">
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold">Show</span>
@@ -710,10 +691,17 @@ const ListData = () => {
               type="number"
               value={recordsPerPage}
               onChange={handleRecordsPerPageChange}
-              className="border border-gray-300 p-2 rounded w-16 text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-gray-300 p-2 rounded w-16 text-center"
             />
             <span className="text-sm font-bold">Records</span>
           </div>
+          {/* Verify Button */}
+          {/* <button
+            onClick={handleVerify}
+            className="bg-blue-500 text-white px-4 py-1 rounded-md cursor-pointer hover:bg-blue-700"
+          >
+            Verify
+          </button> */}
         </div>
 
         {/* Filter Tabs */}
@@ -722,7 +710,7 @@ const ListData = () => {
             <button
               key={filter.name}
               onClick={() => setActiveFilter(filter.name)}
-              className={`flex items-center px-3 py-2 text-sm rounded border transition-colors ${
+              className={`flex items-center px-3 py-2 text-sm rounded border ${
                 activeFilter === filter.name
                   ? "bg-blue-50 border-blue-200 text-blue-700"
                   : "border-gray-300 text-gray-600 hover:bg-gray-50"
@@ -750,10 +738,10 @@ const ListData = () => {
                       <input
                         type="checkbox"
                         onChange={(e) => handleSelectAll(e.target.checked)}
-                        checked={selectedRows.length >= currentRecords.length && currentRecords.length > 0}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        checked={selectedRows.length >= currentRecords.length}
                       />
                       <div className="ml-2">
+                        {" "}
                         {selectedRows.length} Selected
                       </div>
                     </label>
@@ -773,6 +761,7 @@ const ListData = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <div className="flex items-center">Last activity</div>
                   </th>
+
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Unsubscribe
                   </th>
@@ -792,7 +781,7 @@ const ListData = () => {
                   {isLoading ? (
                     <tr>
                       <td
-                        colSpan="10"
+                        colSpan="9"
                         className="px-6 py-8 text-center text-gray-500"
                       >
                         Loading subscribers...
@@ -807,7 +796,7 @@ const ListData = () => {
                         animate="visible"
                         exit="hidden"
                         variants={rowVariants}
-                        className="hover:bg-gray-50 transition-colors"
+                        className="hover:bg-gray-50"
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <input
@@ -832,11 +821,11 @@ const ListData = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {subscriber.last_activity || "N/A"}
                         </td>
+
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           <button
-                            onClick={() => handleUnsubscribe(subscriber.subsID)}
-                            className="text-red-600 hover:text-red-900 transition-colors"
-                            title="Unsubscribe"
+                            // onClick={() => handleUnsubscribe(subscriber.subsID)}
+                            className="text-red-600 hover:text-red-900"
                           >
                             <Users className="w-5 h-5" />
                           </button>
@@ -855,7 +844,7 @@ const ListData = () => {
                   ) : (
                     <tr>
                       <td
-                        colSpan="10"
+                        colSpan="9"
                         className="px-6 py-8 text-center text-gray-500"
                       >
                         No data found for this list.
@@ -869,49 +858,36 @@ const ListData = () => {
         </div>
 
         {/* Pagination */}
-        <div className="bg-white flex items-center justify-between mt-6 rounded-lg border border-blue-200 shadow-md p-4">
-          <div className="text-sm text-gray-600">
+        <div className="bg-white flex items-center justify-between mt-6 rounded-lg border border-blue-200 shadow-md p-2">
+          <div className="text-md text-black-600">
             Showing {indexOfFirstRecord + 1} to{" "}
-            {Math.min(indexOfLastRecord, filteredSubscribers.length)} of {filteredSubscribers.length} Records
+            {Math.min(indexOfLastRecord, filteredSubscribers.length)} Records
           </div>
           <div className="flex items-center space-x-2">
             <button
               onClick={handlePreviousPage}
               disabled={currentPage === 1}
-              className={`px-4 py-2 bg-gray-200 text-gray-700 rounded transition-colors ${
+              className={`px-4 py-2 bg-gray-200 text-gray-700 rounded ${
                 currentPage === 1
                   ? "opacity-50 cursor-not-allowed"
                   : "hover:bg-gray-300"
               }`}
             >
-              Previous
+              {"<<"} Previous
             </button>
-            
-            {/* Page numbers */}
-            {getPaginationRange().map((page) => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`px-4 py-2 rounded transition-colors ${
-                  currentPage === page
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-            
+            <span className="px-4 py-2 bg-blue-600 text-white rounded">
+              {currentPage}
+            </span>
             <button
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
-              className={`px-4 py-2 bg-gray-200 text-gray-700 rounded transition-colors ${
+              className={`px-4 py-2 bg-gray-200 text-gray-700 rounded ${
                 currentPage === totalPages
                   ? "opacity-50 cursor-not-allowed"
                   : "hover:bg-gray-300"
               }`}
             >
-              Next
+              Next {">>"}
             </button>
           </div>
         </div>
@@ -928,7 +904,7 @@ const ListData = () => {
             onClick={() => setShowAutorespondersModal(false)}
           >
             <motion.div
-              className="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-screen overflow-y-auto scrollbar-hide"
+              className="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-screen scrollbar-hide"
               variants={modalVariants}
               initial="hidden"
               animate="visible"
@@ -1000,7 +976,7 @@ const ListData = () => {
             onClick={() => setShowSubscribeFormModal(false)}
           >
             <motion.div
-              className="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-screen overflow-y-auto scrollbar-hide"
+              className="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-screen scrollbar-hide"
               variants={modalVariants}
               initial="hidden"
               animate="visible"
@@ -1051,8 +1027,6 @@ const ListData = () => {
                 <a
                   href="https://sendy.co/api"
                   className="text-blue-600 hover:underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
                 >
                   https://sendy.co/api
                 </a>
@@ -1094,67 +1068,63 @@ const ListData = () => {
         )}
       </AnimatePresence>
 
-      {/* CSV Data Preview Modal */}
       {csvData.length > 0 && showCsvData && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+        <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="border border-gray-500 relative bg-white shadow-lg rounded-lg overflow-x-auto overflow-y-auto max-h-[700px] w-3/4 p-6">
-            <div className="text-right mb-4">
+            <div style={{ textAlign: "end" }}>
               <button
                 onClick={() => setShowCsvData(false)}
-                className="bg-gray-500 text-white px-4 py-2 mr-3 rounded-lg hover:bg-gray-600 transition-colors"
+                className="bg-green-500 text-white px-4 py-2 mr-3 rounded-lg hover:bg-green-600 mb-2"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddLeadFromCsv}
-                className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
+                className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 mb-2"
               >
                 Add all data
               </button>
             </div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full table-auto border-collapse">
-                <thead>
-                  <tr className="bg-gray-800 text-white text-center">
-                    {headers.map((header, index) => (
-                      <th
-                        key={index}
-                        className="py-3 px-4 text-left uppercase font-semibold text-sm"
+            <table className="min-w-full table-auto border-collapse">
+              <thead>
+                <tr className="bg-gray-800 text-white text-center">
+                  {headers.map((header, index) => (
+                    <th
+                      key={index}
+                      className="py-3 px-4 text-justify uppercase font-semibold text-sm"
+                    >
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {csvData.map((row, rowIndex) => (
+                  <tr
+                    key={rowIndex}
+                    className="border-t hover:bg-gray-100 cursor-pointer border"
+                  >
+                    {headers.map((header, colIndex) => (
+                      <td
+                        key={colIndex}
+                        className="py-[9px] px-4 text-justify text-xl font-sans font-normal min-w-50"
                       >
-                        {header}
-                      </th>
+                        {row[header]}
+                      </td>
                     ))}
                   </tr>
-                </thead>
-                <tbody>
-                  {csvData.map((row, rowIndex) => (
-                    <tr
-                      key={rowIndex}
-                      className="border-t hover:bg-gray-100 cursor-pointer border"
-                    >
-                      {headers.map((header, colIndex) => (
-                        <td
-                          key={colIndex}
-                          className="py-2 px-4 text-left text-sm font-normal min-w-32"
-                        >
-                          {row[header]}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
 
-      {/* Add Data Form Modal */}
       {addDataFormOpen && (
         <AddListDataForm
-          listID={listData?.listID}
+          listID={listData.listID}
           setClose={setAddDataFormOpen}
-          fetchData={() => fetchSubscribers(listData?.listID)}
+          fetchData={fetchSubscribers}
         />
       )}
     </div>

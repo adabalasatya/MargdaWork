@@ -208,7 +208,7 @@ const AddTemplate = () => {
       
       if (response.ok) {
         addToast(data.message, "success");
-        router.push("/work/templates-list");
+        router.push("/templates-list");
       } else {
         addToast(data.message, "error");
       }

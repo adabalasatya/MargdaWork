@@ -375,7 +375,7 @@ const WhatsappReport = () => {
       {loading && <Loader />}
 
       {/* Header */}
-      <div className="w-full mt-2 max-w-[1245px] mx-auto p-4 rounded-md bg-white shadow-sm border-2 border-gray-200 sticky top-0 z-20">
+      <div className="w-full mt-2 max-w-5xl mx-auto p-4 rounded-md bg-white shadow-sm border-2 border-gray-200 sticky top-0 z-20">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-2 flex-wrap">
             <div className="flex items-center gap-1">
@@ -424,7 +424,7 @@ const WhatsappReport = () => {
       </div>
 
       {/* Main Content */}
-      <div className="w-full max-w-7xl mx-auto p-4 fixed mt-16 h-[calc(85vh-20px)] flex flex-col md:flex-row gap-4">
+      <div className="w-full max-w-6xl ml-12 mx-auto p-4 fixed  mt-16 h-[calc(85vh-20px)] flex flex-col md:flex-row gap-4">
         <div className="flex flex-col md:flex-row bg-white rounded-lg shadow-md border-2 border-gray-200 flex-1 overflow-hidden">
           {/* Conversations List */}
           <div

@@ -380,8 +380,8 @@ const EmailCredentials = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {paginatedCredentials.map((item) => (
-                        <tr key={item.instID} className="border-b hover:bg-gray-50 text-sm">
+                      {paginatedCredentials.map((item, index) => (
+                        <tr key={item.instID || `${item.from_email}-${index}`} className="border-b hover:bg-gray-50 text-sm">
                           <td className="p-3 font-medium text-gray-800">{item.name}</td>
                           <td className="p-3">{`${item.from_name} <${item.from_email}>`}</td>
                           <td className="p-3">{SOURCE_PROVIDERS[item.source]?.name || item.source}</td>

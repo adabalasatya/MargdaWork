@@ -1,14 +1,16 @@
-"use client";
+"use client"; 
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import PhoneInput from "react-phone-input-2";
-import { useToast } from "@/app/component/customtoast/page";
+import "react-phone-input-2/lib/style.css"; 
+import { useToast } from "@/app/component/customtoast/page"; 
 import Select from "react-select";
+import { useRouter } from "next/navigation";
 
 const AddListDataForm = ({ setClose, fetchData, listID }) => {
-  const router = useRouter();
   const { addToast } = useToast();
+  const router = useRouter();
+
   const [selectedDataTypes, setSelectedDatatypes] = useState([]);
   const [formData, setFormData] = useState({
     phone: "",
@@ -17,20 +19,21 @@ const AddListDataForm = ({ setClose, fetchData, listID }) => {
     name: "",
     task: "",
   });
+
   const dataTypes = [
     { value: "P", label: "Individual" },
     { value: "B", label: "Business" },
     { value: "L", label: "Learner" },
   ];
+
   const [isLoading, setIsLoading] = useState(false);
   const [userID, setUserID] = useState("");
 
   useEffect(() => {
-    // Ensure we're on the client side before accessing sessionStorage
     if (typeof window !== "undefined") {
       const userData = JSON.parse(sessionStorage.getItem("userData"));
       if (!userData || !userData.pic) {
-        return router.push("/work/login");
+        router.push("/work/login");
       } else {
         setUserID(userData.userID);
       }
@@ -39,10 +42,12 @@ const AddListDataForm = ({ setClose, fetchData, listID }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!formData.email && !formData.phone && !formData.whatsapp) {
       return addToast("Either email or mobile or whatsapp is required", "info");
     }
-    if (selectedDataTypes.length == 0) {
+
+    if (selectedDataTypes.length === 0) {
       return addToast("Select data type", "info");
     }
 
@@ -116,6 +121,7 @@ const AddListDataForm = ({ setClose, fetchData, listID }) => {
         </h3>
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Name */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Name
@@ -129,12 +135,14 @@ const AddListDataForm = ({ setClose, fetchData, listID }) => {
                 placeholder="Enter name"
               />
             </div>
+
+            {/* Phone */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Phone
               </label>
               <PhoneInput
-                country={"in"} // Default to India
+                country={"in"}
                 value={formData.phone}
                 onChange={(value) => handlePhoneChange(value, "phone")}
                 inputStyle={{
@@ -163,6 +171,8 @@ const AddListDataForm = ({ setClose, fetchData, listID }) => {
                 placeholder="Phone number"
               />
             </div>
+
+            {/* WhatsApp */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 WhatsApp Number
@@ -197,6 +207,8 @@ const AddListDataForm = ({ setClose, fetchData, listID }) => {
                 placeholder="WhatsApp number"
               />
             </div>
+
+            {/* Email */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Email
@@ -211,8 +223,11 @@ const AddListDataForm = ({ setClose, fetchData, listID }) => {
               />
             </div>
 
+            {/* Data Type */}
             <div>
-              <label htmlFor="dataType">Data Type</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Data Type
+              </label>
               <Select
                 isMulti
                 options={dataTypes}
@@ -235,6 +250,8 @@ const AddListDataForm = ({ setClose, fetchData, listID }) => {
               />
             </div>
           </div>
+
+          {/* Buttons */}
           <div className="flex justify-end space-x-4 mt-8">
             <button
               type="button"

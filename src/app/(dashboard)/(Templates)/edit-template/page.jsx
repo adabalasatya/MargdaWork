@@ -249,7 +249,7 @@ const EditTemplate = () => {
       const data = await response.json();
       if (response.ok) {
         addToast(data.message, "success");
-        return router.push("/work/templates-list");
+        return router.push("/templates-list");
       } else {
         return addToast(data.message, "error");
       }
