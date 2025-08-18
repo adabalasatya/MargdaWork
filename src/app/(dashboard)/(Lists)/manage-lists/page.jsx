@@ -121,9 +121,9 @@ const ManageLists = () => {
   const handleDelete = async (id) => {
     try {
       const response = await fetch(
-        "https://www.margda.in/miraj/lists/delete-list",
+        "https://www.margda.in/miraj/work/lists/delete-list",
         {
-          method: "POST",
+          method: "DELETE",
           headers: {
             "Content-Type": "application/json",
           },
@@ -131,6 +131,7 @@ const ManageLists = () => {
         }
       );
       const data = await response.json();
+      console.log(data)
       if (response.ok) {
         addToast("List deleted successfully!", "success");
         setLists(lists.filter((item) => item.listID !== id)); // Update UI immediately
