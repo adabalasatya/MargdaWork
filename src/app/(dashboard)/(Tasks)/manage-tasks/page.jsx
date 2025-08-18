@@ -151,7 +151,7 @@ const ManageTasks = () => {
       const response = await fetch(
         "https://www.margda.in/miraj/work/task/delete-task",
         {
-          method: "POST",
+          method: "DELETE",
           headers: {
             "Content-Type": "application/json",
           },

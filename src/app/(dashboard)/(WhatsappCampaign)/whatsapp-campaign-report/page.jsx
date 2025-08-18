@@ -375,7 +375,7 @@ const WhatsappReport = () => {
       {loading && <Loader />}
 
       {/* Header */}
-      <div className="w-full mt-2 max-w-5xl mx-auto p-4 rounded-md bg-white shadow-sm border-2 border-gray-200 sticky top-0 z-20">
+      <div className="w-full mt-2 max-w-6xl mx-auto p-4 rounded-md bg-white shadow-sm border-2 border-gray-200 sticky top-0 z-20">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-2 flex-wrap">
             <div className="flex items-center gap-1">

@@ -729,7 +729,7 @@ const ListData = () => {
 
         {/* Subscribers Table */}
         <div className="bg-white border border-gray-300 rounded-lg overflow-hidden">
-          <div className="overflow-x-auto overflow-y-auto max-h-[500px] max-w-[1200px] scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+          <div className="max-w-6xl scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50 sticky top-0 z-10">
                 <tr>

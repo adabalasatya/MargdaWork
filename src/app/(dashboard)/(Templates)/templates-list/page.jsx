@@ -65,9 +65,9 @@ const TemplatesList = () => {
     }
     try {
       const response = await fetch(
-        "https://www.margda.in/api/margda.org/templates/delete-template",
+        "https://www.margda.in/miraj/work/template/delete-template",
         {
-          method: "delete",
+          method: "DELETE",
           headers: {
             Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
