@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FaEdit, FaTrash, FaEye, FaSearch } from "react-icons/fa";
 import { useToast } from "@/app/component/customtoast/page";
+import { toast } from "react-toastify";
 
 const TemplatesList = () => {
   const router = useRouter();
@@ -25,7 +26,7 @@ const TemplatesList = () => {
     if (typeof window !== "undefined") {
       const userData = JSON.parse(sessionStorage.getItem("userData"));
       if (!userData || !userData.pic) {
-        return router.push("/work/login");
+        return router.push("/login");
       } else {
         setUserID(userData.userID);
         setAccessToken(userData.accessToken || userData.access_token);
@@ -52,10 +53,10 @@ const TemplatesList = () => {
         const templates = data.Templates;
         setAllTemplates(templates);
       } else {
-        console.error(data.message, "error");
+        toast.error(data.message, "error");
       }
     } catch (error) {
-      console.error("Error fetching templates:", error);
+      console.error("Error fetching templates:",  error);
     }
   };
 
