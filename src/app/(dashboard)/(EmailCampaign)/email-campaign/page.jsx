@@ -138,11 +138,10 @@ const EmailCampaign = () => {
         setTemplates(filter);
       } else {
         setTemplates([]);
-        addToast("Failed to fetch templates", "error");
+        addToast("Templates Not Found");
       }
     } catch (error) {
       console.error("Error fetching templates:", error);
-      addToast("Failed to fetch templates", "error");
       setTemplates([]);
     }
   };
