@@ -16,9 +16,8 @@ import {
 } from "@mui/material";
 import { motion } from "framer-motion";
 import { styled } from "@mui/material/styles";
-import { useToast } from "@/app/component/customtoast/page";
 
-import Navbar from "@/app/(auth)/navbar/page"
+import Navbar from "@/app/(auth)/navbar/page";
 
 // Styled Components (Same as Login component)
 const GradientBox = styled(Box)(({ theme }) => ({
@@ -43,25 +42,6 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
     padding: theme.spacing(4, 3),
     margin: theme.spacing(2),
     maxWidth: "100%",
-  },
-}));
-
-const StyledButton = styled(Button)(({ theme }) => ({
-  padding: theme.spacing(0.8, 2),
-  fontSize: "1.2rem",
-  fontWeight: 600,
-  borderRadius: theme.spacing(1.5),
-  textTransform: "none",
-  transition: "all 0.3s ease",
-  border: "2px solid #6B46C1",
-  color: "#6B46C1",
-  backgroundColor: "white",
-  minHeight: "36px",
-  "&:hover": {
-    backgroundColor: "#6B46C1",
-    color: "white",
-    transform: "translateY(-3px)",
-    boxShadow: "0 12px 24px rgba(107, 70, 193, 0.4)",
   },
 }));
 
@@ -124,13 +104,7 @@ const StyledAlert = styled(Alert)(({ theme }) => ({
 }));
 
 const Register = () => {
-  const router = useRouter();
-  const { addToast } = useToast();
-  const [profile, setProfile] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
-    fetchProfiles();
     window.scrollTo(0, 0);
   }, []);
 
@@ -141,47 +115,26 @@ const Register = () => {
 
   const imageVariants = {
     hidden: { opacity: 0, x: -100, scale: 0.8 },
-    visible: { 
-      opacity: 1, 
-      x: 0, 
+    visible: {
+      opacity: 1,
+      x: 0,
       scale: 1,
-      transition: { duration: 0.8, ease: "easeOut" } 
+      transition: { duration: 0.8, ease: "easeOut" },
     },
-  };
-
-  const fetchProfiles = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch(
-        "https://www.margda.in/miraj/whatsapp/scan/get-profile",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ userID: 1 }),
-        }
-      );
-      const data = await response.json();
-      if (response.ok) {
-        setProfile(data.Profile);
-      } else {
-        addToast("Failed to fetch profile information", "error");
-      }
-    } catch (error) {
-      console.error("Profile fetch error:", error);
-      addToast("Network error: Please check your connection", "error");
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   return (
     <>
-    <Navbar/>
+      <Navbar />
       <GradientBox>
         <Container maxWidth="xl">
-          <Grid container spacing={6} alignItems="center" justifyContent="center" sx={{ minHeight: "90vh" }}>
+          <Grid
+            container
+            spacing={6}
+            alignItems="center"
+            justifyContent="center"
+            sx={{ minHeight: "90vh" }}
+          >
             {/* Illustration Section - Hidden on Mobile */}
             <Grid item xs={12} lg={7}>
               <IllustrationContainer>
@@ -240,79 +193,42 @@ const Register = () => {
 
                     {/* Registration Content */}
                     <Box mb={4}>
-                      {isLoading ? (
-                        <Box display="flex" justifyContent="center" py={4}>
-                          <Typography variant="h6" color="text.secondary">
-                            Loading registration information...
-                          </Typography>
-                        </Box>
-                      ) : profile && profile.active ? (
-                        <StyledAlert severity="info" variant="outlined">
-                          <Typography
-                            variant="h6"
-                            component="div"
-                            sx={{ 
-                              fontWeight: 600,
-                              lineHeight: 1.5,
-                              textAlign: "center"
+                      <StyledAlert severity="info" variant="outlined">
+                        <Typography
+                          variant="h6"
+                          component="div"
+                          sx={{
+                            fontWeight: 600,
+                            lineHeight: 1.5,
+                            textAlign: "center",
+                          }}
+                        >
+                          Send WhatsApp message:{" "}
+                          <Box
+                            component="span"
+                            sx={{
+                              display: "block",
+                              mt: 2,
+                              p: 2,
+                              backgroundColor: "#f0f0f0",
+                              borderRadius: 2,
+                              fontFamily: "monospace",
+                              fontSize: "1.1rem",
+                              color: "#6B46C1",
+                              fontWeight: "bold",
                             }}
                           >
-                            Send WhatsApp message:{" "}
-                            <Box
-                              component="span"
-                              sx={{
-                                display: "block",
-                                mt: 2,
-                                p: 2,
-                                backgroundColor: "#f0f0f0",
-                                borderRadius: 2,
-                                fontFamily: "monospace",
-                                fontSize: "1.1rem",
-                                color: "#6B46C1",
-                                fontWeight: "bold"
-                              }}
-                            >
-                              &lt;User YOURNAME&gt;
-                            </Box>
-                            <Box component="span" sx={{ display: "block", mt: 2 }}>
-                              to: <strong>+{profile.mobile}</strong>
-                            </Box>
-                          </Typography>
-                        </StyledAlert>
-                      ) : (
-                        <StyledAlert severity="warning" variant="outlined">
-                          <Typography
-                            variant="h6"
-                            component="div"
-                            sx={{ 
-                              fontWeight: 600,
-                              lineHeight: 1.5,
-                              textAlign: "center"
-                            }}
+                            &lt;User YOURNAME&gt;
+                          </Box>
+                          <Box
+                            component="span"
+                            sx={{ display: "block", mt: 2 }}
                           >
-                            Registration functionality is not available due to technical issue.
-                            <Box component="span" sx={{ display: "block", mt: 1 }}>
-                              Please contact admin for assistance.
-                            </Box>
-                          </Typography>
-                        </StyledAlert>
-                      )}
+                            to: <strong>+918130960040</strong>
+                          </Box>
+                        </Typography>
+                      </StyledAlert>
                     </Box>
-
-                    {/* Retry Button (if needed) */}
-                    {!isLoading && (!profile || !profile.active) && (
-                      <Box mb={3}>
-                        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                          <StyledButton
-                            fullWidth
-                            onClick={fetchProfiles}
-                            size="small"
-                          >
-                            Retry Registration
-                          </StyledButton>
-                        </motion.div>
-                      </Box>
-                    )}
 
                     {/* Links */}
                     <LinkContainer>

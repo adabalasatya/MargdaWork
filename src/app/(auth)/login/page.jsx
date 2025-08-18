@@ -211,10 +211,6 @@ const Login = () => {
           setTimeout(() => {
             router.push("/dashboard");
           }, 500);
-        } else {
-          setTimeout(() => {
-            router.push("/update-profile");
-          }, 500);
         }
       } else {
         addToast("An unexpected error occurred. Please try again.", "error");
