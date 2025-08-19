@@ -8,7 +8,6 @@ import "react-toastify/dist/ReactToastify.css";
 import { FaSearch } from "react-icons/fa";
 import { MdOutlineBusinessCenter } from "react-icons/md";
 
-// Helper object to map source codes to readable names and pre-fill data
 const SOURCE_PROVIDERS = {
   G: { name: "Gmail", host: "smtp.gmail.com", port: "465" },
   A: { name: "AWS (Amazon SES)" },
@@ -19,6 +18,7 @@ const SOURCE_PROVIDERS = {
 const EmailCredentials = () => {
   const router = useRouter();
 
+  // Form data (used for both add and edit)
   const initialFormData = {
     name: "",
     from_name: "",
@@ -40,6 +40,8 @@ const EmailCredentials = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
+  const [editMode, setEditMode] = useState(false);
+  const [editCredentialId, setEditCredentialId] = useState(null);
 
   // Data and Table state
   const [credentials, setCredentials] = useState([]);
@@ -49,7 +51,6 @@ const EmailCredentials = () => {
 
   const [userID, setUserID] = useState("");
 
-  // Safe sessionStorage access
   const getUserData = () => {
     if (typeof window !== 'undefined') {
       const userData = sessionStorage.getItem("userData");
@@ -98,7 +99,6 @@ const EmailCredentials = () => {
 
     setFormData((prev) => {
       const newFormData = { ...prev, [name]: value };
-      // Auto-populate SMTP fields when source changes
       if (name === "source") {
         const provider = SOURCE_PROVIDERS[value];
         if (provider?.host) {
@@ -127,7 +127,6 @@ const EmailCredentials = () => {
       errors.from_email = "Valid from email is required";
     if (!formData.reply_email || !emailRegex.test(formData.reply_email))
       errors.reply_email = "Valid reply email is required";
-
     if (formData.source === "A") {
       if (!formData.aws_id.trim()) errors.aws_id = "AWS ID is required";
       if (!formData.aws_secret.trim()) errors.aws_secret = "AWS Secret is required";
@@ -143,13 +142,14 @@ const EmailCredentials = () => {
     return Object.keys(errors).length === 0;
   };
 
+  
   const handleSave = async () => {
     if (!validateForm()) {
       toast.warn("Please review the form for errors.", { toastId: "form_error" });
       return;
     }
-
     setLoading(true);
+
     const payload = {
       userID,
       name: formData.name,
@@ -160,7 +160,7 @@ const EmailCredentials = () => {
     };
 
     if (formData.source === "A") {
-      payload.aws_id = formData.aws_id;
+      payload.aws_id = formData.aws_id.trim();
       payload.aws_secret = formData.aws_secret.trim();
       payload.aws_region = formData.aws_region.trim();
     } else {
@@ -180,9 +180,9 @@ const EmailCredentials = () => {
       );
       const data = await response.json();
       if (response.ok) {
-        toast.success("Brand added successfully!");
-        fetchData(userID); // Re-fetch data to update the table
-        setFormData(initialFormData); // Reset form
+        toast.success("Credentials added successfully!");
+        fetchData(userID);
+        setFormData(initialFormData);
         setValidationErrors({});
       } else {
         toast.error(data.message || "Failed to add brand.");
@@ -190,6 +190,108 @@ const EmailCredentials = () => {
     } catch (error) {
       console.error("Save Error:", error);
       toast.error(`An error occurred: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const handleEditCredential = async () => {
+  if (!validateForm()) {
+    toast.warn("Please review the form for errors.", { toastId: "form_error" });
+    return;
+  }
+  setLoading(true);
+
+  const payload = {
+    credID:editCredentialId,
+    name: formData.name,
+    from_name: formData.from_name,
+    from_email: formData.from_email,
+    reply_email: formData.reply_email,
+    source: formData.source,
+    aws_id: formData.aws_id || "",
+    aws_secret: formData.aws_secret || "",
+    aws_region: formData.aws_region || "",
+    smtp_host: formData.smtp_host || "",
+    smtp_port: formData.smtp_port ? Number(formData.smtp_port) : "",
+    password: formData.password || "",
+  };
+
+  try {
+    const response = await fetch(
+      "https://www.margda.in/miraj/work/credentials/edit-credentials",
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }
+    );
+    const data = await response.json();
+    if (response.ok) {
+      toast.success("Credentials updated successfully!");
+      fetchData(userID);
+      setFormData(initialFormData);
+      setValidationErrors({});
+      setEditMode(false);
+      setEditCredentialId(null);
+    } else {
+      toast.error(data.message || "Failed to update brand.");
+    }
+  } catch (error) {
+    console.error("Edit Error:", error);
+    toast.error(`An error occurred: ${error.message}`);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  // Edit Logic - Populate formData
+  const handleEdit = (item) => {
+    setFormData({
+      name: item.name || "",
+      from_name: item.from_name || "",
+      from_email: item.from_email || "",
+      reply_email: item.reply_email || "",
+      source: item.source || "G",
+      aws_region: item.aws_region || "",
+      aws_id: item.aws_id || "",
+      aws_secret: item.aws_secret || "",
+      smtp_host: item.smtp_host || SOURCE_PROVIDERS[item.source]?.host || "",
+      smtp_port: item.smtp_port || SOURCE_PROVIDERS[item.source]?.port || "",
+      email: item.email || "",
+      password: "", // Do NOT prefill password!
+    });
+    setEditCredentialId(item.credID);
+    setEditMode(true);
+    setValidationErrors({});
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Delete Logic
+  const handleDelete = async (id) => {
+    if (!confirm("Are you sure you want to delete this provider?")) return;
+    setLoading(true);
+    try {
+      const response = await fetch(
+        "https://www.margda.in/miraj/work/credentials/delete-credentials",
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ credID: id }), // or credential_id, check backend
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        toast.success("Provider deleted!");
+        fetchData(userID);
+      } else {
+        toast.error(data.message || "Failed to delete provider.");
+      }
+    } catch (error) {
+      console.error("Delete Error:", error);
+      toast.error("An error occurred while deleting provider.");
     } finally {
       setLoading(false);
     }
@@ -247,19 +349,17 @@ const EmailCredentials = () => {
               <ArrowLeft className="h-6 w-6" />
               <span className="ml-1 font-medium">Back</span>
             </button>
-
             <h1 className="text-2xl md:text-3xl font-bold text-gray-800 text-center flex-1 flex justify-center items-center gap-2">
               <MailIcon className="h-7 w-7 mt-1 text-blue-600" />
               Email Service Providers
             </h1>
-
-            <div className="w-10"></div> {/* Spacer */}
+            <div className="w-10"></div>
           </header>
 
           {/* Form Card */}
           <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 lg:p-8">
             <h2 className="text-xl font-semibold text-gray-800 mb-6">
-              Add New Provider
+              {editMode ? "Edit Provider" : "Add New Provider"}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <fieldset className="md:col-span-2 space-y-4 border p-4 rounded-md">
@@ -307,7 +407,7 @@ const EmailCredentials = () => {
                           name="password"
                           value={formData.password}
                           onChange={handleInputChange}
-                          placeholder="Your email or app password"
+                          placeholder={editMode ? "Enter new password" : "Your email or app password"}
                           className={`w-full px-3 py-2 border ${
                             validationErrors.password ? "border-red-500" : "border-gray-300"
                           } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors pr-10`}
@@ -328,13 +428,27 @@ const EmailCredentials = () => {
                 )}
               </fieldset>
             </div>
-            <div className="mt-8 flex justify-end">
+            <div className="mt-8 flex justify-end gap-3">
+              {editMode && (
+                <button
+                  onClick={() => {
+                    setEditMode(false);
+                    setEditCredentialId(null);
+                    setFormData(initialFormData);
+                    setValidationErrors({});
+                  }}
+                  disabled={loading}
+                  className="px-6 py-2.5 bg-gray-300 text-gray-800 font-semibold rounded-md hover:bg-gray-200 focus:outline-none transition-all"
+                >
+                  Cancel
+                </button>
+              )}
               <button
-                onClick={handleSave}
+                onClick={editMode ? handleEditCredential : handleSave}
                 disabled={loading}
                 className="w-full md:w-auto px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300 disabled:cursor-not-allowed transition-all"
               >
-                {loading ? "Saving..." : "Save Provider"}
+                {loading ? (editMode ? "Updating..." : "Saving...") : (editMode ? "Update Provider" : "Save Provider")}
               </button>
             </div>
           </div>
@@ -381,15 +495,27 @@ const EmailCredentials = () => {
                     </thead>
                     <tbody>
                       {paginatedCredentials.map((item, index) => (
-                        <tr key={item.instID || `${item.from_email}-${index}`} className="border-b hover:bg-gray-50 text-sm">
+                        <tr key={item.instID || item.credential_id || item.credID || `${item.from_email}-${index}`} className="border-b hover:bg-gray-50 text-sm">
                           <td className="p-3 font-medium text-gray-800">{item.name}</td>
                           <td className="p-3">{`${item.from_name} <${item.from_email}>`}</td>
                           <td className="p-3">{SOURCE_PROVIDERS[item.source]?.name || item.source}</td>
                           <td className="p-3">{item.source === "A" ? `Key: ${item.aws_id}` : `Host: ${item.smtp_host}:${item.smtp_port}`}</td>
                           <td className="p-3">
                             <div className="flex items-center gap-3">
-                              <button className="text-blue-600 hover:text-blue-800"><Edit size={18} /></button>
-                              <button className="text-red-600 hover:text-red-800"><Trash2 size={18} /></button>
+                              <button
+                                className="text-blue-600 hover:text-blue-800"
+                                title="Edit"
+                                onClick={() => handleEdit(item)}
+                              >
+                                <Edit size={18} />
+                              </button>
+                              <button
+                                className="text-red-600 hover:text-red-800"
+                                title="Delete"
+                                onClick={() => handleDelete(item.instID || item.credential_id || item.credID)}
+                              >
+                                <Trash2 size={18} />
+                              </button>
                             </div>
                           </td>
                         </tr>
