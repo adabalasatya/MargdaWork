@@ -381,11 +381,11 @@ const MyProfile = () => {
                       alt="Profile"
                       width={96}
                       height={96}
-                      className="h-24 w-24 rounded-full border-2 border-custom-purple shadow-md mb-4 object-cover"
+                      className="h-24 w-24 rounded-full border-2 border-g-gradient-to-r from-blue-500 to-blue-600 shadow-md mb-4 object-cover"
                     />
                     <label
                       htmlFor="profilePic"
-                      className="absolute bottom-0 right-0 bg-custom-purple text-white p-2 rounded-full cursor-pointer hover:bg-purple-700 transition"
+                      className="absolute bottom-0 right-0 g-gradient-to-r from-blue-500 to-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-purple-700 transition"
                     >
                       <FaUser className="text-sm" />
                     </label>
@@ -413,7 +413,7 @@ const MyProfile = () => {
                       Full Name
                     </label>
                     <div className="relative h-[4.5rem]">
-                      <FaUser className="absolute left-4 top-4 text-custom-purple text-lg" />
+                      <FaUser className="absolute left-4 top-4 text-blue-500 text-lg" />
                       <input
                         id="name"
                         type="text"
@@ -422,7 +422,7 @@ const MyProfile = () => {
                         onChange={(e) =>
                           handleInputChange("name", e.target.value)
                         }
-                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 hover:border-purple-400 text-gray-700 placeholder-gray-400 text-base"
+                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-400 text-gray-700 placeholder-gray-400 text-base"
                       />
                     </div>
                     {errors.name && (
@@ -437,14 +437,14 @@ const MyProfile = () => {
                       Gender
                     </label>
                     <div className="relative h-[4.5rem]">
-                      <FaVenusMars className="absolute left-4 top-4 text-custom-purple text-lg" />
+                      <FaVenusMars className="absolute left-4 top-4 text-blue-500 text-lg" />
                       <select
                         id="gender"
                         value={formValues.gender || ""}
                         onChange={(e) =>
                           handleInputChange("gender", e.target.value)
                         }
-                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 hover:border-purple-400 text-gray-700 placeholder-gray-400 text-base"
+                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-400 text-gray-700 placeholder-gray-400 text-base"
                       >
                         <option value="">Select Gender</option>
                         <option value="M">Male</option>
@@ -513,7 +513,7 @@ const MyProfile = () => {
                     Email Address
                   </label>
                   <div className="relative h-[4.5rem]">
-                    <FaEnvelope className="absolute left-4 top-4 text-custom-purple text-lg" />
+                    <FaEnvelope className="absolute left-4 top-4 text-blue-500 text-lg" />
                     <input
                       id="email"
                       type="email"
@@ -522,7 +522,7 @@ const MyProfile = () => {
                       onChange={(e) =>
                         handleInputChange("email", e.target.value)
                       }
-                      className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 hover:border-purple-400 text-gray-700 placeholder-gray-400 text-base"
+                      className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-400 text-gray-700 placeholder-gray-400 text-base"
                     />
                   </div>
                   {errors.email && (
@@ -538,13 +538,13 @@ const MyProfile = () => {
                     Date of Birth
                   </label>
                   <div className="relative h-[4.5rem]">
-                    <FaCalendarAlt className="absolute left-4 top-4 text-custom-purple text-lg" />
+                    <FaCalendarAlt className="absolute left-4 top-4 text-blue-500 text-lg" />
                     <input
                       id="dob"
                       type="date"
                       value={formValues.dob || ""}
                       onChange={(e) => handleInputChange("dob", e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 hover:border-purple-400 text-gray-700 placeholder-gray-400 text-base"
+                      className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-400 text-gray-700 placeholder-gray-400 text-base"
                     />
                   </div>
                   {errors.dob && (
@@ -573,7 +573,7 @@ const MyProfile = () => {
                   whileTap={{ scale: 0.98 }}
                   type="button"
                   onClick={handleNext}
-                  className="flex items-center justify-center px-6 py-3 ml-auto w-full bg-[#6247aa] text-white rounded-lg font-semibold text-base focus:outline-none transition-all duration-300 hover:bg-purple-700"
+                  className="flex items-center justify-center px-6 py-3 ml-auto w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-semibold text-base focus:outline-none transition-all duration-300 hover:bg-purple-700"
                 >
                   Next <FaArrowRight className="ml-2" />
                 </motion.button>
@@ -583,7 +583,7 @@ const MyProfile = () => {
                   whileTap={{ scale: 0.98 }}
                   type="submit"
                   disabled={isSubmitting}
-                  className={`w-full py-3 bg-[#6247aa] text-white rounded-lg font-semibold text-lg focus:outline-none transition-all duration-300 ${
+                  className={`w-full py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-semibold text-lg focus:outline-none transition-all duration-300 ${
                     isSubmitting
                       ? "opacity-70 cursor-not-allowed"
                       : "hover:bg-purple-700"

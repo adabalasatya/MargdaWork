@@ -101,7 +101,7 @@ function Nav({ activeSection }) {
         <div className="flex justify-between h-16 items-center">
           {/* Logo (Left Side with Download Button Styling) */}
           <div className="flex ml-10 items-center">
-            <Link href="/work/">
+            <Link href="/">
               <motion.div
                 className={`group relative mt-2 px-1 py-1 rounded-xl overflow-hidden flex items-center ${
                   isScrolled
@@ -208,7 +208,7 @@ function Nav({ activeSection }) {
               <motion.button
                 className={`group relative px-6 py-2 font-medium rounded-xl shadow-2xl overflow-hidden flex items-center ${
                   isScrolled
-                    ? "bg-[#6247aa] text-white shadow-md"
+                    ? " bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
                     : "bg-white text-black shadow-md border border-white/20"
                 }`}
                 whileHover={{ scale: 1.05 }}
@@ -231,7 +231,7 @@ function Nav({ activeSection }) {
               <motion.button
                 className={`relative px-6 py-2 font-medium rounded-xl shadow-2xl overflow-hidden group ${
                   isScrolled
-                    ? "bg-[#6247aa] text-white shadow-md"
+                    ? " bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
                     : "bg-white text-black shadow-md border border-white/20"
                 }`}
                 whileHover={{ scale: 1.05 }}
@@ -300,7 +300,7 @@ function Nav({ activeSection }) {
                     <Image
                       src="/margdalogo.png"
                       alt="Logo"
-                      width={56}
+                      width={220}
                       height={56}
                       className="h-14 w-auto"
                     />
@@ -364,7 +364,7 @@ function Nav({ activeSection }) {
                   <motion.div variants={navItemVariants} custom={3}>
                     <Link
                       href="/login"
-                      className="block w-full text-center px-4 py-3 bg-white text-purple-600 border-2 border-purple-600 hover:bg-purple-50 rounded-lg font-medium transition-colors duration-200"
+                      className="block w-full text-center px-4 py-3 bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-50 rounded-lg font-medium transition-colors duration-200"
                       onClick={() => setMenuOpen(false)}
                     >
                       Login
@@ -380,7 +380,7 @@ function Nav({ activeSection }) {
                         className={`relative w-full px-6 py-3 font-medium rounded-xl shadow-2xl overflow-hidden group ${
                           isScrolled
                             ? "bg-white text-black hover:bg-gray-100 shadow-md border border-white"
-                            : "bg-white text-purple-600 hover:bg-gray-50 shadow-md border border-white/20"
+                            : "bg-white text-blue-600 hover:bg-blue-50 shadow-md border border-white/20"
                         }`}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}

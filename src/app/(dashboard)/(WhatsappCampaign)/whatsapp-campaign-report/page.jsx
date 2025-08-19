@@ -374,57 +374,59 @@ const WhatsappReport = () => {
       <ToastContainer position="top-right" autoClose={5000} />
       {loading && <Loader />}
 
-      {/* Header */}
-      <div className="w-full mt-2 max-w-6xl mx-auto p-4 rounded-md bg-white shadow-sm border-2 border-gray-200 sticky top-0 z-20">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex items-center gap-1">
-              <span className="text-sm text-gray-600">From</span>
-              <input
-                type="date"
-                value={fromDate}
-                onChange={(e) => setFromDate(e.target.value)}
-                className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[#008069]"
-              />
+      {/* Main Content Container */}
+      <div className="w-full fixed max-w-6xl ml-12 mx-auto p-4 mt-2 h-[calc(90vh-20px)] flex flex-col gap-4">
+        
+        {/* Header - Now inside main container */}
+        <div className="w-full p-4 rounded-md bg-white shadow-sm border-2 border-gray-200">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-1">
+                <span className="text-sm text-gray-600">From</span>
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                  className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[#008069]"
+                />
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-sm text-gray-600">To</span>
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                  className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[#008069]"
+                />
+              </div>
+              <button
+                onClick={clearDates}
+                className="px-3 py-1 bg-blue-500 text-white rounded-lg text-sm hover:bg-[#075e54]"
+              >
+                Clear
+              </button>
             </div>
-            <div className="flex items-center gap-1">
-              <span className="text-sm text-gray-600">To</span>
-              <input
-                type="date"
-                value={toDate}
-                onChange={(e) => setToDate(e.target.value)}
-                className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[#008069]"
-              />
+            <h2 className="text-xl font-semibold text-blue-600 flex items-center justify-center gap-2">
+              <FaWhatsapp /> WhatsApp Chat
+            </h2>
+            <div className="flex gap-2">
+              <select
+                className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-600"
+                value={selectedCampaignID}
+                onChange={(e) => setSelectedCampaignID(e.target.value)}
+              >
+                <option value="">All Campaigns</option>
+                {campaigns.map((campaign) => (
+                  <option key={campaign.campaignID} value={campaign.campaignID}>
+                    {campaign.campaign_name}
+                  </option>
+                ))}
+              </select>
             </div>
-            <button
-              onClick={clearDates}
-              className="px-3 py-1 bg-blue-500 text-white rounded-lg text-sm hover:bg-[#075e54]"
-            >
-              Clear
-            </button>
-          </div>
-          <h2 className="text-xl font-semibold text-blue-600 flex items-center justify-center gap-2">
-            <FaWhatsapp /> WhatsApp Chat
-          </h2>
-          <div className="flex gap-2">
-            <select
-              className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-600"
-              value={selectedCampaignID}
-              onChange={(e) => setSelectedCampaignID(e.target.value)}
-            >
-              <option value="">All Campaigns</option>
-              {campaigns.map((campaign) => (
-                <option key={campaign.campaignID} value={campaign.campaignID}>
-                  {campaign.campaign_name}
-                </option>
-              ))}
-            </select>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="w-full max-w-6xl ml-12 mx-auto p-4 fixed  mt-16 h-[calc(85vh-20px)] flex flex-col md:flex-row gap-4">
+        {/* Chat Interface */}
         <div className="flex flex-col md:flex-row bg-white rounded-lg shadow-md border-2 border-gray-200 flex-1 overflow-hidden">
           {/* Conversations List */}
           <div
@@ -872,6 +874,7 @@ const WhatsappReport = () => {
           </motion.div>
         </div>
       )}
+      
       {showAddToTask &&
         selectedDataID.lastMessage &&
         selectedDataID.lastMessage.dataID && (

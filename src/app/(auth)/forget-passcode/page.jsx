@@ -35,7 +35,6 @@ import Navbar from "@/app/(auth)/navbar/page"
 // Styled Components (Same as Login/Register components)
 const GradientBox = styled(Box)(({ theme }) => ({
   minHeight: "100vh",
-  background: "linear-gradient(135deg, #f3e7ff 0%, #e0f2fe 100%)",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -65,15 +64,15 @@ const StyledButton = styled(Button)(({ theme }) => ({
   borderRadius: theme.spacing(1.5),
   textTransform: "none",
   transition: "all 0.3s ease",
-  border: "2px solid #6B46C1",
-  color: "#6B46C1",
+  border: "2px solid #2c50d3ff",
+  color: "#2c50d3ff",
   backgroundColor: "white",
   minHeight: "36px",
   "&:hover": {
-    backgroundColor: "#6B46C1",
+    backgroundColor: "#2c50d3ff",
     color: "white",
     transform: "translateY(-3px)",
-    boxShadow: "0 12px 24px rgba(107, 70, 193, 0.4)",
+    boxShadow: "0 12px 24px rgba(70, 80, 193, 0.4)",
   },
 }));
 
@@ -101,7 +100,6 @@ const IllustrationContainer = styled(Box)(({ theme }) => ({
 const CopyrightBox = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3),
   textAlign: "center",
-  background: "linear-gradient(135deg, #f3e7ff 0%, #e0f2fe 100%)",
 }));
 
 const StyledRadioGroup = styled(RadioGroup)(({ theme }) => ({
@@ -119,7 +117,7 @@ const StyledRadioGroup = styled(RadioGroup)(({ theme }) => ({
       backgroundColor: "rgba(107, 70, 193, 0.1)",
     },
     "& .Mui-checked": {
-      color: "#6B46C1",
+      color: "#2c50d3ff",
     },
   },
   "& .MuiRadio-root": {
@@ -137,17 +135,17 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
       borderWidth: "2px",
     },
     "&:hover fieldset": {
-      borderColor: "#6B46C1",
+      borderColor: "#2c50d3ff",
     },
     "&.Mui-focused fieldset": {
-      borderColor: "#6B46C1",
+      borderColor: "#2c50d3ff",
       borderWidth: "2px",
     },
   },
   "& .MuiInputLabel-root": {
     fontSize: "1.1rem",
     "&.Mui-focused": {
-      color: "#6B46C1",
+      color: "#2c50d3ff",
     },
   },
   "& .MuiOutlinedInput-input": {
@@ -303,7 +301,7 @@ const ForgetPasscode = () => {
                               fontWeight: 600,
                               color: "text.secondary",
                               mb: 2,
-                              "&.Mui-focused": { color: "#6B46C1" }
+                              "&.Mui-focused": { color: "#2c50d3ff" }
                             }}
                           >
                             Choose delivery method:
@@ -317,7 +315,7 @@ const ForgetPasscode = () => {
                               control={<Radio />}
                               label={
                                 <Box display="flex" alignItems="center" gap={1}>
-                                  <WhatsAppIcon sx={{ color: "#6B46C1" }} />
+                                  <WhatsAppIcon sx={{ color: "#2c50d3ff" }} />
                                   <Typography variant="body1" fontWeight={500}>
                                     WhatsApp
                                   </Typography>
@@ -329,7 +327,7 @@ const ForgetPasscode = () => {
                               control={<Radio />}
                               label={
                                 <Box display="flex" alignItems="center" gap={1}>
-                                  <SmsIcon sx={{ color: "#6B46C1" }} />
+                                  <SmsIcon sx={{ color: "#2c50d3ff" }} />
                                   <Typography variant="body1" fontWeight={500}>
                                     SMS
                                   </Typography>
@@ -341,7 +339,7 @@ const ForgetPasscode = () => {
                               control={<Radio />}
                               label={
                                 <Box display="flex" alignItems="center" gap={1}>
-                                  <EmailIcon sx={{ color: "#6B46C1" }} />
+                                  <EmailIcon sx={{ color: "#2c50d3ff" }} />
                                   <Typography variant="body1" fontWeight={500}>
                                     Email
                                   </Typography>
@@ -439,10 +437,10 @@ const ForgetPasscode = () => {
                         <Typography
                           variant="body1"
                           sx={{
-                            color: "#6B46C1",
+                            color: "#2c50d3ff",
                             fontWeight: 500,
                             "&:hover": {
-                              color: "#553C9A",
+                              color: "#2c50d3ff",
                               textDecoration: "underline",
                             },
                           }}

@@ -130,7 +130,7 @@ const Navbar = () => {
           <div className="flex flex-col space-y-2 p-4">
             <Link
               href="/dashboard"
-              className="flex items-center px-3 py-2 text-xs font-medium text-gray-800 bg-white border-2 border-gray-300 rounded-lg shadow-md hover:bg-[#6247aa]  hover:text-white transition-colors duration-300 ease-in-out"
+              className="flex items-center px-3 py-2 text-xs font-medium text-gray-800 bg-white border-2 border-gray-300 rounded-lg shadow-md hover:bg-gradient-to-r from-blue-500 to-blue-600  hover:text-white transition-colors duration-300 ease-in-out"
               onClick={() => setIsMenuOpen(false)}
             >
               <FaDatabase className="mr-2" /> Data
@@ -154,7 +154,7 @@ const Navbar = () => {
             </Link> */}
             <Link 
               href="/team-support"
-              className="flex items-center px-3 py-2 text-xs font-medium text-gray-800 bg-white border-2 border-gray-300 rounded-lg shadow-md hover:bg-[#6247aa]  hover:text-white transition-colors duration-300 ease-in-out"
+              className="flex items-center px-3 py-2 text-xs font-medium text-gray-800 bg-white border-2 border-gray-300 rounded-lg shadow-md hover:bg-gradient-to-r from-blue-500 to-blue-600  hover:text-white transition-colors duration-300 ease-in-out"
               onClick={() => setIsMenuOpen(false)}
             >
               <FaUsers className="mr-2" /> Team-Support
@@ -169,7 +169,7 @@ const Navbar = () => {
         <div className="flex justify-start w-full space-x-4 sm:space-x-8 whitespace-nowrap">
           <Link
             href="/dashboard"
-            className="flex items-center px-3 py-2 text-xs font-medium text-gray-800 bg-white border-2 border-gray-300 rounded-lg shadow-md hover:bg-[#6247aa] hover:text-white transition-colors duration-300 ease-in-out sm:px-4 sm:py-2 sm:text-sm"
+            className="flex items-center px-3 py-2 text-xs font-medium text-gray-800 bg-white border-2 border-gray-300 rounded-lg shadow-md hover:bg-gradient-to-r from-blue-500 to-blue-600 hover:text-white transition-colors duration-300 ease-in-out sm:px-4 sm:py-2 sm:text-sm"
           >
             <FaDatabase className="mr-2" /> Data
           </Link>
@@ -179,7 +179,7 @@ const Navbar = () => {
         <div className="flex space-x-4 sm:space-x-8 ml-auto mr-16 whitespace-nowrap">
           <Link 
             href="/team-support"
-            className="flex items-center px-3 py-2 text-xs font-medium text-gray-800 bg-white border-2 border-gray-300 rounded-lg shadow-md hover:bg-[#6247aa]  hover:text-white transition-colors duration-300 ease-in-out sm:px-4 sm:py-2 sm:text-sm"
+            className="flex items-center px-3 py-2 text-xs font-medium text-gray-800 bg-white border-2 border-gray-300 rounded-lg shadow-md hover:bg-gradient-to-r from-blue-500 to-blue-600  hover:text-white transition-colors duration-300 ease-in-out sm:px-4 sm:py-2 sm:text-sm"
           >
             <FaUsers className="mr-2" /> Team-Support
           </Link>

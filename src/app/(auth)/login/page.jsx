@@ -36,7 +36,6 @@ import Navbar from "@/app/(auth)/navbar/page"
 // Styled Components
 const GradientBox = styled(Box)(({ theme }) => ({
   minHeight: "100vh",
-  background: "linear-gradient(135deg, #f3e7ff 0%, #e0f2fe 100%)",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -66,15 +65,15 @@ const StyledButton = styled(Button)(({ theme }) => ({
   borderRadius: theme.spacing(1.5),
   textTransform: "none",
   transition: "all 0.3s ease",
-  border: "2px solid #6B46C1",
-  color: "#6B46C1",
+  border: "2px solid #2c50d3ff",
+  color: "#2c50d3ff",
   backgroundColor: "white",
   minHeight: "36px", // Ensures consistent height
   "&:hover": {
-    backgroundColor: "#6B46C1",
+    backgroundColor: "#2c50d3ff",
     color: "white",
     transform: "translateY(-3px)",
-    boxShadow: "0 12px 24px rgba(107, 70, 193, 0.4)",
+    boxShadow: "0 12px 24px rgba(70, 101, 193, 0.4)",
   },
 }));
 
@@ -95,13 +94,13 @@ const LinkContainer = styled(Box)(({ theme }) => ({
 }));
 
 const StyledLink = styled(Link)(({ theme }) => ({
-  color: "#6B46C1",
+  color: "#2c50d3ff",
   textDecoration: "none",
   fontWeight: 500,
   fontSize: "1rem", // Slightly larger
   transition: "color 0.3s ease",
   "&:hover": {
-    color: "#553C9A",
+    color: "#2c50d3ff",
     textDecoration: "underline",
   },
 }));
@@ -122,7 +121,6 @@ const IllustrationContainer = styled(Box)(({ theme }) => ({
 const CopyrightBox = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3),
   textAlign: "center",
-  background: "linear-gradient(135deg, #f3e7ff 0%, #e0f2fe 100%)",
 }));
 
 // Enhanced FormControl styling
@@ -135,17 +133,17 @@ const StyledFormControl = styled(FormControl)(({ theme }) => ({
       borderWidth: "2px",
     },
     "&:hover fieldset": {
-      borderColor: "#6B46C1",
+      borderColor: "#2c50d3ff",
     },
     "&.Mui-focused fieldset": {
-      borderColor: "#6B46C1",
+      borderColor: "#2c50d3ff",
       borderWidth: "2px",
     },
   },
   "& .MuiInputLabel-root": {
     fontSize: "1.1rem",
     "&.Mui-focused": {
-      color: "#6B46C1",
+      color: "#2c50d3ff",
     },
   },
   "& .MuiOutlinedInput-input": {
@@ -295,7 +293,7 @@ const Login = () => {
                       <Image
                         src="/logoicon.png"
                         alt="Logo"
-                        width={56} // Increased from 48
+                        width={220} // Increased from 48
                         height={56}
                         style={{ width: "56px", height: "auto" }}
                       />
@@ -334,12 +332,13 @@ const Login = () => {
                             paddingRight: "1.5rem",
                             paddingTop: "25px", // Increased padding
                             paddingBottom: "20px",
-                            border: "2px solid #d1d5db", // Thicker border
+                            border: "2px solid #dadce4ff", // Thicker border
                             borderRadius: "12px", // More rounded
                             fontSize: "1.1rem", // Larger font
                             lineHeight: "1.5rem",
                             color: "#374151",
                             backgroundColor: "white",
+                            
                             fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
                           }}
                           buttonStyle={{
@@ -376,7 +375,7 @@ const Login = () => {
                             }}
                             startAdornment={
                               <InputAdornment position="start">
-                                <LockIcon sx={{ color: "#6B46C1", fontSize: "1.5rem" }} />
+                                <LockIcon sx={{ color: "blue", fontSize: "1.5rem" }} />
                               </InputAdornment>
                             }
                             endAdornment={

@@ -354,7 +354,7 @@ const Sidebar = ({ toggleSidebar }) => {
                 key={item.link || item.title}
                 href={item.link}
                 onClick={handleLinkClick}
-                className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg text-black hover:bg-[#6247aa] hover:text-white ${
+                className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg text-black hover:bg-gradient-to-r from-blue-500 to-blue-600 hover:text-white ${
                   !isOpen ? "justify-center" : ""
                 }`}
               >
@@ -400,7 +400,7 @@ const Sidebar = ({ toggleSidebar }) => {
             <button
               className={`${
                 isOpen ? "ml-auto" : "mx-auto"
-              } bg-white text-gray-900 p-2 rounded-full shadow hover:bg-orange-500 hover:text-white focus:outline-none transition-all duration-300`}
+              } bg-white text-gray-900 p-2 rounded-full shadow hover:bg-gradient-to-r from-blue-500 to-blue-600 hover:text-white focus:outline-none transition-all duration-300`}
               onClick={() => setIsOpen(!isOpen)}
             >
               <Menu className="w-6 h-6" />
@@ -414,7 +414,7 @@ const Sidebar = ({ toggleSidebar }) => {
               <Link
                 href="/dashboard"
                 onClick={handleLinkClick}
-                className={`flex items-center px-4 py-3 text-lg font-medium rounded-lg text-black hover:bg-[#6247aa] hover:text-white ${
+                className={`flex items-center px-4 py-3 text-lg font-medium rounded-lg text-black hover:bg-gradient-to-r from-blue-500 to-blue-600 hover:text-white ${
                   !isOpen ? "justify-center" : ""
                 }`}
               >

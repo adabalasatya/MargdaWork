@@ -22,7 +22,6 @@ import Navbar from "@/app/(auth)/navbar/page";
 // Styled Components (Same as Login component)
 const GradientBox = styled(Box)(({ theme }) => ({
   minHeight: "100vh",
-  background: "linear-gradient(135deg, #f3e7ff 0%, #e0f2fe 100%)",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -62,13 +61,13 @@ const LinkContainer = styled(Box)(({ theme }) => ({
 }));
 
 const StyledLink = styled(Link)(({ theme }) => ({
-  color: "#6B46C1",
+  color: "#2c50d3ff",
   textDecoration: "none",
   fontWeight: 500,
   fontSize: "1rem",
   transition: "color 0.3s ease",
   "&:hover": {
-    color: "#553C9A",
+    color: "#2c50d3ff",
     textDecoration: "underline",
   },
 }));
@@ -89,7 +88,6 @@ const IllustrationContainer = styled(Box)(({ theme }) => ({
 const CopyrightBox = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3),
   textAlign: "center",
-  background: "linear-gradient(135deg, #f3e7ff 0%, #e0f2fe 100%)",
 }));
 
 const StyledAlert = styled(Alert)(({ theme }) => ({
@@ -193,7 +191,7 @@ const Register = () => {
 
                     {/* Registration Content */}
                     <Box mb={4}>
-                      <StyledAlert severity="info" variant="outlined">
+                      <StyledAlert severity="info" variant="outlined" >
                         <Typography
                           variant="h6"
                           component="div"
@@ -214,7 +212,7 @@ const Register = () => {
                               borderRadius: 2,
                               fontFamily: "monospace",
                               fontSize: "1.1rem",
-                              color: "#6B46C1",
+                              color: "#2c50d3ff",
                               fontWeight: "bold",
                             }}
                           >
