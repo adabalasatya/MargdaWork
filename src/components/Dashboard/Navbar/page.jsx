@@ -17,7 +17,7 @@ const Navbar = () => {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setProfileMenuOpen] = useState(false);
-  
+
   // State to track if component has mounted (client-side)
   const [isMounted, setIsMounted] = useState(false);
   const [userData, setUserData] = useState(null);
@@ -26,7 +26,7 @@ const Navbar = () => {
   useEffect(() => {
     // Set mounted to true after first render
     setIsMounted(true);
-    
+
     // Only access localStorage on client side
     if (typeof window !== "undefined") {
       const storedUserData = localStorage.getItem("userData");
@@ -83,7 +83,7 @@ const Navbar = () => {
           <div className="flex justify-start w-full space-x-4 sm:space-x-8 whitespace-nowrap">
             <div className="flex items-center px-3 py-2 text-xs font-medium text-gray-800  bg-white border-2 border-gray-300 rounded-lg shadow-md sm:px-4 sm:py-2 sm:text-sm">
               <div className="w-4 h-4 bg-gray-300 rounded mr-2 animate-pulse"></div>
-              <span>Data</span>
+              <span>Contact List</span>
             </div>
           </div>
 
@@ -133,7 +133,7 @@ const Navbar = () => {
               className="flex items-center px-3 py-2 text-xs font-medium text-gray-800 bg-white border-2 border-gray-300 rounded-lg shadow-md hover:bg-gradient-to-r from-blue-500 to-blue-600  hover:text-white transition-colors duration-300 ease-in-out"
               onClick={() => setIsMenuOpen(false)}
             >
-              <FaDatabase className="mr-2" /> Data
+              <FaDatabase className="mr-2" /> Contact List
             </Link>
 
             {/* {loginUserID === 1 && (
@@ -152,7 +152,7 @@ const Navbar = () => {
             >
               <FaShoppingCart className="mr-2" /> Mart
             </Link> */}
-            <Link 
+            <Link
               href="/team-support"
               className="flex items-center px-3 py-2 text-xs font-medium text-gray-800 bg-white border-2 border-gray-300 rounded-lg shadow-md hover:bg-gradient-to-r from-blue-500 to-blue-600  hover:text-white transition-colors duration-300 ease-in-out"
               onClick={() => setIsMenuOpen(false)}
@@ -171,13 +171,13 @@ const Navbar = () => {
             href="/dashboard"
             className="flex items-center px-3 py-2 text-xs font-medium text-gray-800 bg-white border-2 border-gray-300 rounded-lg shadow-md hover:bg-gradient-to-r from-blue-500 to-blue-600 hover:text-white transition-colors duration-300 ease-in-out sm:px-4 sm:py-2 sm:text-sm"
           >
-            <FaDatabase className="mr-2" /> Data
+            <FaDatabase className="mr-2" /> Contact List
           </Link>
         </div>
 
         {/* Right Side Buttons */}
         <div className="flex space-x-4 sm:space-x-8 ml-auto mr-16 whitespace-nowrap">
-          <Link 
+          <Link
             href="/team-support"
             className="flex items-center px-3 py-2 text-xs font-medium text-gray-800 bg-white border-2 border-gray-300 rounded-lg shadow-md hover:bg-gradient-to-r from-blue-500 to-blue-600  hover:text-white transition-colors duration-300 ease-in-out sm:px-4 sm:py-2 sm:text-sm"
           >

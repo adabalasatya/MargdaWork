@@ -55,10 +55,10 @@ import Papa from "papaparse";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import moment from "moment";
-import AddDataForm from "@/app/(dashboard)/(DataComponents)/AddDataForm/page"
-import { useToast } from "@/app/component/customtoast/page"
-import SendEmailCon from "@/app/(dashboard)/(DataComponents)/SendEmailCon/page"
-import WhatsAppCon from "@/app/(dashboard)/(DataComponents)/SendWhatsappCon/page"
+import AddDataForm from "@/app/(dashboard)/(DataComponents)/AddDataForm/page";
+import { useToast } from "@/app/component/customtoast/page";
+import SendEmailCon from "@/app/(dashboard)/(DataComponents)/SendEmailCon/page";
+import WhatsAppCon from "@/app/(dashboard)/(DataComponents)/SendWhatsappCon/page";
 
 // Sample options for filters
 const sampleTasks = ["Follow-up", "Meeting", "Hiring", "Call Back"];
@@ -117,7 +117,7 @@ const sampleExperiences = [
 const Dashboard = () => {
   const router = useRouter();
   const { addToast } = useToast();
-  
+
   // Existing state
   const [dataDetails, setDataDetails] = useState([]);
   const [selectedTask, setSelectedTask] = useState("");
@@ -196,7 +196,7 @@ const Dashboard = () => {
         router.push("/work/login");
         return;
       }
-      
+
       try {
         const parsedUserData = JSON.parse(userData);
         if (!parsedUserData || !parsedUserData.pic) {
@@ -270,7 +270,10 @@ const Dashboard = () => {
           const { data, meta } = results;
           const fileHeaders = meta.fields;
           if (fileHeaders.join(",") !== expectedHeaders.join(",")) {
-            addToast(`Invalid columns. Expected: ${expectedHeaders.join(", ")}`, "error");
+            addToast(
+              `Invalid columns. Expected: ${expectedHeaders.join(", ")}`,
+              "error"
+            );
             setCsvData([]);
             setHeaders([]);
             return;
@@ -385,47 +388,74 @@ const Dashboard = () => {
 
   // Action handlers
   const handleChangeTask = (item) => {
-    addToast(`Change Task for ${item.name} - Functionality not implemented`, "info");
+    addToast(
+      `Change Task for ${item.name} - Functionality not implemented`,
+      "info"
+    );
     setOpenDropdownId(null);
   };
 
   const handleChangeLead = (item) => {
-    addToast(`Change Lead for ${item.name} - Functionality not implemented`, "info");
+    addToast(
+      `Change Lead for ${item.name} - Functionality not implemented`,
+      "info"
+    );
     setOpenDropdownId(null);
   };
 
   const handleShareData = (item) => {
-    addToast(`Share Data for ${item.name} - Functionality not implemented`, "info");
+    addToast(
+      `Share Data for ${item.name} - Functionality not implemented`,
+      "info"
+    );
     setOpenDropdownId(null);
   };
 
   const handleShareLog = (item) => {
-    addToast(`Share Log for ${item.name} - Functionality not implemented`, "info");
+    addToast(
+      `Share Log for ${item.name} - Functionality not implemented`,
+      "info"
+    );
     setOpenDropdownId(null);
   };
 
   const handleMakeUser = (item) => {
-    addToast(`Make User for ${item.name} - Functionality not implemented`, "info");
+    addToast(
+      `Make User for ${item.name} - Functionality not implemented`,
+      "info"
+    );
     setOpenDropdownId(null);
   };
 
   const handlePasscode = (item) => {
-    addToast(`Generate Passcode for ${item.name} - Functionality not implemented`, "info");
+    addToast(
+      `Generate Passcode for ${item.name} - Functionality not implemented`,
+      "info"
+    );
     setOpenDropdownId(null);
   };
 
   const handleInvoice = (item) => {
-    addToast(`Generate Invoice for ${item.name} - Functionality not implemented`, "info");
+    addToast(
+      `Generate Invoice for ${item.name} - Functionality not implemented`,
+      "info"
+    );
     setOpenDropdownId(null);
   };
 
   const handleReceipt = (item) => {
-    addToast(`Generate Receipt for ${item.name} - Functionality not implemented`, "info");
+    addToast(
+      `Generate Receipt for ${item.name} - Functionality not implemented`,
+      "info"
+    );
     setOpenDropdownId(null);
   };
 
   const handleSkillsTest = (item) => {
-    addToast(`Skills Test for ${item.name} - Functionality not implemented`, "info");
+    addToast(
+      `Skills Test for ${item.name} - Functionality not implemented`,
+      "info"
+    );
     setOpenDropdownId(null);
   };
 
@@ -438,7 +468,10 @@ const Dashboard = () => {
   };
 
   const handleHRInteraction = (item) => {
-    addToast(`HR Interaction for ${item.name} - Functionality not implemented`, "info");
+    addToast(
+      `HR Interaction for ${item.name} - Functionality not implemented`,
+      "info"
+    );
     setOpenDropdownId(null);
   };
 
@@ -451,12 +484,18 @@ const Dashboard = () => {
   };
 
   const handleDocumentUpload = (item) => {
-    addToast(`Document Upload for ${item.name} - Functionality not implemented`, "info");
+    addToast(
+      `Document Upload for ${item.name} - Functionality not implemented`,
+      "info"
+    );
     setOpenDropdownId(null);
   };
 
   const handleStudentContest = (item) => {
-    addToast(`Student Contest for ${item.name} - Functionality not implemented`, "info");
+    addToast(
+      `Student Contest for ${item.name} - Functionality not implemented`,
+      "info"
+    );
     setOpenDropdownId(null);
   };
 
@@ -477,12 +516,18 @@ const Dashboard = () => {
   };
 
   const handleAbilityAnalyser = (item) => {
-    addToast(`Ability Analyser for ${item.name} - Functionality not implemented`, "info");
+    addToast(
+      `Ability Analyser for ${item.name} - Functionality not implemented`,
+      "info"
+    );
     setOpenDropdownId(null);
   };
 
   const handleCareerDashboard = (item) => {
-    addToast(`Career Dashboard for ${item.name} - Functionality not implemented`, "info");
+    addToast(
+      `Career Dashboard for ${item.name} - Functionality not implemented`,
+      "info"
+    );
     setOpenDropdownId(null);
   };
 
@@ -663,7 +708,7 @@ const Dashboard = () => {
             onClick={() => setIsAddDataFormOpen(true)}
             className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
           >
-            <FaPlus className="mr-2 text-lg" /> Add Data
+            <FaPlus className="mr-2 text-lg" /> Add Contact
           </button>
           <Link href="">
             <button className="flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200">
@@ -763,25 +808,33 @@ const Dashboard = () => {
             <FaEnvelope className="mr-2 text-lg" /> Email
           </button>
           <button
-            onClick={() => addToast("RCM functionality not implemented", "info")}
+            onClick={() =>
+              addToast("RCM functionality not implemented", "info")
+            }
             className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
           >
             <FaUserCheck className="mr-2 text-lg" /> RCM
           </button>
           <button
-            onClick={() => addToast("Meet functionality not implemented", "info")}
+            onClick={() =>
+              addToast("Meet functionality not implemented", "info")
+            }
             className="flex items-center px-4 py-2 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
           >
             <FaUsers className="mr-2 text-lg" /> Meet
           </button>
           <button
-            onClick={() => addToast("Visit functionality not implemented", "info")}
+            onClick={() =>
+              addToast("Visit functionality not implemented", "info")
+            }
             className="flex items-center px-4 py-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
           >
             <FaMapMarkedAlt className="mr-2 text-lg" /> Visit
           </button>
           <button
-            onClick={() => addToast("Work Report functionality not implemented", "info")}
+            onClick={() =>
+              addToast("Work Report functionality not implemented", "info")
+            }
             className="flex items-center px-4 py-2 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
           >
             <FaRegHandPointRight className="mr-2 text-lg" /> Work Report
@@ -791,7 +844,7 @@ const Dashboard = () => {
 
       {/* Filter Toggle Button (Right Corner) */}
       <div className="flex justify-end mt-4 gap-2">
-        <button
+        {/* <button
           onClick={toggleFilter}
           className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
         >
@@ -805,7 +858,7 @@ const Dashboard = () => {
         >
           <FaCheck className="mr-2 text-lg" />
           Shortlist ({selectedRows.length})
-        </button>
+        </button> */}
 
         <select
           name="tasks"
@@ -816,7 +869,11 @@ const Dashboard = () => {
         >
           <option value="">Tasks</option>
           {tasks.map((task) => (
-            <option className="bg-blue-500" value={task.taskID} key={task.taskID}>
+            <option
+              className="bg-blue-500"
+              value={task.taskID}
+              key={task.taskID}
+            >
               {task.task}
             </option>
           ))}
@@ -828,7 +885,9 @@ const Dashboard = () => {
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
           <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-gray-800">Advanced Filters</h2>
+              <h2 className="text-2xl font-bold text-gray-800">
+                Advanced Filters
+              </h2>
               <button
                 onClick={toggleFilter}
                 className="p-2 rounded-full hover:bg-gray-100"
@@ -840,10 +899,14 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Basic Filters */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">Basic Filters</h3>
-                
+                <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">
+                  Basic Filters
+                </h3>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Data Type</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Data Type
+                  </label>
                   <select
                     value={selectedDataFilter}
                     onChange={(e) => setSelectedDataFilter(e.target.value)}
@@ -857,7 +920,9 @@ const Dashboard = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Lead</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Lead
+                  </label>
                   <select
                     value={selectedLead}
                     onChange={(e) => setSelectedLead(e.target.value)}
@@ -870,7 +935,9 @@ const Dashboard = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Status
+                  </label>
                   <select
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
@@ -883,7 +950,9 @@ const Dashboard = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Date Range
+                  </label>
                   <div className="grid grid-cols-2 gap-2">
                     <input
                       type="date"
@@ -905,10 +974,14 @@ const Dashboard = () => {
 
               {/* Location Filters */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">Location</h3>
-                
+                <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">
+                  Location
+                </h3>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Country
+                  </label>
                   <select
                     value={selectedCountry}
                     onChange={handleSelectCountry}
@@ -916,7 +989,10 @@ const Dashboard = () => {
                   >
                     <option value="">Select Country</option>
                     {sampleCountries.map((country) => (
-                      <option key={country.country_code} value={country.country_code}>
+                      <option
+                        key={country.country_code}
+                        value={country.country_code}
+                      >
                         {country.country}
                       </option>
                     ))}
@@ -924,7 +1000,9 @@ const Dashboard = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    State
+                  </label>
                   <select
                     value={selectedState?.state_code || ""}
                     onChange={handleStateChange}
@@ -945,7 +1023,9 @@ const Dashboard = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    District
+                  </label>
                   <select
                     value={selectedDistrict}
                     onChange={handleDistrictChange}
@@ -961,7 +1041,10 @@ const Dashboard = () => {
                           district.state_code === selectedState?.state_code
                       )
                       .map((district) => (
-                        <option key={district.districtID} value={district.district}>
+                        <option
+                          key={district.districtID}
+                          value={district.district}
+                        >
                           {district.district}
                         </option>
                       ))}
@@ -969,12 +1052,15 @@ const Dashboard = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Pin code</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Pin code
+                  </label>
                   <Select
                     options={samplePincodes.filter(
                       (pincode) =>
-                        sampleDistricts.find((d) => d.district === selectedDistrict)
-                          ?.state_code ===
+                        sampleDistricts.find(
+                          (d) => d.district === selectedDistrict
+                        )?.state_code ===
                         sampleStates.find(
                           (s) => s.state_code === selectedState?.state_code
                         )?.state_code
@@ -990,10 +1076,14 @@ const Dashboard = () => {
 
               {/* Professional Filters */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">Professional</h3>
-                
+                <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">
+                  Professional
+                </h3>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Skills</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Skills
+                  </label>
                   <Select
                     isMulti
                     options={sampleSkills}
@@ -1005,7 +1095,9 @@ const Dashboard = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Functional Area</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Functional Area
+                  </label>
                   <select
                     value={selectedFunctionalArea}
                     onChange={(e) => setSelectedFunctionalArea(e.target.value)}
@@ -1021,7 +1113,9 @@ const Dashboard = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Position</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Position
+                  </label>
                   <select
                     value={selectedPosition}
                     onChange={(e) => setSelectedPosition(e.target.value)}
@@ -1037,7 +1131,9 @@ const Dashboard = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Industry
+                  </label>
                   <select
                     value={selectedIndustry}
                     onChange={(e) => setSelectedIndustry(e.target.value)}
@@ -1053,7 +1149,9 @@ const Dashboard = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Education</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Education
+                  </label>
                   <Select
                     isMulti
                     options={sampleEducations}
@@ -1065,7 +1163,9 @@ const Dashboard = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Institute</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Institute
+                  </label>
                   <Select
                     isMulti
                     options={sampleInstitutes}
@@ -1077,7 +1177,9 @@ const Dashboard = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Experience</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Experience
+                  </label>
                   <Select
                     isMulti
                     options={sampleExperiences}
@@ -1089,7 +1191,9 @@ const Dashboard = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Experience Years</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Experience Years
+                  </label>
                   <div className="grid grid-cols-2 gap-2">
                     <input
                       type="number"
@@ -1138,7 +1242,10 @@ const Dashboard = () => {
                 <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"
-                    checked={selectedRows.length >= currentRecords.length && currentRecords.length > 0}
+                    checked={
+                      selectedRows.length >= currentRecords.length &&
+                      currentRecords.length > 0
+                    }
                     onChange={(e) => toggleSelectAll(e.target.checked)}
                     className="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
                   />
@@ -1159,7 +1266,7 @@ const Dashboard = () => {
                 <div className="flex items-center space-x-2">
                   <FaUser className="text-purple-600 w-5 h-5" />
                   <span className="text-sm font-semibold text-gray-700">
-                    Data
+                    Contact
                   </span>
                 </div>
               </th>

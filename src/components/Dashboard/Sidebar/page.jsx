@@ -46,7 +46,7 @@ const Sidebar = ({ toggleSidebar }) => {
         router.push("/login");
         return;
       }
-      
+
       try {
         const parsedUserData = JSON.parse(userData);
         if (!parsedUserData || !parsedUserData.pic) {
@@ -60,57 +60,57 @@ const Sidebar = ({ toggleSidebar }) => {
   }, [router]);
 
   const menus = [
-    {
-      name: "HR",
-      icon: <FaUserTie />,
-      items: [
-        {
-          title: "Add Skill",
-          link: "/add-skill",
-          icon: <FaArrowAltCircleRight />,
-        },
-        {
-          title: "Skill MCQ",
-          link: "/skill-mcq",
-          icon: <FaArrowAltCircleRight />,
-        },
-        {
-          title: "Skill Test",
-          link: "/skill-test",
-          icon: <FaArrowAltCircleRight />,
-        },
-        {
-          title: "Add Interview Questions",
-          link: "/add-hr-question",
-          icon: <FaArrowAltCircleRight />,
-        },
-        {
-          title: "HR Interaction",
-          link: "/hr-interaction",
-          icon: <FaArrowAltCircleRight />,
-        },
-        {
-          title: "HR Communication Test",
-          link: "/hr-communication-test",
-          icon: <FaArrowAltCircleRight />,
-        },
-        {
-          title: "Trainee Dashboard",
-          link: "/trainee-dashboard",
-          icon: <FaArrowAltCircleRight />,
-        },
-        {
-          title: "Upload Documents",
-          link: "/upload-documents",
-          icon: <FaArrowAltCircleRight />,
-        },
-        {
-          title: "Verify Documents",
-          link: "/verify-documents",
-          icon: <FaArrowAltCircleRight />,
-        },
-      ],
-    },
+    // {
+    //   name: "HR",
+    //   icon: <FaUserTie />,
+    //   items: [
+    //     {
+    //       title: "Add Skill",
+    //       link: "/add-skill",
+    //       icon: <FaArrowAltCircleRight />,
+    //     },
+    //     {
+    //       title: "Skill MCQ",
+    //       link: "/skill-mcq",
+    //       icon: <FaArrowAltCircleRight />,
+    //     },
+    //     {
+    //       title: "Skill Test",
+    //       link: "/skill-test",
+    //       icon: <FaArrowAltCircleRight />,
+    //     },
+    //     {
+    //       title: "Add Interview Questions",
+    //       link: "/add-hr-question",
+    //       icon: <FaArrowAltCircleRight />,
+    //     },
+    //     {
+    //       title: "HR Interaction",
+    //       link: "/hr-interaction",
+    //       icon: <FaArrowAltCircleRight />,
+    //     },
+    //     {
+    //       title: "HR Communication Test",
+    //       link: "/hr-communication-test",
+    //       icon: <FaArrowAltCircleRight />,
+    //     },
+    //     {
+    //       title: "Trainee Dashboard",
+    //       link: "/trainee-dashboard",
+    //       icon: <FaArrowAltCircleRight />,
+    //     },
+    //     {
+    //       title: "Upload Documents",
+    //       link: "/upload-documents",
+    //       icon: <FaArrowAltCircleRight />,
+    //     },
+    //     {
+    //       title: "Verify Documents",
+    //       link: "/verify-documents",
+    //       icon: <FaArrowAltCircleRight />,
+    //     },
+    //   ],
+    // },
     {
       name: "Email Campaign",
       icon: <FaMailBulk />,
@@ -410,7 +410,7 @@ const Sidebar = ({ toggleSidebar }) => {
             ref={scrollContainerRef}
             className="p-1 space-y-4 overflow-x-hidden max-h-[calc(100vh-64px)]"
           >
-            <div className="bg-white border border-gray-200 rounded-lg shadow-md">
+            {/* <div className="bg-white border border-gray-200 rounded-lg shadow-md">
               <Link
                 href="/dashboard"
                 onClick={handleLinkClick}
@@ -421,13 +421,13 @@ const Sidebar = ({ toggleSidebar }) => {
                 <FaBuilding className="text-lg" />
                 {isOpen && <span className="ml-4">Workplace</span>}
               </Link>
-            </div>
+            </div> */}
             {menus.map((menu) => (
               <React.Fragment key={menu.name}>
                 {renderMenu(menu)}
               </React.Fragment>
             ))}
-            
+
             {/* Commented out buttons converted to Next.js format */}
             {/* <button
               onClick={() => {
