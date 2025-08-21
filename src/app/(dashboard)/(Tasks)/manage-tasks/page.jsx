@@ -387,6 +387,9 @@ const ManageTasks = () => {
           <thead className="bg-gray-100">
             <tr>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                S.No
+              </th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                 Task Name
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
@@ -398,7 +401,7 @@ const ManageTasks = () => {
             <AnimatePresence>
               {isLoading ? (
                 <tr>
-                  <td colSpan="2" className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan="3" className="px-6 py-8 text-center text-gray-500">
                     <div className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600 mr-2"></div>
                       Loading tasks...
@@ -416,6 +419,9 @@ const ManageTasks = () => {
                     variants={rowVariants}
                     className="border-b last:border-b-0 hover:bg-gray-50 transition-colors duration-200"
                   >
+                    <td className="px-6 py-4 text-gray-900">
+                      {index + 1}
+                    </td>
                     <td className="px-6 py-4 text-gray-900">
                       {item.task}
                     </td>
@@ -447,7 +453,7 @@ const ManageTasks = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="2" className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan="3" className="px-6 py-8 text-center text-gray-500">
                     {searchTerm 
                       ? `No tasks found matching "${searchTerm}"` 
                       : "No tasks available"

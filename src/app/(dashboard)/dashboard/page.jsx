@@ -59,6 +59,8 @@ import AddDataForm from "@/app/(dashboard)/(DataComponents)/AddDataForm/page";
 import { useToast } from "@/app/component/customtoast/page";
 import SendEmailCon from "@/app/(dashboard)/(DataComponents)/SendEmailCon/page";
 import WhatsAppCon from "@/app/(dashboard)/(DataComponents)/SendWhatsappCon/page";
+import CallCon from "@/app/(dashboard)/(DataComponents)/SendCallCon/page";
+
 
 // Sample options for filters
 const sampleTasks = ["Follow-up", "Meeting", "Hiring", "Call Back"];
@@ -193,14 +195,14 @@ const Dashboard = () => {
     if (typeof window !== "undefined") {
       const userData = sessionStorage.getItem("userData");
       if (!userData) {
-        router.push("/work/login");
+        router.push("/login");
         return;
       }
 
       try {
         const parsedUserData = JSON.parse(userData);
         if (!parsedUserData || !parsedUserData.pic) {
-          router.push("/work/login");
+          router.push("/login");
         } else {
           setUserID(parsedUserData.userID);
           fetchData(parsedUserData.userID);
@@ -865,7 +867,7 @@ const Dashboard = () => {
           id="tasks"
           onChange={(e) => setSelectedTask(e.target.value)}
           value={selectedTask}
-          className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-md shadow-md hover:scale-105 transition-transform duration-200"
+          className="flex items-center px-4 py-2 bg-blue-500 outline-none text-white rounded-md shadow-md transition-transform duration-200"
         >
           <option value="">Tasks</option>
           {tasks.map((task) => (
@@ -1784,6 +1786,17 @@ const Dashboard = () => {
         />
       )}
 
+{/* call Send Modal */}
+      {showCallSend && (
+  <CallCon
+    setShowCallCon={setShowCallSend}
+    setSelectedLeads={setSelectedRows}
+    selectedLeads={selectedRows}
+    fetchData={() => fetchData(userID)}
+  />
+)}
+
+
       {/* SMS Send Modal */}
       {showSmsSend && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
@@ -1801,22 +1814,6 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Call Send Modal */}
-      {showCallSend && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-xl shadow-xl w-1/2">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Make Call
-            </h2>
-            <button
-              onClick={() => setShowCallSend(false)}
-              className="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg shadow-md hover:scale-105 transition-transform duration-200"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

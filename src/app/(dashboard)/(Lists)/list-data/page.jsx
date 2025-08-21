@@ -21,7 +21,7 @@ import {
   Settings,
   Info,
 } from "lucide-react";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaEdit, FaTrash } from "react-icons/fa";
 import Link from "next/link"; 
 import { useRouter, useSearchParams } from "next/navigation"; 
 import { motion, AnimatePresence } from "framer-motion";
@@ -32,8 +32,8 @@ import { useToast } from "@/app/component/customtoast/page";
 import AddListDataForm from "@/app/(dashboard)/(Lists)/AddListForm/page"; 
 
 const ListData = () => {
-  const router = useRouter(); // Next.js router
-  const searchParams = useSearchParams(); // To access query parameters
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { addToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [addDataFormOpen, setAddDataFormOpen] = useState(false);
@@ -61,23 +61,19 @@ const ListData = () => {
   const [filters, setFilters] = useState([
     { name: "All", count: 0, color: "bg-blue-500" },
     { name: "Active", count: 0, color: "bg-green-500" },
-    // { name: "Unconfirmed", count: 0, color: "bg-gray-400" },
     { name: "Unsubscribed", count: 0, color: "bg-red-500" },
-    // { name: "Bounced", count: 0, color: "bg-gray-600" },
-    // { name: "Marked as spam", count: 0, color: "bg-gray-700" },
   ]);
   const [userID, setUserID] = useState("");
 
   useEffect(() => {
     const userData = JSON.parse(sessionStorage.getItem("userData"));
     if (!userData || !userData.pic) {
-      router.push("/work/login"); // Use router.push for navigation
+      router.push("/work/login");
     } else {
       setUserID(userData.userID);
     }
   }, [router]);
 
-  // Static chart data for LineChart (fallback)
   const chartDataStatic = [
     { date: "Jun 24", subscribers: 120 },
     { date: "Jul 24", subscribers: 145 },
@@ -94,9 +90,7 @@ const ListData = () => {
   ];
 
   useEffect(() => {
-    // In Next.js, we can get passed state via query parameters or props
-    // Assuming listData is passed via query params or fetched server-side
-    const state = JSON.parse(searchParams.get("item") || "{}"); // Adjust based on how you pass data
+    const state = JSON.parse(searchParams.get("item") || "{}");
     if (state && state.listID) {
       setListData(state);
       const listID = parseInt(state.listID);
@@ -105,7 +99,6 @@ const ListData = () => {
       } else {
         console.error("Invalid listID:", state.listID);
         addToast("Invalid list ID. Redirecting to lists page.", "error");
-        
       }
     } else {
       console.error("No valid listData found");
@@ -113,7 +106,6 @@ const ListData = () => {
     }
   }, [searchParams, router]);
 
-  // Fetch subscribers from API
   const fetchSubscribers = async (listID) => {
     setIsLoading(true);
     try {
@@ -151,7 +143,6 @@ const ListData = () => {
     }
   };
 
-  // Update pieData and filters
   const updateCharts = (subscribers) => {
     const statusCounts = subscribers.reduce(
       (acc, sub) => {
@@ -200,31 +191,11 @@ const ListData = () => {
         count: subscribed || 0,
         color: "bg-green-500",
       },
-      // {
-      //   name: "Unconfirmed",
-      //   count: 0,
-      //   color: "bg-gray-400",
-      // },
       {
         name: "Unsubscribed",
         count: unsubscribed || 0,
         color: "bg-red-500",
       },
-      // {
-      //   name: "Bounced",
-      //   count: statusCounts["Bounced"] || 0,
-      //   color: "bg-gray-600",
-      // },
-      // {
-      //   name: "Marked as spam",
-      //   count: statusCounts["Marked as spam"] || 0,
-      //   color: "bg-gray-700",
-      // },
-      // {
-      //   name: "Unknown",
-      //   count: statusCounts["Unknown"] || 0,
-      //   color: "bg-gray-500",
-      // },
     ];
 
     setPieData(newPieData.length > 0 ? newPieData : pieData);
@@ -232,7 +203,7 @@ const ListData = () => {
   };
 
   const handleBack = () => {
-    router.back(); // Use Next.js router.back for navigation
+    router.back();
   };
 
   const handleUnsubscribe = async (id) => {
@@ -272,7 +243,6 @@ const ListData = () => {
     URL.revokeObjectURL(url);
   };
 
-  // Filter subscribers
   const filteredSubscribers = subscribers.filter((subscriber) => {
     const matchesFilter =
       activeFilter === "All"
@@ -441,7 +411,6 @@ const ListData = () => {
     }
   };
 
-  // Animation variants
   const modalVariants = {
     hidden: { opacity: 0, scale: 0.8, y: -50 },
     visible: {
@@ -489,7 +458,7 @@ const ListData = () => {
           </h1>
           <button
             onClick={handleBack}
-            className="absolute right-0 flex items-center text-white border border-gray-300 shadow-md p-2 rounded-md bg-blue-600 hover:scale-105 transition-all duration-200 text-sm font-medium"
+            className="absolute left-0 flex items-center text-white border border-gray-300 shadow-md p-2 rounded-md bg-blue-600 hover:scale-105 transition-all duration-200 text-sm font-medium"
             aria-label="Go back to previous page"
           >
             <FaArrowLeft className="mr-2" size={16} />
@@ -519,22 +488,6 @@ const ListData = () => {
             >
               Sample CSV
             </button>
-            {/* <Link href="/mailing/delete-subscribers">
-              <button className="flex items-center px-4 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:scale-105">
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete subscribers
-              </button>
-            </Link>
-            <Link href="/mailing/mass-unsubscribe">
-              <button className="flex items-center px-4 py-2 bg-white text-sm border border-gray-300 rounded-md shadow-sm hover:scale-105">
-                <Users className="w-4 h-4 mr-2" />
-                Mass unsubscribe
-              </button>
-            </Link>
-            <button className="flex items-center px-4 py-2 text-sm bg-green-600 text-white rounded hover:scale-105">
-              <Download className="w-4 h-4 mr-2" />
-              Export all subscribers
-            </button> */}
           </div>
 
           <div className="relative">
@@ -557,13 +510,7 @@ const ListData = () => {
             <span className="px-2 py-1 bg-blue-500 text-white text-xs rounded">
               {listData ? listData.name : "Loading..."}
             </span>
-            <span className="text-sm text-gray-500 mx-2">|</span>
-            <button
-              onClick={handleBack}
-              className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer"
-            >
-              Back to lists
-            </button>
+            
           </div>
 
           <div className="flex items-center space-x-4">
@@ -590,7 +537,7 @@ const ListData = () => {
               Autoresponders
               <span className="ml-2 px-2 py-0.5 bg-gray-100 text-xs rounded-full">
                 0
-              </span>
+                </span>
             </button>
             <Link href="#">
               <button className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:scale-105">
@@ -620,70 +567,6 @@ const ListData = () => {
       </div>
 
       <div className="px-6 py-6">
-        {/* Subscribers Activity Chart */}
-        {/* <div className="mb-8">
-          <div className="flex items-center mb-4">
-            <h2 className="text-lg font-medium text-gray-700">
-              Subscribers Activity Chart
-            </h2>
-            <Info className="w-4 h-4 ml-2 text-gray-400" />
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-lg p-6 w-full min-h-[300px]">
-            <div className="flex items-center mb-6">
-    
-              <div className="w-32 h-32 mr-8">
-                {hasData ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={20}
-                        outerRadius={60}
-                        paddingAngle={2}
-                        dataKey="value"
-                      >
-                        {pieData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center">
-                    <span className="text-gray-400 text-sm">No Data</span>
-                  </div>
-                )}
-              </div>
-
-       
-              <div className="flex-1 min-h-[200px]">
-                <ResponsiveContainer width="100%" height={200}>
-                  <LineChart data={chartDataStatic}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis
-                      dataKey="date"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 12, fill: "#6b7280" }}
-                    />
-                    <YAxis hide />
-                    <Line
-                      type="monotone"
-                      dataKey="subscribers"
-                      stroke="#3b82f6"
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-        </div> */}
-
         <div className="flex gap-6 mb-8">
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold">Show</span>
@@ -695,17 +578,25 @@ const ListData = () => {
             />
             <span className="text-sm font-bold">Records</span>
           </div>
-          {/* Verify Button */}
-          {/* <button
-            onClick={handleVerify}
-            className="bg-blue-500 text-white px-4 py-1 rounded-md cursor-pointer hover:bg-blue-700"
-          >
-            Verify
-          </button> */}
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex items-center space-x-4 mb-6">
+        <div className="flex items-center space-x-4 mb-4">
+          {/* Select All Checkbox */}
+          <div className="flex items-center">
+            <label className="flex items-center text-sm text-gray-700">
+              <input
+                type="checkbox"
+                onChange={(e) => handleSelectAll(e.target.checked)}
+                checked={selectedRows.length >= currentRecords.length && currentRecords.length > 0}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <span className="ml-2">
+                Select All ({selectedRows.length} selected)
+              </span>
+            </label>
+          </div>
+
           {filters.map((filter) => (
             <button
               key={filter.name}
@@ -729,50 +620,46 @@ const ListData = () => {
 
         {/* Subscribers Table */}
         <div className="bg-white border border-gray-300 rounded-lg overflow-hidden">
-          <div className="max-w-6xl scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+          <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50 sticky top-0 z-10">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        onChange={(e) => handleSelectAll(e.target.checked)}
-                        checked={selectedRows.length >= currentRecords.length}
-                      />
-                      <div className="ml-2">
-                        {" "}
-                        {selectedRows.length} Selected
-                      </div>
-                    </label>
+                  <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Select
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    S/No
+                  </th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Name
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Email
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Mobile
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Whatsapp
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center">Last activity</div>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="flex items-center">Status</div>
                   </th>
 
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Unsubscribe
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Total Sent
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Never Opened
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Failed
+                  </th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Action
                   </th>
                 </tr>
               </thead>
@@ -781,7 +668,7 @@ const ListData = () => {
                   {isLoading ? (
                     <tr>
                       <td
-                        colSpan="9"
+                        colSpan="12"
                         className="px-6 py-8 text-center text-gray-500"
                       >
                         Loading subscribers...
@@ -798,7 +685,7 @@ const ListData = () => {
                         variants={rowVariants}
                         className="hover:bg-gray-50"
                       >
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-500">
                           <input
                             type="checkbox"
                             checked={selectedRows.includes(subscriber)}
@@ -806,45 +693,64 @@ const ListData = () => {
                             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                           />
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {indexOfFirstRecord + index + 1}
+                        </td>
+                        <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {subscriber.name || "N/A"}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                           {subscriber.email || "N/A"}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                           {subscriber.mobile || "N/A"}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                           {subscriber.whatsapp || "N/A"}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                           {subscriber.last_activity || "N/A"}
                         </td>
 
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                           <button
-                            // onClick={() => handleUnsubscribe(subscriber.subsID)}
+                            onClick={() => handleUnsubscribe(subscriber.subsID)}
                             className="text-red-600 hover:text-red-900"
                           >
                             <Users className="w-5 h-5" />
                           </button>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                           {subscriber.totalSent || 0}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                           {subscriber.notOpen || 0}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                           {subscriber.failed || 0}
+                        </td>
+                        <td className="px-3 py-4 flex space-x-2">
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            className="text-indigo-600 hover:text-indigo-800"
+                          >
+                            <FaEdit />
+                          </motion.button>
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            className="text-red-500 hover:text-red-600"
+                          >
+                            <FaTrash />
+                          </motion.button>
                         </td>
                       </motion.tr>
                     ))
                   ) : (
                     <tr>
                       <td
-                        colSpan="9"
+                        colSpan="12"
                         className="px-6 py-8 text-center text-gray-500"
                       >
                         No data found for this list.
@@ -858,8 +764,8 @@ const ListData = () => {
         </div>
 
         {/* Pagination */}
-        <div className="bg-white flex items-center justify-between mt-6 rounded-lg border border-blue-200 shadow-md p-2">
-          <div className="text-md text-black-600">
+        <div className="flex items-center justify-between p-2">
+          <div className="text-sm font-bold text-gray-500">
             Showing {indexOfFirstRecord + 1} to{" "}
             {Math.min(indexOfLastRecord, filteredSubscribers.length)} Records
           </div>

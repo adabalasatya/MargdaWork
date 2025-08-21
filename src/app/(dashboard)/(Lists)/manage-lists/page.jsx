@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaEdit, FaTrash, FaPlus, FaSearch, FaArrowLeft } from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlus, FaSearch, FaArrowLeft, FaClone, FaObjectGroup, FaMinus } from "react-icons/fa";
 import { FiEdit, FiLayers } from "react-icons/fi";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -19,6 +19,13 @@ const ManageLists = () => {
   const [error, setError] = useState("");
   const [lists, setLists] = useState([]);
   const [userID, setUserID] = useState("");
+  const [selectedLists, setSelectedLists] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+  const [isMergeModalOpen, setIsMergeModalOpen] = useState(false);
+  const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
+  const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
+  const [newListName, setNewListName] = useState("");
+  const [operationType, setOperationType] = useState(""); // "merge", "remove", "duplicate"
 
   const { addToast } = useToast();
 
@@ -34,6 +41,15 @@ const ManageLists = () => {
       fetchLists(userData.userID);
     }
   }, []);
+
+  useEffect(() => {
+    // Update selectAll state based on selectedLists
+    if (lists.length > 0 && selectedLists.length === lists.length) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedLists, lists]);
 
   const fetchLists = async (userID) => {
     try {
@@ -155,7 +171,139 @@ const ManageLists = () => {
     router.back();
   };
 
+  const toggleListSelection = (listID) => {
+    if (selectedLists.includes(listID)) {
+      setSelectedLists(selectedLists.filter(id => id !== listID));
+    } else {
+      setSelectedLists([...selectedLists, listID]);
+    }
+  };
+
+  const toggleSelectAll = () => {
+    if (selectAll) {
+      setSelectedLists([]);
+    } else {
+      setSelectedLists(lists.map(list => list.listID));
+    }
+    setSelectAll(!selectAll);
+  };
+
+  const handleMerge = () => {
+    if (selectedLists.length < 2) {
+      addToast("Please select at least two lists to merge", "error");
+      return;
+    }
+    setOperationType("merge");
+    setNewListName("");
+    setIsMergeModalOpen(true);
+  };
+
+  const handleRemove = () => {
+    if (selectedLists.length < 2) {
+      addToast("Please select at least two lists to remove duplicates", "error");
+      return;
+    }
+    setOperationType("remove");
+    setNewListName("");
+    setIsRemoveModalOpen(true);
+  };
+
+  const handleDuplicate = () => {
+    if (selectedLists.length < 2) {
+      addToast("Please select at least two lists to find duplicates", "error");
+      return;
+    }
+    setOperationType("duplicate");
+    setIsDuplicateModalOpen(true);
+  };
+
+  const performListOperation = async () => {
+    try {
+      let endpoint = "";
+      let payload = {};
+
+      switch (operationType) {
+        case "merge":
+          endpoint = "https://www.margda.in/miraj/work/lists/merge-lists";
+          payload = {
+            listIDs: selectedLists,
+            newListName: newListName,
+            userID: userID
+          };
+          break;
+        case "remove":
+          endpoint = "https://www.margda.in/miraj/work/lists/remove-duplicates";
+          payload = {
+            listIDs: selectedLists,
+            newListName: newListName,
+            userID: userID
+          };
+          break;
+        case "duplicate":
+          endpoint = "https://www.margda.in/miraj/work/lists/find-duplicates";
+          payload = {
+            listIDs: selectedLists,
+            userID: userID
+          };
+          break;
+        default:
+          return;
+      }
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        let successMessage = "";
+        switch (operationType) {
+          case "merge":
+            successMessage = "Lists merged successfully!";
+            break;
+          case "remove":
+            successMessage = "Duplicate records removed successfully!";
+            break;
+          case "duplicate":
+            successMessage = "Duplicate records found and processed!";
+            break;
+        }
+        addToast(successMessage, "success");
+        await fetchLists(userID); // Refresh the lists
+        setSelectedLists([]); // Clear selection
+      } else {
+        addToast(data.message || `Failed to perform ${operationType} operation`, "error");
+      }
+    } catch (error) {
+      console.error(`Error performing ${operationType} operation:`, error);
+      addToast(`Failed to perform ${operationType} operation`, "error");
+    } finally {
+      // Close all modals
+      setIsMergeModalOpen(false);
+      setIsRemoveModalOpen(false);
+      setIsDuplicateModalOpen(false);
+    }
+  };
+
   const modalVariants = {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: { duration: 0.2, ease: "easeOut" },
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.95,
+      transition: { duration: 0.2, ease: "easeIn" },
+    },
+  };
+
+  const operationModalVariants = {
     hidden: { opacity: 0, scale: 0.95 },
     visible: {
       opacity: 1,
@@ -221,6 +369,10 @@ const ManageLists = () => {
             />
             <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           </div>
+        </div>
+        
+        {/* Right side buttons */}
+        <div className="flex items-center space-x-4">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -229,13 +381,43 @@ const ManageLists = () => {
               setListName("");
               setIsModalOpen(true);
             }}
-            className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg shadow hover:bg-gray-300 transition-colors duration-200"
+            className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition-colors duration-200"
           >
             <FaPlus className="mr-2" /> Add New List
           </motion.button>
+          
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleMerge}
+            disabled={selectedLists.length < 2}
+            className={`flex items-center px-4 py-2 rounded-lg shadow transition-colors duration-200 ${
+              selectedLists.length < 2 
+                ? "bg-green-600 text-white" 
+                : "bg-blue-600 text-white hover:bg-blue-700"
+            }`}
+          >
+            <FaObjectGroup className="mr-2" /> Merge
+          </motion.button>
+          
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleRemove}
+            disabled={selectedLists.length < 2}
+            className={`flex items-center px-4 py-2 rounded-lg shadow transition-colors duration-200 ${
+              selectedLists.length < 2 
+                ? "bg-red-500 text-white" 
+                : "bg-yellow-600 text-white hover:bg-yellow-700"
+            }`}
+          >
+            <FaMinus className="mr-2" /> Remove Duplicates
+          </motion.button>
+          
         </div>
       </div>
 
+      {/* Add/Edit List Modal */}
       <AnimatePresence>
         {isModalOpen && (
           <motion.div
@@ -309,10 +491,188 @@ const ManageLists = () => {
         )}
       </AnimatePresence>
 
+      {/* Merge Modal */}
+      <AnimatePresence>
+        {isMergeModalOpen && (
+          <motion.div
+            className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-sm z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.div
+              className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md"
+              variants={operationModalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+                Merge Lists
+              </h2>
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  New List Name
+                </label>
+                <input
+                  type="text"
+                  value={newListName}
+                  onChange={(e) => setNewListName(e.target.value)}
+                  placeholder="Enter new list name"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+                />
+                <p className="text-sm text-gray-500 mt-2">
+                  Selected lists: {selectedLists.length}
+                </p>
+              </div>
+              <div className="flex justify-end space-x-4">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setIsMergeModalOpen(false)}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200"
+                >
+                  Cancel
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={performListOperation}
+                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                >
+                  <FaObjectGroup className="mr-2" />
+                  Merge Lists
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Remove Duplicates Modal */}
+      <AnimatePresence>
+        {isRemoveModalOpen && (
+          <motion.div
+            className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-sm z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.div
+              className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md"
+              variants={operationModalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+                Remove Duplicates
+              </h2>
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  New List Name
+                </label>
+                <input
+                  type="text"
+                  value={newListName}
+                  onChange={(e) => setNewListName(e.target.value)}
+                  placeholder="Enter new list name"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+                />
+                <p className="text-sm text-gray-500 mt-2">
+                  Selected lists: {selectedLists.length}
+                </p>
+              </div>
+              <div className="flex justify-end space-x-4">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setIsRemoveModalOpen(false)}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200"
+                >
+                  Cancel
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={performListOperation}
+                  className="flex items-center px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors duration-200"
+                >
+                  <FaMinus className="mr-2" />
+                  Remove Duplicates
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Find Duplicates Modal */}
+      <AnimatePresence>
+        {isDuplicateModalOpen && (
+          <motion.div
+            className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-sm z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.div
+              className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md"
+              variants={operationModalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+                Find Duplicates
+              </h2>
+              <div className="mb-6">
+                <p className="text-sm text-gray-700 mb-4">
+                  This will find common records (email, mobile, WhatsApp) across the selected lists.
+                </p>
+                <p className="text-sm text-gray-500">
+                  Selected lists: {selectedLists.length}
+                </p>
+              </div>
+              <div className="flex justify-end space-x-4">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setIsDuplicateModalOpen(false)}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200"
+                >
+                  Cancel
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={performListOperation}
+                  className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200"
+                >
+                  <FaClone className="mr-2" />
+                  Find Duplicates
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="overflow-x-auto bg-white border border-gray-300 rounded-xl shadow-lg">
         <table className="min-w-full">
           <thead className="bg-gray-100">
             <tr>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={toggleSelectAll}
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                />
+              </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                 ID
               </th>
@@ -335,10 +695,7 @@ const ManageLists = () => {
                 Bounced
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                Edit
-              </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                Delete
+                Actions
               </th>
             </tr>
           </thead>
@@ -355,6 +712,14 @@ const ManageLists = () => {
                     variants={rowVariants}
                     className="border-b last:border-b-0 hover:bg-gray-50 transition-colors duration-200"
                   >
+                    <td className="px-6 py-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedLists.includes(item.listID)}
+                        onChange={() => toggleListSelection(item.listID)}
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      />
+                    </td>
                     <td className="px-6 py-4 text-gray-600">{item.listID}</td>
                     <td className="px-6 py-4">
                       <Link
@@ -380,24 +745,26 @@ const ManageLists = () => {
                       {item.bounced || "N/A"}
                     </td>
                     <td className="px-6 py-4">
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => handleEdit(item)}
-                        className="text-indigo-600 hover:text-indigo-800"
-                      >
-                        <FaEdit />
-                      </motion.button>
-                    </td>
-                    <td className="px-6 py-4">
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => handleDelete(item.listID)}
-                        className="text-red-500 hover:text-red-600"
-                      >
-                        <FaTrash />
-                      </motion.button>
+                      <div className="flex space-x-3">
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => handleEdit(item)}
+                          className="text-indigo-600 hover:text-indigo-800"
+                          title="Edit List"
+                        >
+                          <FaEdit />
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => handleDelete(item.listID)}
+                          className="text-red-500 hover:text-red-600"
+                          title="Delete List"
+                        >
+                          <FaTrash />
+                        </motion.button>
+                      </div>
                     </td>
                   </motion.tr>
                 ))
