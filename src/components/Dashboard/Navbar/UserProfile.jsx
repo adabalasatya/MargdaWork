@@ -227,12 +227,12 @@ const UserProfile = () => {
               <span>WhatsApp Scan</span>
             </Link>
             
-            <div className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-300 cursor-pointer">
+            {/* <div className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-300 cursor-pointer">
               <span className="w-5 h-5 mr-2 flex items-center justify-center">
                 ⛓️‍💥
               </span>
               <span>Refer Code {userData?.user_data?.refercode}</span>
-            </div>
+            </div> */}
             
             <button
               onClick={handleLogout}

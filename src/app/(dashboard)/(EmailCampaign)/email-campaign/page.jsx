@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaArrowLeft } from "react-icons/fa";
-import { FiEye, FiTrash2, FiSearch, FiPlus, FiX, FiSend, FiRefreshCw } from "react-icons/fi";
+import { FiEye, FiTrash2, FiSearch, FiPlus, FiX, FiSend, FiRefreshCw, FiEdit} from "react-icons/fi";
 import { useToast } from "@/app/component/customtoast/page";
 import Loader from "@/app/component/Loader";
 
@@ -30,6 +30,10 @@ const EmailCampaign = () => {
   const [userID, setUserID] = useState("");
   const [userData, setUserData] = useState(null);
   const { addToast } = useToast();
+
+  // State additions
+const [editingCampaignId, setEditingCampaignId] = useState(null);
+const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     // Check if we're in browser environment
@@ -237,6 +241,12 @@ const EmailCampaign = () => {
       addToast("Please fill in all required fields", "error");
       return;
     }
+
+    if (isEditing) {
+    // Update flow
+    await updateCampaign();
+    return;
+  }
     
     try {
       setLoading(true);
@@ -277,6 +287,110 @@ const EmailCampaign = () => {
       setLoading(false);
     }
   };
+
+  // Open edit modal with campaign data
+const handleEdit = (campaign) => {
+  setCampaignForm({
+    name: campaign.campaign_name || "",
+    credID: campaign.credID || "",
+    templateID: campaign.templateID || "",
+    listID: campaign.listID || "",
+  });
+  setEditingCampaignId(campaign.campaignID);
+  setIsEditing(true);
+  setIsModalOpen(true);
+};
+
+
+//Update Campaign
+const updateCampaign = async () => {
+  if (
+    !editingCampaignId ||
+    !campaignForm.name.trim() ||
+    !campaignForm.credID ||
+    !campaignForm.templateID ||
+    !campaignForm.listID
+  ) {
+    addToast("Please fill all required fields", "error");
+    return false;
+  }
+
+  try {
+    setLoading(true);
+    const response = await fetch(
+      "https://www.margda.in/miraj/work/email-campaign/edit-campaign",
+      {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          campaignID: editingCampaignId,
+          name: campaignForm.name.trim(),
+          credID: campaignForm.credID,
+          templateID: campaignForm.templateID,
+          listID: campaignForm.listID,
+        }),
+      }
+    );
+
+    const data = await response.json();
+    if (response.ok) {
+      addToast(data.message || "Campaign updated successfully", "success");
+      await fetchData(userID);
+
+      // Reset state after update
+      setIsModalOpen(false);
+      setCampaignForm({
+        name: "",
+        credID: "",
+        templateID: "",
+        listID: "",
+      });
+      setIsEditing(false);
+      setEditingCampaignId(null);
+      return true;
+    } else {
+      addToast(data.message || "Failed to update campaign", "error");
+      return false;
+    }
+  } catch (error) {
+    console.error("Error updating campaign:", error);
+    addToast("Unknown Error, try again later", "error");
+    return false;
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+// Delete Campaign
+const handleDelete = async (id) => {
+  if (!confirm("Are you sure you want to delete this campaign?")) return;
+
+  setLoading(true);
+  try {
+    const response = await fetch(
+      "https://www.margda.in/miraj/work/email-campaign/delete-campaign",
+      {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ campaignID: id }),
+      }
+    );
+    const data = await response.json();
+    if (response.ok) {
+      addToast(data.message, "success");
+      await fetchData(userID); // refresh campaigns
+    } else {
+      addToast(data.message, "error");
+    }
+  } catch (error) {
+    console.error("Error deleting campaign:", error);
+    addToast("Unknown Error, try again later", "error");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // Clear date filters function
   const clearDateFilters = () => {
@@ -371,44 +485,45 @@ const EmailCampaign = () => {
 
       {/* Modal for Campaign Form */}
       {isModalOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              toggleModal();
-            }
-          }}
+  <div 
+    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    onClick={(e) => {
+      if (e.target === e.currentTarget) {
+        toggleModal();
+      }
+    }}
+  >
+    <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden">
+      <div className="bg-gray-50 p-4 flex justify-between items-center">
+        <h3 className="text-lg font-semibold text-black">
+          {isEditing ? "Edit Campaign" : "Create New Campaign"}
+        </h3>
+        <button
+          onClick={toggleModal}
+          className="text-red-500 hover:text-red-700 transition-colors duration-200"
+          aria-label="Close modal"
         >
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden">
-            <div className="bg-gray-50 p-4 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-black">
-                Create New Campaign
-              </h3>
-              <button
-                onClick={toggleModal}
-                className="text-red-500 hover:text-red-700 transition-colors duration-200"
-                aria-label="Close modal"
-              >
-                <FiX size={20} />
-              </button>
-            </div>
+          <FiX size={20} />
+        </button>
+      </div>
 
-            <form onSubmit={handleFormSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Campaign Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={campaignForm.name}
-                  onChange={(e) =>
-                    setCampaignForm({ ...campaignForm, name: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Enter campaign name"
-                  required
-                />
-              </div>
+      <form onSubmit={handleFormSubmit} className="p-6 space-y-4">
+        {/* --- Campaign Name --- */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Campaign Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            value={campaignForm.name}
+            onChange={(e) =>
+              setCampaignForm({ ...campaignForm, name: e.target.value })
+            }
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            placeholder="Enter campaign name"
+            required
+          />
+        </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -536,29 +651,29 @@ const EmailCampaign = () => {
               </div>
 
               <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-                <button
-                  type="button"
-                  onClick={toggleModal}
-                  disabled={loading}
-                  className="px-5 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="px-6 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-                >
-                  {loading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Creating...
-                    </>
-                  ) : (
-                    'Create Campaign'
-                  )}
-                </button>
-              </div>
+          <button
+            type="button"
+            onClick={toggleModal}
+            disabled={loading}
+            className="px-5 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-6 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+          >
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                {isEditing ? "Updating..." : "Creating..."}
+              </>
+            ) : (
+              isEditing ? "Update Campaign" : "Create Campaign"
+            )}
+          </button>
+        </div>
             </form>
           </div>
         </div>
@@ -761,6 +876,24 @@ const EmailCampaign = () => {
                         >
                           <FiSend size={16} />
                         </button>
+
+                        {/* Edit Campaign */}
+    <button
+      onClick={() => handleEdit(campaign)}
+      className="text-green-600 hover:text-green-800 transition-colors duration-200"
+      title="Edit Campaign"
+    >
+      <FiEdit size={16} />
+    </button>
+
+     {/* Delete Campaign */}
+    <button
+      onClick={() => handleDelete(campaign.campaignID)}
+      className="text-red-600 hover:text-red-800 transition-colors duration-200"
+      title="Delete Campaign"
+    >
+      <FiTrash2 size={16} />
+    </button>
                       </div>
                     </td>
                   </tr>

@@ -199,15 +199,16 @@ const SmsCampaign = () => {
   };
 
   const handleEdit = (campaign) => {
-    setCampaignForm({
-      id: campaign.id,
-      name: campaign.name,
-      tempID: campaign.templateId || "",
-      listID: campaign.listId || "",
-    });
-    setIsEditing(true);
-    setIsModalOpen(true);
-  };
+  setCampaignForm({
+    id: campaign.campaignID,
+    name: campaign.name,
+    tempID: campaign.templateID || "",
+    listID: campaign.listID || "",
+  });
+  setIsEditing(true);
+  setIsModalOpen(true);
+};
+
 
   const handleDelete = async (id) => {
     if (typeof window === 'undefined') return;
@@ -223,7 +224,7 @@ const SmsCampaign = () => {
             headers: {
               "content-type": "application/json",
             },
-            body: JSON.stringify({ campaignID: id, userID }),
+            body: JSON.stringify({ campaignID: id }),
           }
         );
         
@@ -260,50 +261,105 @@ const SmsCampaign = () => {
   };
 
   const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!campaignForm.name.trim() || !campaignForm.tempID || !campaignForm.listID) {
-      addToast("Please fill in all required fields", "error");
-      return;
-    }
-    
-    try {
-      setLoading(true);
-      const response = await fetch(
-        "https://www.margda.in/miraj/work/sms-campaign/create-campaign",
-        {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({
-            name: campaignForm.name.trim(),
-            tempID: campaignForm.tempID,
-            listID: campaignForm.listID,
-            userID,
-          }),
-        }
-      );
-      const data = await response.json();
-      if (response.ok) {
-        addToast(data.message, "success");
-        await fetchData(userID);
-        setIsModalOpen(false);
-        setCampaignForm({
-          name: "",
-          tempID: "",
-          listID: "",
-        });
-      } else {
-        addToast(data.message, "error");
+  e.preventDefault();
+
+  if (!campaignForm.name.trim() || !campaignForm.tempID || !campaignForm.listID) {
+    addToast("Please fill in all required fields", "error");
+    return;
+  }
+
+  if (isEditing) {
+    // Update flow
+    await updateCampaign();
+    return;
+  }
+
+  // Create flow (unchanged)
+  try {
+    setLoading(true);
+    const response = await fetch(
+      "https://www.margda.in/miraj/work/sms-campaign/create-campaign",
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          name: campaignForm.name.trim(),
+          tempID: campaignForm.tempID,
+          listID: campaignForm.listID,
+          userID,
+        }),
       }
-    } catch (error) {
-      console.error("Error creating campaign:", error);
-      addToast("Unknown Error, try again later", "error");
-    } finally {
-      setLoading(false);
+    );
+    const data = await response.json();
+    if (response.ok) {
+      addToast(data.message, "success");
+      await fetchData(userID);
+      setIsModalOpen(false);
+      setCampaignForm({
+        name: "",
+        tempID: "",
+        listID: "",
+      });
+    } else {
+      addToast(data.message, "error");
     }
-  };
+  } catch (error) {
+    console.error("Error creating campaign:", error);
+    addToast("Unknown Error, try again later", "error");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+const updateCampaign = async () => {
+
+  try {
+    setLoading(true);
+    // Adjust the URL and body keys if your backend expects different names
+    const response = await fetch(
+      "https://www.margda.in/miraj/work/sms-campaign/edit-campaign",
+      {
+        method: "PUT",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          campaignID: campaignForm.id,
+          name: campaignForm.name.trim(),
+          templateID: campaignForm.tempID,
+          listID: campaignForm.listID
+        }),
+      }
+    );
+
+    const data = await response.json();
+    if (response.ok) {
+      addToast(data.message || "Campaign updated successfully", "success");
+      await fetchData(userID);
+      setIsModalOpen(false);
+      setCampaignForm({
+        name: "",
+        tempID: "",
+        listID: "",
+      });
+      setIsEditing(false);
+      return true;
+    } else {
+      addToast(data.message || "Failed to update campaign", "error");
+      return false;
+    }
+  } catch (error) {
+    console.error("Error updating campaign:", error);
+    addToast("Unknown Error, try again later", "error");
+    return false;
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // Enhanced filtering logic with search and date filters
   const filteredCampaigns = campaigns.filter((campaign) => {
@@ -723,6 +779,24 @@ const SmsCampaign = () => {
                           >
                             <FiSend size={16} />
                           </button>
+
+                          {/* Edit Campaign */}
+                        <button
+                          onClick={() => handleEdit(campaign)}
+                          className="text-green-600 hover:text-green-800 transition-colors duration-200"
+                          title="Edit Campaign"
+                        >
+                          <FiEdit size={16} />
+                        </button>
+
+                        {/* Delete Campaign */}
+                        <button
+                          onClick={() => handleDelete(campaign.campaignID)}
+                          className="text-red-600 hover:text-red-800 transition-colors duration-200"
+                          title="Delete Campaign"
+                        >
+                          <FiTrash2 size={16} />
+                        </button>
                         </div>
                       </td>
                     </tr>
