@@ -60,6 +60,7 @@ import { useToast } from "@/app/component/customtoast/page";
 import SendEmailCon from "@/app/(dashboard)/(DataComponents)/SendEmailCon/page";
 import WhatsAppCon from "@/app/(dashboard)/(DataComponents)/SendWhatsappCon/page";
 import CallCon from "@/app/(dashboard)/(DataComponents)/SendCallCon/page";
+import SendSmsCon from "@/app/(dashboard)/(DataComponents)/SendSmsCon/page";
 
 
 // Sample options for filters
@@ -210,7 +211,7 @@ const Dashboard = () => {
         }
       } catch (error) {
         console.error("Error parsing user data:", error);
-        router.push("/work/login");
+        router.push("/login");
       }
     }
   }, [router]);
@@ -810,12 +811,16 @@ const Dashboard = () => {
             <FaEnvelope className="mr-2 text-lg" /> Email
           </button>
           <button
-            onClick={() =>
-              addToast("RCM functionality not implemented", "info")
-            }
+           onClick={() => {
+    if (selectedRows.length === 0) {
+      addToast("Select at least one data", "error");
+      return;
+    }
+    setShowSmsSend(true);
+  }}
             className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
           >
-            <FaUserCheck className="mr-2 text-lg" /> RCM
+            <FaUserCheck className="mr-2 text-lg" /> RCM&SMS
           </button>
           <button
             onClick={() =>
@@ -1795,24 +1800,14 @@ const Dashboard = () => {
     fetchData={() => fetchData(userID)}
   />
 )}
-
-
-      {/* SMS Send Modal */}
-      {showSmsSend && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-xl shadow-xl w-1/2">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Send SMS
-            </h2>
-            <button
-              onClick={() => setShowSmsSend(false)}
-              className="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg shadow-md hover:scale-105 transition-transform duration-200"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+{showSmsSend && (
+  <SendSmsCon
+    setClose={setShowSmsSend}
+    setSelectedLeads={setSelectedRows}
+    selectedLeads={selectedRows}
+    userID={userID}
+  />
+)}
 
     </div>
   );
