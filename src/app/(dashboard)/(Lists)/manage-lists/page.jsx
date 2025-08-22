@@ -63,7 +63,9 @@ const ManageLists = () => {
           body: JSON.stringify({ userID }),
         }
       );
+      
       const data = await response.json();
+      console.log(data)
       if (response.ok) {
         setLists(data.Lists || []); // Ensure lists is an array even if empty
       } else {
@@ -171,13 +173,13 @@ const ManageLists = () => {
     router.back();
   };
 
-  const toggleListSelection = (listID) => {
-    if (selectedLists.includes(listID)) {
-      setSelectedLists(selectedLists.filter(id => id !== listID));
-    } else {
-      setSelectedLists([...selectedLists, listID]);
-    }
-  };
+  const toggleListSelection = (list) => {
+  if (selectedLists.some(selected => selected.listID === list.listID)) {
+    setSelectedLists(selectedLists.filter(selected => selected.listID !== list.listID));
+  } else {
+    setSelectedLists([...selectedLists, list]);
+  }
+};
 
   const toggleSelectAll = () => {
     if (selectAll) {
@@ -208,88 +210,91 @@ const ManageLists = () => {
     setIsRemoveModalOpen(true);
   };
 
-  const handleDuplicate = () => {
+
+  // --- Replace performListOperation with two clean functions ---
+
+// Merge selected lists
+const performMerge = async () => {
+  try {
     if (selectedLists.length < 2) {
-      addToast("Please select at least two lists to find duplicates", "error");
+      addToast("Please select at least two lists to merge", "error");
       return;
     }
-    setOperationType("duplicate");
-    setIsDuplicateModalOpen(true);
-  };
-
-  const performListOperation = async () => {
-    try {
-      let endpoint = "";
-      let payload = {};
-
-      switch (operationType) {
-        case "merge":
-          endpoint = "https://www.margda.in/miraj/work/lists/merge-lists";
-          payload = {
-            listIDs: selectedLists,
-            newListName: newListName,
-            userID: userID
-          };
-          break;
-        case "remove":
-          endpoint = "https://www.margda.in/miraj/work/lists/remove-duplicates";
-          payload = {
-            listIDs: selectedLists,
-            newListName: newListName,
-            userID: userID
-          };
-          break;
-        case "duplicate":
-          endpoint = "https://www.margda.in/miraj/work/lists/find-duplicates";
-          payload = {
-            listIDs: selectedLists,
-            userID: userID
-          };
-          break;
-        default:
-          return;
-      }
-
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        let successMessage = "";
-        switch (operationType) {
-          case "merge":
-            successMessage = "Lists merged successfully!";
-            break;
-          case "remove":
-            successMessage = "Duplicate records removed successfully!";
-            break;
-          case "duplicate":
-            successMessage = "Duplicate records found and processed!";
-            break;
-        }
-        addToast(successMessage, "success");
-        await fetchLists(userID); // Refresh the lists
-        setSelectedLists([]); // Clear selection
-      } else {
-        addToast(data.message || `Failed to perform ${operationType} operation`, "error");
-      }
-    } catch (error) {
-      console.error(`Error performing ${operationType} operation:`, error);
-      addToast(`Failed to perform ${operationType} operation`, "error");
-    } finally {
-      // Close all modals
-      setIsMergeModalOpen(false);
-      setIsRemoveModalOpen(false);
-      setIsDuplicateModalOpen(false);
+    if (!newListName.trim()) {
+      addToast("Please provide a new list name", "error");
+      return;
     }
-  };
 
-  const modalVariants = {
+    const listIDs = selectedLists.map(list => list.listID)
+    console.log(listIDs)
+
+    const response = await fetch("https://www.margda.in/miraj/work/lists/merge-lists", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userID: userID,
+        listIDs: listIDs,
+        newListName: newListName,
+      }),
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      addToast("Lists merged successfully!", "success");
+      await fetchLists(userID);
+      setSelectedLists([]);
+      setIsMergeModalOpen(false);
+    } else {
+      addToast(data.message || "Failed to merge lists", "error");
+    }
+  } catch (error) {
+    console.error("Error merging lists:", error);
+    addToast("Failed to merge lists", "error");
+  }
+};
+
+// Remove duplicates between two lists
+const performRemoveDuplicates = async () => {
+  try {
+    if (selectedLists.length !== 2) {
+      addToast("Please select exactly two lists to remove duplicates", "error");
+      return;
+    }
+
+    const [list1, list2] = selectedLists;
+
+    console.log(list1.listID)
+    console.log(list2.listID)
+
+    const response = await fetch("https://www.margda.in/miraj/work/lists/remove-duplicates", {
+      method: "POST",
+      headers: {
+            "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        list1ID: list2.listID,
+        list2ID: list1.listID,
+      }),
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      addToast("Duplicates removed successfully!", "success");
+      await fetchLists(userID);
+      setSelectedLists([]);
+      setIsRemoveModalOpen(false);
+    } else {
+      addToast(data.message || "Failed to remove duplicates", "error");
+    }
+  } catch (error) {
+    console.error("Error removing duplicates:", error);
+    addToast("Failed to remove duplicates", "error");
+  }
+};
+
+
+
+const modalVariants = {
     hidden: { opacity: 0, scale: 0.95 },
     visible: {
       opacity: 1,
@@ -394,7 +399,7 @@ const ManageLists = () => {
             className={`flex items-center px-4 py-2 rounded-lg shadow transition-colors duration-200 ${
               selectedLists.length < 2 
                 ? "bg-green-600 text-white" 
-                : "bg-blue-600 text-white hover:bg-blue-700"
+                : "bg-green-600 text-white"
             }`}
           >
             <FaObjectGroup className="mr-2" /> Merge
@@ -408,7 +413,7 @@ const ManageLists = () => {
             className={`flex items-center px-4 py-2 rounded-lg shadow transition-colors duration-200 ${
               selectedLists.length < 2 
                 ? "bg-red-500 text-white" 
-                : "bg-yellow-600 text-white hover:bg-yellow-700"
+                : "bg-red-500 text-white"
             }`}
           >
             <FaMinus className="mr-2" /> Remove Duplicates
@@ -538,7 +543,7 @@ const ManageLists = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={performListOperation}
+                  onClick={performMerge}
                   className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
                 >
                   <FaObjectGroup className="mr-2" />
@@ -571,20 +576,14 @@ const ManageLists = () => {
                 Remove Duplicates
               </h2>
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  New List Name
-                </label>
-                <input
-                  type="text"
-                  value={newListName}
-                  onChange={(e) => setNewListName(e.target.value)}
-                  placeholder="Enter new list name"
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
-                />
-                <p className="text-sm text-gray-500 mt-2">
-                  Selected lists: {selectedLists.length}
-                </p>
-              </div>
+  <p className="text-sm text-gray-700 mb-4">
+    This will compare the two selected lists and remove duplicate entries from the second list.
+  </p>
+  <p className="text-sm text-gray-500">
+    Selected lists: {selectedLists.length}
+  </p>
+</div>
+
               <div className="flex justify-end space-x-4">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -597,7 +596,7 @@ const ManageLists = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={performListOperation}
+                  onClick={performRemoveDuplicates}
                   className="flex items-center px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors duration-200"
                 >
                   <FaMinus className="mr-2" />
@@ -714,11 +713,12 @@ const ManageLists = () => {
                   >
                     <td className="px-6 py-4">
                       <input
-                        type="checkbox"
-                        checked={selectedLists.includes(item.listID)}
-                        onChange={() => toggleListSelection(item.listID)}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                      />
+  type="checkbox"
+  checked={selectedLists.some(selected => selected.listID === item.listID)}
+  onChange={() => toggleListSelection(item)}
+  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+/>
+
                     </td>
                     <td className="px-6 py-4 text-gray-600">{item.listID}</td>
                     <td className="px-6 py-4">
