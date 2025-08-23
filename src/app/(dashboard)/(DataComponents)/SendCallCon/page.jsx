@@ -26,7 +26,7 @@ const CallCon = ({ setShowCallCon, selectedLeads, setSelectedLeads, fetchData })
   
       const storedUserData = JSON.parse(sessionStorage.getItem("userData") || 'null');
       if (!storedUserData || !storedUserData.pic) {
-        router.push("/work/login");
+        router.push("/login");
         return;
       } else {
         setUserData(storedUserData);
@@ -102,7 +102,7 @@ const CallCon = ({ setShowCallCon, selectedLeads, setSelectedLeads, fetchData })
         } else {
           if (response.status == 402) {
             addToast(data.message, "error", 10000);
-            return router.push("/shop");
+            return router.push("/dashboard");
           }
           addToast(data.message || "Failed to initiate call.", "error");
         }
@@ -116,7 +116,7 @@ const CallCon = ({ setShowCallCon, selectedLeads, setSelectedLeads, fetchData })
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+    <div className="fixed inset-0 backdrop-blur-sm z-50 flex justify-center items-center p-4">
       <div className="bg-white rounded-lg shadow-2xl w-full max-w-md overflow-hidden">
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b">

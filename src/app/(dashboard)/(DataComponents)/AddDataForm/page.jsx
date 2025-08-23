@@ -143,7 +143,7 @@ const AddDataForm = ({ setIsAddDataFormOpen, fetchData, userID }) => {
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-75 z-50">
+    <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm z-50">
       <div className="bg-white p-8 rounded-md shadow-2xl max-w-7xl max-h-[90vh] overflow-y-auto">
         <h3 className="text-3xl font-extrabold mb-8 text-gray-900 text-center">
           Add New Record

@@ -22,14 +22,14 @@ import {
   Info,
 } from "lucide-react";
 import { FaArrowLeft, FaEdit, FaTrash } from "react-icons/fa";
-import Link from "next/link"; 
-import { useRouter, useSearchParams } from "next/navigation"; 
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Loader from "@/app/component/Loader"; 
-import { useToast } from "@/app/component/customtoast/page"; 
-import AddListDataForm from "@/app/(dashboard)/(Lists)/AddListForm/page"; 
+import Loader from "@/app/component/Loader";
+import { useToast } from "@/app/component/customtoast/page";
+import AddListDataForm from "@/app/(dashboard)/(Lists)/AddListForm/page";
 
 const ListData = () => {
   const router = useRouter();
@@ -37,6 +37,7 @@ const ListData = () => {
   const { addToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [addDataFormOpen, setAddDataFormOpen] = useState(false);
+  const [editDataFormOpen, setEditDataFormOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(10);
   const [listData, setListData] = useState(null);
@@ -51,6 +52,9 @@ const ListData = () => {
   const [headers, setHeaders] = useState([]);
   const [showCsvData, setShowCsvData] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [editingSubscriber, setEditingSubscriber] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null); // For single delete
   const [pieData, setPieData] = useState([
     { name: "Active", value: 0, color: "#10b981" },
     { name: "Unconfirmed", value: 0, color: "#9ca3af" },
@@ -68,7 +72,7 @@ const ListData = () => {
   useEffect(() => {
     const userData = JSON.parse(sessionStorage.getItem("userData"));
     if (!userData || !userData.pic) {
-      router.push("/work/login");
+      router.push("/login");
     } else {
       setUserID(userData.userID);
     }
@@ -157,45 +161,17 @@ const ListData = () => {
     const unsubscribed = subscribers.filter((item) => !item.status).length;
     const newPieData = [
       { name: "Active", value: statusCounts["Active"] || 0, color: "#10b981" },
-      {
-        name: "Unconfirmed",
-        value: statusCounts["Unconfirmed"] || 0,
-        color: "#9ca3af",
-      },
-      {
-        name: "Unsubscribed",
-        value: statusCounts["Unsubscribed"] || 0,
-        color: "#ef4444",
-      },
-      {
-        name: "Bounced",
-        value: statusCounts["Bounced"] || 0,
-        color: "#4b5563",
-      },
-      {
-        name: "Marked as spam",
-        value: statusCounts["Marked as spam"] || 0,
-        color: "#374151",
-      },
-      {
-        name: "Unknown",
-        value: statusCounts["Unknown"] || 0,
-        color: "#6b7280",
-      },
+      { name: "Unconfirmed", value: statusCounts["Unconfirmed"] || 0, color: "#9ca3af" },
+      { name: "Unsubscribed", value: statusCounts["Unsubscribed"] || 0, color: "#ef4444" },
+      { name: "Bounced", value: statusCounts["Bounced"] || 0, color: "#4b5563" },
+      { name: "Marked as spam", value: statusCounts["Marked as spam"] || 0, color: "#374151" },
+      { name: "Unknown", value: statusCounts["Unknown"] || 0, color: "#6b7280" },
     ].filter((item) => item.value > 0);
 
     const newFilters = [
       { name: "All", count: all || 0, color: "bg-blue-500" },
-      {
-        name: "Active",
-        count: subscribed || 0,
-        color: "bg-green-500",
-      },
-      {
-        name: "Unsubscribed",
-        count: unsubscribed || 0,
-        color: "bg-red-500",
-      },
+      { name: "Active", count: subscribed || 0, color: "bg-green-500" },
+      { name: "Unsubscribed", count: unsubscribed || 0, color: "bg-red-500" },
     ];
 
     setPieData(newPieData.length > 0 ? newPieData : pieData);
@@ -226,6 +202,111 @@ const ListData = () => {
     } catch (error) {
       console.log(error);
       addToast(error.message || "Unknown Error, try again later", "error");
+    }
+  };
+
+  const handleEditSubscriber = (subscriber) => {
+    setEditingSubscriber(subscriber);
+    setEditDataFormOpen(true);
+  };
+
+  const handleUpdateSubscriber = async (updatedData) => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        "https://www.margda.in/miraj/work/list-data/edit-data",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            dataID: updatedData.dataID,
+            name: updatedData.name,
+            email: updatedData.email,
+            mobile: updatedData.mobile,
+            whatsapp: updatedData.whatsapp,
+          }),
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        await fetchSubscribers(listData.listID);
+        setEditDataFormOpen(false);
+        setEditingSubscriber(null);
+        addToast("Subscriber updated successfully", "success");
+      } else {
+        addToast(data.message || "Failed to update subscriber", "error");
+      }
+    } catch (error) {
+      console.error("Error updating subscriber:", error);
+      addToast("Error updating subscriber: " + error.message, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteSubscriber = async (dataID) => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        "https://www.margda.in/miraj/work/list-data/delete-data",
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ dataID }),
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        await fetchSubscribers(listData.listID);
+        setSelectedRows([]);
+        setShowDeleteConfirm(false);
+        setDeleteTarget(null);
+        addToast("Subscriber deleted successfully", "success");
+      } else {
+        addToast(data.message || "Failed to delete subscriber", "error");
+      }
+    } catch (error) {
+      console.error("Error deleting subscriber:", error);
+      addToast("Error deleting subscriber: " + error.message, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        "https://www.margda.in/miraj/work/list-data/bulk-delete",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            dataIDs: selectedRows.map((row) => row.dataID),
+            listID: listData.listID,
+          }),
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        await fetchSubscribers(listData.listID);
+        setSelectedRows([]);
+        setShowDeleteConfirm(false);
+        addToast("Selected subscribers deleted successfully", "success");
+      } else {
+        addToast(data.message || "Failed to delete subscribers", "error");
+      }
+    } catch (error) {
+      console.error("Error deleting subscribers:", error);
+      addToast("Error deleting subscribers: " + error.message, "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -282,7 +363,7 @@ const ListData = () => {
   };
 
   const handleRecordsPerPageChange = (e) => {
-    const value = e.target.value;
+    const value = parseInt(e.target.value);
     setCurrentPage(1);
     if (value) {
       if (value < 1) {
@@ -293,7 +374,7 @@ const ListData = () => {
         setRecordsPerPage(value);
       }
     } else {
-      setRecordsPerPage(0);
+      setRecordsPerPage(10);
     }
   };
 
@@ -436,6 +517,147 @@ const ListData = () => {
     }),
   };
 
+  const EditSubscriberForm = ({ subscriber, onSubmit, onCancel }) => {
+    const [formData, setFormData] = useState({
+      name: subscriber.name || "",
+      email: subscriber.email || "",
+      mobile: subscriber.mobile || "",
+      whatsapp: subscriber.whatsapp || "",
+      dataID: subscriber.dataID,
+    });
+
+    const handleChange = (e) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      onSubmit(formData);
+    };
+
+    return (
+      <motion.div
+        className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      >
+        <motion.div
+          className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full"
+          variants={modalVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Edit Subscriber</h2>
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">Name</label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">Email</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">Mobile</label>
+              <input
+                type="text"
+                name="mobile"
+                value={formData.mobile}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700">WhatsApp</label>
+              <input
+                type="text"
+                name="whatsapp"
+                value={formData.whatsapp}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div className="flex justify-end space-x-4">
+              <button
+                type="button"
+                onClick={onCancel}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Save
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </motion.div>
+    );
+  };
+
+  const DeleteConfirmModal = ({ onConfirm, onCancel, isBulk }) => (
+    <motion.div
+      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full"
+        variants={modalVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">
+          Confirm Deletion
+        </h2>
+        <p className="mb-6 text-gray-600">
+          {isBulk
+            ? `Are you sure you want to delete ${selectedRows.length} selected subscribers?`
+            : "Are you sure you want to delete this subscriber?"}
+          This action cannot be undone.
+        </p>
+        <div className="flex justify-end space-x-4">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+          >
+            Delete
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+
   return (
     <div className="min-h-screen mt-4">
       <ToastContainer
@@ -488,6 +710,15 @@ const ListData = () => {
             >
               Sample CSV
             </button>
+            {selectedRows.length > 0 && (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="flex items-center px-4 py-2 bg-red-600 text-white text-sm border border-gray-300 rounded-md shadow-sm hover:scale-105"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Selected ({selectedRows.length})
+              </button>
+            )}
           </div>
 
           <div className="relative">
@@ -510,7 +741,6 @@ const ListData = () => {
             <span className="px-2 py-1 bg-blue-500 text-white text-xs rounded">
               {listData ? listData.name : "Loading..."}
             </span>
-            
           </div>
 
           <div className="flex items-center space-x-4">
@@ -537,7 +767,7 @@ const ListData = () => {
               Autoresponders
               <span className="ml-2 px-2 py-0.5 bg-gray-100 text-xs rounded-full">
                 0
-                </span>
+              </span>
             </button>
             <Link href="#">
               <button className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:scale-105">
@@ -582,7 +812,6 @@ const ListData = () => {
 
         {/* Filter Tabs */}
         <div className="flex items-center space-x-4 mb-4">
-          {/* Select All Checkbox */}
           <div className="flex items-center">
             <label className="flex items-center text-sm text-gray-700">
               <input
@@ -645,7 +874,6 @@ const ListData = () => {
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <div className="flex items-center">Status</div>
                   </th>
-
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Unsubscribe
                   </th>
@@ -711,7 +939,6 @@ const ListData = () => {
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                           {subscriber.last_activity || "N/A"}
                         </td>
-
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                           <button
                             onClick={() => handleUnsubscribe(subscriber.subsID)}
@@ -733,6 +960,7 @@ const ListData = () => {
                           <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
+                            onClick={() => handleEditSubscriber(subscriber)}
                             className="text-indigo-600 hover:text-indigo-800"
                           >
                             <FaEdit />
@@ -740,6 +968,10 @@ const ListData = () => {
                           <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
+                            onClick={() => {
+                              setDeleteTarget(subscriber.dataID);
+                              setShowDeleteConfirm(true);
+                            }}
                             className="text-red-500 hover:text-red-600"
                           >
                             <FaTrash />
@@ -798,6 +1030,36 @@ const ListData = () => {
           </div>
         </div>
       </div>
+
+      {/* Edit Subscriber Modal */}
+      <AnimatePresence>
+        {editDataFormOpen && editingSubscriber && (
+          <EditSubscriberForm
+            subscriber={editingSubscriber}
+            onSubmit={handleUpdateSubscriber}
+            onCancel={() => {
+              setEditDataFormOpen(false);
+              setEditingSubscriber(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <DeleteConfirmModal
+            isBulk={deleteTarget === null}
+            onConfirm={() =>
+              deleteTarget ? handleDeleteSubscriber(deleteTarget) : handleBulkDelete()
+            }
+            onCancel={() => {
+              setShowDeleteConfirm(false);
+              setDeleteTarget(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Autoresponders Modal */}
       <AnimatePresence>

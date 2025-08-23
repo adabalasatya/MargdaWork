@@ -183,8 +183,8 @@ const WhatsAppCon = ({ selectedLeads, setClose, userID, setSelectedLeads }) => {
   const canSendMessage = profile && profile.active;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 backdrop-blur-sm z-50 flex justify-center items-center">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold">Send WhatsApp</h2>
           <button

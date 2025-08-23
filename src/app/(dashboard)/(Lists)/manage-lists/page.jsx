@@ -272,8 +272,8 @@ const performRemoveDuplicates = async () => {
             "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        list1ID: list2.listID,
-        list2ID: list1.listID,
+        list1ID: list1.listID,
+        list2ID: list2.listID,
       }),
     });
 

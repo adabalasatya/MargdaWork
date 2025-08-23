@@ -297,7 +297,7 @@ const MyProfile = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 to-blue-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex flex-col py-12 px-4 sm:px-6 lg:px-8">
       {/* Header */}
       {/* <div className="flex flex-col items-center justify-center mb-8">
         <div className="flex items-center justify-center mb-4">
@@ -345,7 +345,7 @@ const MyProfile = () => {
           variants={formVariants}
           initial="hidden"
           animate="visible"
-          className="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-8 space-y-6"
+          className="w-full max-w-2xl bg-white rounded-2xl shadow-lg border-2 border-gray-200 p-8 space-y-6"
         >
           <div className="flex items-center justify-center mb-6">
             <CustomImage

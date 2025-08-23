@@ -176,61 +176,61 @@ const Login = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!formValues.whatsapp || !formValues.passcode) {
-      return addToast("Enter number and password", "error");
-    }
-    setIsLoading(true);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!formValues.whatsapp || !formValues.passcode) {
+    return addToast("Enter number and password", "error");
+  }
+  setIsLoading(true);
 
-    let response;
-    try {
-      response = await fetch("https://www.margda.in/miraj/work/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          whatsapp: formValues.whatsapp,
-          password: formValues.passcode,
-        }),
-      });
-      const userData = await response.json();
-      if (response.status === 404) {
-        addToast(userData.message, "error");
-        setIsLoading(false);
-      } else if (response.status === 401) {
-        addToast(userData.message, "error");
-        setIsLoading(false);
-      } else if (response.status === 200) {
-        const data = userData.user_data;
-        sessionStorage.setItem("userData", JSON.stringify(data));
-        if (data.email) {
-          setTimeout(() => {
-            router.push("/dashboard");
-          }, 500);
-        }
-      } else {
-        addToast("An unexpected error occurred. Please try again.", "error");
-        setIsLoading(false);
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      if (error.message === "Failed to fetch") {
-        addToast(
-          "Network error: Please check your internet connection",
-          "error"
-        );
-      } else {
-        addToast(
-          "Failed to connect to the server. Please try again later.",
-          "error"
-        );
-      }
+  let response;
+  try {
+    response = await fetch("https://www.margda.in/miraj/work/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        whatsapp: formValues.whatsapp,
+        password: formValues.passcode,
+      }),
+    });
+    const userData = await response.json();
+    
+    if (response.status === 404) {
+      addToast(userData.message, "error");
+      setIsLoading(false);
+    } else if (response.status === 401) {
+      addToast(userData.message, "error");
+      setIsLoading(false);
+    } else if (response.status === 200) {
+      const data = userData.user_data;
+      sessionStorage.setItem("userData", JSON.stringify(data));
+      
+      // Redirect directly to dashboard without profile update
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 500);
+    } else {
+      addToast("An unexpected error occurred. Please try again.", "error");
       setIsLoading(false);
     }
-  };
-
+  } catch (error) {
+    console.error("Login error:", error);
+    if (error.message === "Failed to fetch") {
+      addToast(
+        "Network error: Please check your internet connection",
+        "error"
+      );
+    } else {
+      addToast(
+        "Failed to connect to the server. Please try again later.",
+        "error"
+      );
+    }
+    setIsLoading(false);
+  }
+};
   const formVariants = {
     hidden: { opacity: 0, y: 50 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },

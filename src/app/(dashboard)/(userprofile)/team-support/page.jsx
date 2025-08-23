@@ -1,43 +1,19 @@
-'use client';
+"use client";
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { FaPhone, FaTicketAlt } from "react-icons/fa";
+import { 
+  FaPhone, 
+  FaTicketAlt, 
+  FaRupeeSign, 
+  FaUsers,
+  FaArrowDown,
+  FaArrowUp
+} from "react-icons/fa";
 import { toast } from "react-toastify";
-import Loader from "@/app/component/Loader";
 import { useToast } from "@/app/component/customtoast/page";
-
-// Custom Image Component to handle both external and internal images
-const CustomImage = ({ src, alt, className, width, height, onError, ...props }) => {
-  const isExternalUrl = src?.startsWith('http');
-  
-  if (isExternalUrl) {
-    return (
-      <img
-        src={src}
-        alt={alt}
-        className={className}
-        style={{ width: `${width}px`, height: `${height}px` }}
-        onError={onError}
-        {...props}
-      />
-    );
-  }
-  
-  return (
-    <Image
-      src={src}
-      alt={alt}
-      width={width}
-      height={height}
-      className={className}
-      onError={onError}
-      {...props}
-    />
-  );
-};
 
 // Define header variants for animation
 const headerVariants = {
@@ -47,43 +23,18 @@ const headerVariants = {
 
 const DownArrow = () => (
   <div className="flex justify-center my-8">
-    <svg
-      className="w-8 h-8 text-gray-600 animate-bounce"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M19 14l-7 7m0 0l-7-7m7 7V3"
-      />
-    </svg>
+    <FaArrowDown className="w-8 h-8 text-gray-600 animate-bounce" />
   </div>
 );
 
 const UpArrow = () => (
   <div className="flex justify-center my-8">
-    <svg
-      className="w-8 h-8 text-gray-600 animate-bounce"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M5 10l7-7m0 0l7 7m-7-7v18"
-      />
-    </svg>
+    <FaArrowUp className="w-8 h-8 text-gray-600 animate-bounce" />
   </div>
 );
 
 const TeamSupport = () => {
   const { addToast } = useToast();
-  const [loading, setLoading] = useState(false);
   const [localUserData, setLocalUserData] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
   const [refered, setRefered] = useState([]);
@@ -92,25 +43,29 @@ const TeamSupport = () => {
   const router = useRouter();
 
   useEffect(() => {
-    // Check if we're in browser environment
-    if (typeof window === 'undefined') return;
-
-    const userData = JSON.parse(localStorage.getItem("userData") || 'null');
+    // Client-side only localStorage access
+    const userData = localStorage.getItem("userData");
     if (userData) {
-      setLocalUserData(userData);
-      setAccessToken(userData.access_token);
-      fetchTeamDetails(userData.access_token);
+      const parsedUserData = JSON.parse(userData);
+      setLocalUserData(parsedUserData);
+      setAccessToken(parsedUserData.access_token);
     }
   }, []);
 
-  const fetchTeamDetails = async (token) => {
+  useEffect(() => {
+    if (accessToken) {
+      fetchTeamDetails();
+    }
+  }, [accessToken]);
+
+  const fetchTeamDetails = async () => {
     try {
       const response = await fetch(
         "https://www.margda.in/api/user/team/team-details",
         {
           method: "GET",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       );
@@ -129,7 +84,6 @@ const TeamSupport = () => {
       }
     } catch (error) {
       console.log(error);
-      addToast("Failed to fetch team details", "error");
     }
   };
 
@@ -138,8 +92,9 @@ const TeamSupport = () => {
   };
 
   const handleCallClick = async (phoneNumber) => {
-    if (phoneNumber && localUserData) {
-      setLoading(true);
+    if (!localUserData || !accessToken) return;
+
+    if (phoneNumber) {
       try {
         const response = await fetch(
           "https://www.margda.in/api/cloud_telephony/initiate_call_to_lead",
@@ -157,33 +112,34 @@ const TeamSupport = () => {
         );
         const data = await response.json();
         if (response.ok) {
-          addToast(data.message || "Call initiated successfully.", "success");
+          toast.success(data.message || "Call initiated successfully.");
         } else {
           if (response.status === 400 || response.status === 402) {
             return router.push("/shop");
           }
-          addToast(data.message || "Failed to initiate call.", "error");
+          toast.error(data.message || "Failed to initiate call.");
         }
       } catch (error) {
         console.log(error);
-        addToast(error.message || "An error occurred", "error");
-      } finally {
-        setLoading(false);
+        toast.error(error.message || "An error occurred");
       }
     } else {
-      addToast("This team member hasn't added mobile number yet", "error");
+      toast.error("This team member hadn't added mobile number yet");
     }
   };
 
-  // Show loading or return null if data is not available yet
+  // Early return if user data is not loaded
   if (!localUserData) {
-    return <Loader />;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg text-gray-600">Loading user data...</div>
+      </div>
+    );
   }
 
   return (
     <div className="bg-white p-4">
       {/* Header Section */}
-      {loading && <Loader />}
       <motion.header
         className="bg-gray-50"
         variants={headerVariants}
@@ -193,19 +149,19 @@ const TeamSupport = () => {
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center space-x-4">
             <motion.div
-              className="w-12 h-12 rounded-lg shadow-md overflow-hidden"
               whileHover={{
                 scale: 1.05,
                 boxShadow: "0px 10px 15px rgba(255, 0, 0, 0.3)",
               }}
               transition={{ type: "spring", stiffness: 300 }}
+              className="relative w-12 h-12"
             >
-              <CustomImage
-                src="/logoicon.png"
+              <Image
+                src="/assets/logoicon.png"
                 alt="Logo"
                 width={48}
                 height={48}
-                className="w-full h-full object-cover"
+                className="rounded-lg shadow-md"
               />
             </motion.div>
             <motion.h1
@@ -242,19 +198,19 @@ const TeamSupport = () => {
           <div className="w-[360px] h-28 bg-[#183258] rounded-b-full relative mb-4 shadow-lg group-hover:bg-sky-400 group-hover:shadow-2xl group-hover:ring-4 group-hover:ring-sky-400 transition-all duration-300">
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/4">
               <motion.div
-                className="w-28 h-28 rounded-full border-4 border-white shadow-md overflow-hidden"
                 whileHover={{
                   scale: 1.1,
                   boxShadow: "0px 10px 15px rgba(255, 0, 0, 0.3)",
                 }}
                 transition={{ type: "spring", stiffness: 300 }}
+                className="relative w-28 h-28"
               >
-                <CustomImage
-                  src="/support.jpg"
+                <Image
+                  src="/assets/support.jpg"
                   alt="Support Call"
                   width={112}
                   height={112}
-                  className="w-full h-full object-cover"
+                  className="rounded-full border-4 border-white shadow-md"
                 />
               </motion.div>
             </div>
@@ -266,25 +222,25 @@ const TeamSupport = () => {
             <FaPhone className="mr-2" /> Support Call
           </button>
         </div>
-
+        
         {/* Support Ticket */}
         <div className="flex flex-col items-center group">
           <div className="w-[360px] h-28 bg-[#183258] rounded-b-full relative mb-4 shadow-lg group-hover:bg-sky-400 group-hover:shadow-2xl group-hover:ring-4 group-hover:ring-sky-400 transition-all duration-300">
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/4">
               <motion.div
-                className="w-28 h-28 rounded-full border-4 border-white shadow-md overflow-hidden"
                 whileHover={{
                   scale: 1.1,
                   boxShadow: "0px 10px 15px rgba(255, 0, 0, 0.3)",
                 }}
                 transition={{ type: "spring", stiffness: 300 }}
+                className="relative w-28 h-28"
               >
-                <CustomImage
-                  src="/support1.jpg"
+                <Image
+                  src="/assets/support1.jpg"
                   alt="Support Ticket"
                   width={112}
                   height={112}
-                  className="w-full h-full object-cover"
+                  className="rounded-full border-4 border-white shadow-md"
                 />
               </motion.div>
             </div>
@@ -302,28 +258,27 @@ const TeamSupport = () => {
       <div className="mb-16">
         <div className="flex flex-row justify-around px-6 items-center">
           {associate && (
-            <div className="flex flex-col items-center group ">
+            <div className="flex flex-col items-center group">
               <div className="w-[360px] h-32 bg-[#183258] rounded-b-full relative mb-4 shadow-lg group-hover:bg-sky-500 group-hover:shadow-2xl group-hover:ring-4 group-hover:ring-sky-500 transition-all duration-300">
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2">
                   <motion.div
-                    className="w-28 h-28 rounded-full border-4 border-white shadow-md overflow-hidden"
                     whileHover={{
                       scale: 1.1,
                       boxShadow: "0px 10px 15px rgba(255, 0, 0, 0.3)",
                     }}
                     transition={{ type: "spring", stiffness: 300 }}
+                    className="relative w-28 h-28"
                   >
-                    <CustomImage
-                      src={associate.pic_url || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTh4uQmq5l06DIuhNUDihsvATgceMTbyKNBzT4Rharp2hacekLEJHq9eaKF1LPaT9_iRpA&usqp=CAU"}
+                    <Image
+                      src={associate.pic_url}
                       alt={associate.name}
                       width={112}
                       height={112}
-                      className="w-full h-full object-cover"
+                      className="rounded-full border-4 border-white shadow-md"
                     />
                   </motion.div>
                 </div>
               </div>
-
               <h3 className="text-xl font-semibold mt-12 text-gray-800">
                 Associate
               </h3>
@@ -336,24 +291,25 @@ const TeamSupport = () => {
               </button>
             </div>
           )}
+          
           {mentor && (
-            <div className="flex flex-col items-center group ">
+            <div className="flex flex-col items-center group">
               <div className="w-[360px] h-32 bg-[#183258] rounded-b-full relative mb-4 shadow-lg group-hover:bg-sky-500 group-hover:shadow-2xl group-hover:ring-4 group-hover:ring-sky-500 transition-all duration-300">
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2">
                   <motion.div
-                    className="w-28 h-28 rounded-full border-4 border-white shadow-md overflow-hidden"
                     whileHover={{
                       scale: 1.1,
                       boxShadow: "0px 10px 15px rgba(255, 0, 0, 0.3)",
                     }}
                     transition={{ type: "spring", stiffness: 300 }}
+                    className="relative w-28 h-28"
                   >
-                    <CustomImage
-                      src={mentor.pic_url || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTh4uQmq5l06DIuhNUDihsvATgceMTbyKNBzT4Rharp2hacekLEJHq9eaKF1LPaT9_iRpA&usqp=CAU"}
+                    <Image
+                      src={mentor.pic_url}
                       alt={mentor.name}
                       width={112}
                       height={112}
-                      className="w-full h-full object-cover"
+                      className="rounded-full border-4 border-white shadow-md"
                     />
                   </motion.div>
                 </div>
@@ -375,9 +331,8 @@ const TeamSupport = () => {
 
       {/* Team Leaders */}
       <div className="">
-        {/* Up Arrow on top of Support Team */}
         <UpArrow />
-
+        
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-8 text-gray-800">
             Support TEAM
@@ -386,19 +341,19 @@ const TeamSupport = () => {
             <div className="w-[360px] h-32 bg-[#183258] rounded-b-full relative mb-4 shadow-lg group-hover:bg-sky-500 group-hover:shadow-2xl group-hover:ring-4 group-hover:ring-sky-500 transition-all duration-300">
               <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2">
                 <motion.div
-                  className="w-28 h-28 rounded-full border-4 border-white shadow-md overflow-hidden"
                   whileHover={{
                     scale: 1.1,
                     boxShadow: "0px 10px 15px rgba(255, 0, 0, 0.3)",
                   }}
                   transition={{ type: "spring", stiffness: 300 }}
+                  className="relative w-28 h-28"
                 >
-                  <CustomImage
-                    src={localUserData.user_data.pic_url || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTh4uQmq5l06DIuhNUDihsvATgceMTbyKNBzT4Rharp2hacekLEJHq9eaKF1LPaT9_iRpA&usqp=CAU"}
+                  <Image
+                    src={localUserData.user_data.pic_url}
                     alt={localUserData.user_data.name}
                     width={112}
                     height={112}
-                    className="w-full h-full object-cover"
+                    className="rounded-full border-4 border-white shadow-md"
                   />
                 </motion.div>
               </div>
@@ -409,7 +364,6 @@ const TeamSupport = () => {
           </div>
         </div>
 
-        {/* Down Arrow below Support Team */}
         <DownArrow />
 
         <div className="text-center pb-9">
@@ -427,14 +381,14 @@ const TeamSupport = () => {
                   <div className="w-[360px] h-32 bg-[#183258] rounded-b-full relative mb-4 shadow-lg group-hover:bg-sky-500 group-hover:shadow-2xl group-hover:ring-4 group-hover:ring-sky-500 transition-all duration-300">
                     <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2">
                       <motion.div
-                        className="w-28 h-28 rounded-full border-4 border-white shadow-md overflow-hidden"
                         whileHover={{
                           scale: 1.1,
                           boxShadow: "0px 10px 15px rgba(255, 0, 0, 0.3)",
                         }}
                         transition={{ type: "spring", stiffness: 300 }}
+                        className="relative w-28 h-28"
                       >
-                        <CustomImage
+                        <Image
                           src={
                             item.pic_url ||
                             "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTh4uQmq5l06DIuhNUDihsvATgceMTbyKNBzT4Rharp2hacekLEJHq9eaKF1LPaT9_iRpA&usqp=CAU"
@@ -442,7 +396,7 @@ const TeamSupport = () => {
                           alt={item.name}
                           width={112}
                           height={112}
-                          className="w-full h-full object-cover"
+                          className="rounded-full border-4 border-white shadow-md"
                         />
                       </motion.div>
                     </div>
@@ -450,11 +404,9 @@ const TeamSupport = () => {
                   <h3 className="text-xl font-semibold mt-12 text-gray-800">
                     {item.name}
                   </h3>
-
                   <div>
-                    {item.district ? item.district : ""}
-                    &nbsp;
-                    {item.pincode ? item.pincode : ""}
+                    {item.district && `${item.district} `}
+                    {item.pincode && item.pincode}
                   </div>
                   <button
                     onClick={() => handleCallClick(item.mobile)}
@@ -468,12 +420,57 @@ const TeamSupport = () => {
               ))}
             </div>
           ) : (
-            <div className="text-gray-500 text-center py-8">
-              <p>No business associates found.</p>
-            </div>
+            <div>{/* You didn't refer any advisor yet. */}</div>
           )}
         </div>
+
+        {/* Social Icons Section (Example of how converted icons would look) */}
+        {/* <ul className="social flex justify-center space-x-6 mt-6">
+          <li>
+            <a
+              onClick={() => callWeb(9289572711)}
+              title="Click to call"
+              className="flex items-center text-gray-700 hover:text-blue-500 transition-colors cursor-pointer"
+            >
+              <FaPhone className="text-xl mr-2" />
+            </a>
+          </li>
+
+          <li>
+            <a
+              href="#"
+              className="flex items-center text-gray-700 hover:text-green-600 transition-colors relative group"
+            >
+              <FaRupeeSign className="text-xl mr-2" />
+              <span className="font-semibold">0</span>
+
+              <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                Current Balance
+              </span>
+            </a>
+          </li>
+
+          <li>
+            <a
+              href="https://margdarshak.org/team-support/4584"
+              className="flex items-center text-gray-700 hover:text-purple-500 transition-colors relative"
+            >
+              <FaUsers className="text-xl mr-2" />
+              <span>Users</span>
+              <span className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 bg-primary text-white text-xs rounded-full px-2">
+                3
+              </span>
+            </a>
+          </li>
+        </ul> */}
       </div>
+
+      {/* Copyright Footer */}
+      {/* <footer className="mt-5 p-4 text-custom-purple text-md font-bold text-center">
+        <p>
+          © {new Date().getFullYear()} Digital Softech. All Rights Reserved.
+        </p>
+      </footer> */}
     </div>
   );
 };
