@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { FiRefreshCw, FiSmartphone, FiUser, FiCheckCircle, FiAlertCircle } from "react-icons/fi";
 import Image from "next/image";
@@ -46,6 +46,7 @@ const QrScanPage = () => {
   const [profile, setProfile] = useState([]);
   const [loading, setLoading] = useState(false);
   const [userID, setUserID] = useState("");
+  const [checkingStatus, setCheckingStatus] = useState(false);
   const { addToast } = useToast();
 
   useEffect(() => {
@@ -60,6 +61,47 @@ const QrScanPage = () => {
       fetchProfiles(userData.userID);
     }
   }, [router]);
+
+  // Function to check connection status
+  const checkConnectionStatus = useCallback(async () => {
+    if (!userID || checkingStatus) return;
+    
+    setCheckingStatus(true);
+    try {
+      const response = await fetch(
+        "https://www.margda.in/miraj/whatsapp/scan/get-profile",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ userID }),
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        setProfile(data.Profile);
+        // If we have a QR code but the profile is now active, we can clear the QR code
+        if (qrCodeSrc && data.Profile && data.Profile.active) {
+          setQrCodeSrc(null);
+        }
+      }
+    } catch (error) {
+      console.error("Error checking connection status:", error);
+    } finally {
+      setCheckingStatus(false);
+    }
+  }, [userID, qrCodeSrc, checkingStatus]);
+
+  // Set up interval for checking connection status
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      checkConnectionStatus();
+    }, 1000); // Check every 1 seconds
+
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId);
+  }, [checkConnectionStatus]);
 
   const getInstance = async () => {
     setLoading(true);
@@ -183,7 +225,7 @@ const QrScanPage = () => {
                 </button>
 
                 {/* Instance ID */}
-                {instanceId && (
+                {/* {instanceId && (
                   <div className="mt-4 p-3 bg-gray-50 rounded-xl border border-gray-200">
                     <div className="text-left">
                       <span className="font-semibold text-gray-700 block mb-1">Instance ID:</span>
@@ -192,7 +234,7 @@ const QrScanPage = () => {
                       </p>
                     </div>
                   </div>
-                )}
+                )} */}
               </div>
             </div>
 
