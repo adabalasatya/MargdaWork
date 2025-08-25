@@ -284,7 +284,7 @@ const WhatsAppCon = ({ selectedLeads, setClose, userID, setSelectedLeads }) => {
         <div className="flex justify-end gap-4">
           {!canSendMessage && (
             <Link
-              href="/work/qr-scan"
+              href="/qr-scan"
               className="bg-red-400 text-white px-4 py-2 rounded-lg hover:bg-red-500 transition-colors text-center"
             >
               Scan WhatsApp First

@@ -52,9 +52,14 @@ const DataTable = ({
   setEditingData,
   setShowLeadTypeForm,
   sampleDataTypes,
+  tasks
 }) => {
   const [editingRowId, setEditingRowId] = useState(null);
   const [editingData, setEditingDataLocal] = useState({});
+
+  const [showTaskChangeModal, setShowTaskChangeModal] = useState(false);
+  const [selectedItemForTaskChange, setSelectedItemForTaskChange] = useState(null);
+  const [selectedTaskId, setSelectedTaskId] = useState("");
 
   const getLeadTypeColor = (typeID) => {
     switch (parseInt(typeID)) {
@@ -102,6 +107,60 @@ const DataTable = ({
     }
   };
 
+  const handleSaveEdit = async (item) => {
+    try {
+      const updateData = {
+        
+        dataID: item.dataID,
+        name: editingData.name || item.name,
+        mobile: editingData.phone || item.mobile || "", // Use mobile to match server
+        whatsapp: editingData.whatsapp || item.whatsapp || "",
+        email: editingData.email || item.email || "",
+        share: editingData.share || item.share || false,
+      };
+      console.log("Sending updateData:", updateData); // Debug log
+
+      const response = await fetch(
+        "https://www.margda.in/miraj/work/data/edit-data",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updateData),
+        }
+      );
+
+      const data = await response.json();
+      console.log("Server response:", data); // Debug log
+
+      if (response.ok) {
+        setDataDetails((prev) =>
+          prev.map((prevItem) =>
+            prevItem.dataID === item.dataID
+              ? {
+                  ...prevItem,
+                  name: updateData.name,
+                  mobile: updateData.mobile, // Update mobile
+                  whatsapp: updateData.whatsapp,
+                  email: updateData.email,
+                  share: updateData.share,
+                }
+              : prevItem
+          )
+        );
+        addToast(`Successfully updated ${updateData.name}`, "success");
+        setEditingRowId(null);
+        setEditingDataLocal({});
+      } else {
+        addToast(data.message || `Failed to update record: ${data.error || "Unknown error"}`, "error");
+      }
+    } catch (error) {
+      console.error("Error updating record:", error);
+      addToast("Failed to update record", "error");
+    }
+  };
+
   const handleDelete = async (item) => {
     try {
       const response = await fetch(
@@ -133,6 +192,57 @@ const DataTable = ({
     setOpenDropdownId(null);
   };
 
+  const confirmTaskChange = async () => {
+    if (!selectedTaskId) {
+      addToast("Please select a task", "error");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "https://www.margda.in/miraj/work/data/change-task",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            taskID: selectedTaskId,
+            dataID: selectedItemForTaskChange.dataID,
+          }),
+        }
+      );
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Update the task in the local state
+        setDataDetails((prev) =>
+          prev.map((preItem) => 
+            preItem.dataID === selectedItemForTaskChange.dataID
+              ? { 
+                  ...preItem, 
+                  taskID: selectedTaskId,
+                  taskName: tasks.find(task => task.taskID == selectedTaskId)?.task || "Unknown"
+                }
+              : preItem
+          )
+        );
+        addToast(`Task changed successfully for ${selectedItemForTaskChange.name}`, "success");
+      } else {
+        addToast(data.message || "Failed to change task", "error");
+      }
+    } catch (error) {
+      console.error("Error changing task:", error);
+      addToast("Failed to change task", "error");
+    }
+    
+    // Reset modal state
+    setShowTaskChangeModal(false);
+    setSelectedItemForTaskChange(null);
+    setSelectedTaskId("");
+  };
+
   const handleView = (item) => {
     setDataDetails((prev) =>
       prev.map((dataItem) =>
@@ -149,14 +259,6 @@ const DataTable = ({
   const handleLeadType = (item) => {
     setEditingData(item);
     setShowLeadTypeForm(true);
-    setOpenDropdownId(null);
-  };
-
-  const handleChangeTask = (item) => {
-    addToast(
-      `Change Task for ${item.name} - Functionality not implemented`,
-      "info"
-    );
     setOpenDropdownId(null);
   };
 
@@ -337,71 +439,29 @@ const DataTable = ({
     }
   };
 
-  const handleSaveEdit = async (item) => {
-    try {
-      const updateData = {
-        
-        dataID: item.dataID,
-        name: editingData.name || item.name,
-        mobile: editingData.phone || item.mobile || "", // Use mobile to match server
-        whatsapp: editingData.whatsapp || item.whatsapp || "",
-        email: editingData.email || item.email || "",
-        share: editingData.share || item.share || false,
-      };
-      console.log("Sending updateData:", updateData); // Debug log
-
-      const response = await fetch(
-        "https://www.margda.in/miraj/work/data/edit-data",
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(updateData),
-        }
-      );
-
-      const data = await response.json();
-      console.log("Server response:", data); // Debug log
-
-      if (response.ok) {
-        setDataDetails((prev) =>
-          prev.map((prevItem) =>
-            prevItem.dataID === item.dataID
-              ? {
-                  ...prevItem,
-                  name: updateData.name,
-                  mobile: updateData.mobile, // Update mobile
-                  whatsapp: updateData.whatsapp,
-                  email: updateData.email,
-                  share: updateData.share,
-                }
-              : prevItem
-          )
-        );
-        addToast(`Successfully updated ${updateData.name}`, "success");
-        setEditingRowId(null);
-        setEditingDataLocal({});
-      } else {
-        addToast(data.message || `Failed to update record: ${data.error || "Unknown error"}`, "error");
-      }
-    } catch (error) {
-      console.error("Error updating record:", error);
-      addToast("Failed to update record", "error");
-    }
-  };
-
   const handleCancelEdit = () => {
     setEditingRowId(null);
     setEditingDataLocal({});
+  };
+
+  const handleChangeTask = async (item) => {
+    setSelectedItemForTaskChange(item);
+    setShowTaskChangeModal(true);
+    setOpenDropdownId(null);
+  };
+  
+  const cancelTaskChange = () => {
+    setShowTaskChangeModal(false);
+    setSelectedItemForTaskChange(null);
+    setSelectedTaskId("");
   };
 
   return (
     <div className="bg-white rounded-xl border-2 border-gray-200 shadow-md p-6 mt-4">
       <table className="w-full text-sm text-left border-spacing-x-4">
         <thead>
-          <tr className="text-gray-700 top-0 bg-gray-50 z-10">
-            <th className="px-4 py-3 border border-gray-200 bg-gray-100">
+          <tr className="text-gray-700 top-0 z-10">
+            <th className="px-4 py-3 border border-gray-200">
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
@@ -417,7 +477,7 @@ const DataTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 border border-gray-200 bg-gray-100">
+            <th className="px-4 py-3 border border-gray-200">
               <div className="flex items-center space-x-2">
                 <FaUserCog className="text-blue-600 w-5 h-5" />
                 <span className="text-sm font-semibold text-gray-700">
@@ -425,7 +485,7 @@ const DataTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 border border-gray-200 bg-gray-100">
+            <th className="px-4 py-3 border border-gray-200">
               <div className="flex items-center space-x-2">
                 <FaUser className="text-purple-600 w-5 h-5" />
                 <span className="text-sm font-semibold text-gray-700">
@@ -433,7 +493,7 @@ const DataTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 border border-gray-200 bg-gray-100">
+            <th className="px-4 py-3 border border-gray-200">
               <div className="flex items-center space-x-2">
                 <FaUsers className="text-green-600 w-5 h-5" />
                 <span className="text-sm font-semibold text-gray-700">
@@ -441,7 +501,7 @@ const DataTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 border border-gray-200 bg-gray-100">
+            <th className="px-4 py-3 border border-gray-200">
               <div className="flex items-center space-x-2">
                 <FaFile className="text-blue-600 w-5 h-5" />
                 <span className="text-sm font-semibold text-gray-700">
@@ -449,7 +509,7 @@ const DataTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 border border-gray-200 bg-gray-100">
+            <th className="px-4 py-3 border border-gray-200">
               <div className="flex items-center space-x-2">
                 <FaCheck className="text-green-600 w-5 h-5" />
                 <span className="text-sm font-semibold text-gray-700">
@@ -457,7 +517,7 @@ const DataTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 border border-gray-200 bg-gray-100">
+            <th className="px-4 py-3 border border-gray-200">
               <div className="flex items-center space-x-2">
                 <FaFile className="text-blue-600 w-5 h-5" />
                 <span className="text-sm font-semibold text-gray-700">
@@ -472,9 +532,9 @@ const DataTable = ({
             currentRecords.map((item, i) => (
               <tr
                 key={i}
-                className={`hover:bg-gray-100 transition-colors duration-200 ${
+                className={`transition-colors duration-200 ${
                   selectedRows.includes(item) ? "bg-blue-50" : ""
-                } ${getLeadTypeColor(item.typeID)}`}
+                } ${getLeadTypeColor(item.leadID)}`}
                 onClick={() => toggleRowSelection(item)}
               >
                 <td className="px-4 py-3 border-r border-gray-200">
@@ -551,7 +611,7 @@ const DataTable = ({
                         >
                           <FaExchangeAlt className="mr-2" /> C-Task
                         </button>
-                        <button
+                        {/* <button
                           className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -559,7 +619,7 @@ const DataTable = ({
                           }}
                         >
                           <FaExchangeAlt className="mr-2" /> C-Lead
-                        </button>
+                        </button> */}
                         {/* <button
                           className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                           onClick={(e) => {
@@ -833,7 +893,7 @@ const DataTable = ({
                           Lead Type:{" "}
                           {leadTypes.find((type) => type.typeID == item.typeID)
                             ?.type || "Unknown"}{" "}
-                          {getLeadTypeIcon(item.typeID)}
+                          {getLeadTypeIcon(item.leadID)}
                         </span>
                       </div>
                     )}
@@ -917,6 +977,51 @@ const DataTable = ({
           )}
         </tbody>
       </table>
+      {/* Task Change Modal */}
+      {showTaskChangeModal && (
+        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">
+              Change Task for {selectedItemForTaskChange?.name}
+            </h3>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select New Task
+              </label>
+              <select
+                value={selectedTaskId}
+                onChange={(e) => setSelectedTaskId(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Select Task</option>
+                {tasks?.map((task) => (
+                  <option key={task.taskID} value={task.taskID}>
+                    {task.task}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                type="button"
+                onClick={cancelTaskChange}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmTaskChange}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Change Task
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

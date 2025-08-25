@@ -395,7 +395,6 @@ const modalVariants = {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleMerge}
-            disabled={selectedLists.length < 2}
             className={`flex items-center px-4 py-2 rounded-lg shadow transition-colors duration-200 ${
               selectedLists.length < 2 
                 ? "bg-green-600 text-white" 
@@ -409,7 +408,6 @@ const modalVariants = {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleRemove}
-            disabled={selectedLists.length < 2}
             className={`flex items-center px-4 py-2 rounded-lg shadow transition-colors duration-200 ${
               selectedLists.length < 2 
                 ? "bg-red-500 text-white" 
@@ -672,9 +670,9 @@ const modalVariants = {
                   className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                 />
               </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+              {/* <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                 ID
-              </th>
+              </th> */}
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                 List
               </th>
@@ -720,7 +718,7 @@ const modalVariants = {
 />
 
                     </td>
-                    <td className="px-6 py-4 text-gray-600">{item.listID}</td>
+                    {/* <td className="px-6 py-4 text-gray-600">{item.listID}</td> */}
                     <td className="px-6 py-4">
                       <Link
                         href={`/list-data?item=${encodeURIComponent(JSON.stringify(item))}`}

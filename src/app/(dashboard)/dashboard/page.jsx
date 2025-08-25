@@ -107,7 +107,6 @@ const Dashboard = () => {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const userData = sessionStorage.getItem("userData");
-      const storedLeadType = sessionStorage.getItem("selectedLeadType");
       if (!userData) {
         router.push("/login");
         return;
@@ -119,9 +118,12 @@ const Dashboard = () => {
           router.push("/login");
         } else {
           setUserID(parsedUserData.userID);
-          if (storedLeadType) {
-            setSelectedLeadType(storedLeadType);
-          }
+
+          const storedLeadType = sessionStorage.getItem("selectedLeadType") || "";
+          setSelectedLeadType(storedLeadType);
+
+          console.log(storedLeadType)
+          
           fetchData(parsedUserData.userID);
           fetchTasks(parsedUserData.userID);
           fetchLeadTypes();
@@ -287,8 +289,7 @@ const Dashboard = () => {
     if (!matchTask) return false;
 
     const matchLeadType = selectedLeadType
-      ? item.typeID == selectedLeadType ||
-        parseInt(item.typeID) === parseInt(selectedLeadType)
+      ? parseInt(item.leadID) == parseInt(selectedLeadType)
       : true;
 
     if (!matchLeadType) return false;
@@ -447,28 +448,37 @@ const Dashboard = () => {
     setSelectedRows([]);
 
     if (taskId) {
-      const selectedTaskData = tasks.find((task) => task.taskID === taskId);
+      const selectedTaskData = tasks.find((task) => task.taskID === parseInt(taskId));
       const taskName = selectedTaskData ? selectedTaskData.task : taskId;
-      addToast(`Filtering data for task: ${taskName}`, "info");
+      addToast("Filtering data for task : " + taskName);
     } else {
       addToast("Showing all tasks", "info");
     }
   };
 
   const handleLeadTypeChange = (e) => {
-    const typeId = e.target.value;
-    setSelectedLeadType(typeId);
-    setCurrentPage(1);
-    setSelectedRows([]);
-
+  const typeId = e.target.value;
+  setSelectedLeadType(typeId);
+  setCurrentPage(1);
+  setSelectedRows([]);
+  
+  // Save to sessionStorage immediately
+  if (typeof window !== "undefined") {
     if (typeId) {
-      const selectedTypeData = leadTypes.find((type) => type.typeID == typeId);
-      const typeName = selectedTypeData ? selectedTypeData.type : typeId;
-      addToast(`Filtering data for lead type: ${typeName}`, "info");
+      sessionStorage.setItem("selectedLeadType", typeId);
     } else {
-      addToast("Showing all lead types", "info");
+      sessionStorage.removeItem("selectedLeadType");
     }
-  };
+  }
+  
+  if (typeId) {
+    const selectedLead = leadTypes.find((lead) => lead.typeID == typeId);
+    const leadName = selectedLead ? selectedLead.type : typeId;
+    addToast("Filtering data for lead: " + leadName);
+  } else {
+    addToast("Showing all leads", "info");
+  }
+};
 
   const handleResetFilters = () => {
     setFilterState({
@@ -602,6 +612,7 @@ const Dashboard = () => {
         setEditingData={setEditingData}
         setShowLeadTypeForm={setShowLeadTypeForm}
         sampleDataTypes={sampleDataTypes}
+        tasks={tasks}
       />
 
       <Pagination

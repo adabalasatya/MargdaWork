@@ -191,7 +191,7 @@ const SendSmsCon = ({ setClose, selectedLeads, setSelectedLeads, fetchData }) =>
                     key={getTemplateKey(template, index)} 
                     value={getTemplateValue(template)}
                   >
-                    {getTemplateName(template)} {getTemplateValue(template) ? `(ID: ${getTemplateValue(template)})` : ''}
+                    {getTemplateName(template)}
                   </option>
                 ))}
               </select>

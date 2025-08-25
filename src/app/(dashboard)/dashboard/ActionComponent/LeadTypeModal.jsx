@@ -51,13 +51,14 @@ const LeadTypeForm = ({ selectedLead, setShowLeadTypeForm, setUserData, userData
     }
 
     // Check for dataID or leadID (depending on your data structure)
-    const leadId = selectedLead.dataID || selectedLead.leadID;
-    if (!leadId) {
+    const dataID = selectedLead.dataID;
+    if (!dataID) {
       addToast("Invalid lead data - missing ID", "error");
       return;
     }
 
     setLoading(true);
+
     try {
       const response = await fetch(
         "https://www.margda.in/miraj/work/data/leadtype/update-lead-type",
@@ -69,19 +70,19 @@ const LeadTypeForm = ({ selectedLead, setShowLeadTypeForm, setUserData, userData
           body: JSON.stringify({
             userID: userID,
             typeID: parseInt(selectedType),
-            dataID: parseInt(leadId),
+            dataID: parseInt(dataID),
           }),
         }
       );
       
       const data = await response.json();
+      console.log(data)
 
       if (response.ok) {
-        // Update the local state - handle both dataID and leadID cases
         setUserData((prevData) =>
           prevData.map((item) => {
-            const itemId = item.dataID || item.leadID;
-            return itemId === leadId
+            const itemId = item.dataID;
+            return itemId === dataID
               ? { ...item, typeID: parseInt(selectedType) }
               : item;
           })

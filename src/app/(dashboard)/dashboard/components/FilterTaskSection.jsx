@@ -68,15 +68,14 @@ const FilterTaskSection = ({
             </option>
             {leadTypes.map((type) => {
               const typeRecordCount = dataDetails.filter(
-                (item) =>
-                  item.typeID == type.typeID ||
-                  parseInt(item.typeID) === parseInt(type.typeID)
+                (item) => parseInt(item.leadID) == parseInt(type.typeID)
               ).length;
+
 
               return (
                 <option
                   className="bg-white text-black"
-                  value={type.typeID}
+                  value={String(type.typeID)}
                   key={type.typeID}
                 >
                   {type.type} {getLeadTypeIcon(type.typeID)} (
