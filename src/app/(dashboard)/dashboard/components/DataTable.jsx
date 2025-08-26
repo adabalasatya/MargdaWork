@@ -1,4 +1,5 @@
 'use client';
+
 import { useState } from "react";
 import {
   FaUserCog,
@@ -32,9 +33,9 @@ import {
   FaWhatsapp,
   FaBuilding,
   FaTasks,
-  FaTimes,
 } from "react-icons/fa";
 import moment from "moment";
+import EditDataForm from "../ActionComponent/EditDataForm";
 
 const DataTable = ({
   currentRecords,
@@ -52,11 +53,11 @@ const DataTable = ({
   setEditingData,
   setShowLeadTypeForm,
   sampleDataTypes,
-  tasks
+  tasks,
+  fetchData,
 }) => {
-  const [editingRowId, setEditingRowId] = useState(null);
-  const [editingData, setEditingDataLocal] = useState({});
-
+  const [isEditDataFormOpen, setIsEditDataFormOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
   const [showTaskChangeModal, setShowTaskChangeModal] = useState(false);
   const [selectedItemForTaskChange, setSelectedItemForTaskChange] = useState(null);
   const [selectedTaskId, setSelectedTaskId] = useState("");
@@ -104,60 +105,6 @@ const DataTable = ({
         return "⚫️";
       default:
         return "⚪️";
-    }
-  };
-
-  const handleSaveEdit = async (item) => {
-    try {
-      const updateData = {
-        
-        dataID: item.dataID,
-        name: editingData.name || item.name,
-        mobile: editingData.phone || item.mobile || "", // Use mobile to match server
-        whatsapp: editingData.whatsapp || item.whatsapp || "",
-        email: editingData.email || item.email || "",
-        share: editingData.share || item.share || false,
-      };
-      console.log("Sending updateData:", updateData); // Debug log
-
-      const response = await fetch(
-        "https://www.margda.in/miraj/work/data/edit-data",
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(updateData),
-        }
-      );
-
-      const data = await response.json();
-      console.log("Server response:", data); // Debug log
-
-      if (response.ok) {
-        setDataDetails((prev) =>
-          prev.map((prevItem) =>
-            prevItem.dataID === item.dataID
-              ? {
-                  ...prevItem,
-                  name: updateData.name,
-                  mobile: updateData.mobile, // Update mobile
-                  whatsapp: updateData.whatsapp,
-                  email: updateData.email,
-                  share: updateData.share,
-                }
-              : prevItem
-          )
-        );
-        addToast(`Successfully updated ${updateData.name}`, "success");
-        setEditingRowId(null);
-        setEditingDataLocal({});
-      } else {
-        addToast(data.message || `Failed to update record: ${data.error || "Unknown error"}`, "error");
-      }
-    } catch (error) {
-      console.error("Error updating record:", error);
-      addToast("Failed to update record", "error");
     }
   };
 
@@ -212,18 +159,17 @@ const DataTable = ({
           }),
         }
       );
-      
+
       const data = await response.json();
-      
+
       if (response.ok) {
-        // Update the task in the local state
         setDataDetails((prev) =>
-          prev.map((preItem) => 
+          prev.map((preItem) =>
             preItem.dataID === selectedItemForTaskChange.dataID
-              ? { 
-                  ...preItem, 
+              ? {
+                  ...preItem,
                   taskID: selectedTaskId,
-                  taskName: tasks.find(task => task.taskID == selectedTaskId)?.task || "Unknown"
+                  taskName: tasks.find((task) => task.taskID == selectedTaskId)?.task || "Unknown",
                 }
               : preItem
           )
@@ -236,8 +182,7 @@ const DataTable = ({
       console.error("Error changing task:", error);
       addToast("Failed to change task", "error");
     }
-    
-    // Reset modal state
+
     setShowTaskChangeModal(false);
     setSelectedItemForTaskChange(null);
     setSelectedTaskId("");
@@ -262,139 +207,15 @@ const DataTable = ({
     setOpenDropdownId(null);
   };
 
-  const handleChangeLead = (item) => {
-    addToast(
-      `Change Lead for ${item.name} - Functionality not implemented`,
-      "info"
-    );
+  const handleEditClick = (item) => {
+    setEditingItem(item);
+    setIsEditDataFormOpen(true);
     setOpenDropdownId(null);
   };
 
-  const handleShareData = (item) => {
-    addToast(
-      `Share Data for ${item.name} - Functionality not implemented`,
-      "info"
-    );
-    setOpenDropdownId(null);
-  };
-
-  const handleShareLog = (item) => {
-    addToast(
-      `Share Log for ${item.name} - Functionality not implemented`,
-      "info"
-    );
-    setOpenDropdownId(null);
-  };
-
-  const handleMakeUser = (item) => {
-    addToast(
-      `Make User for ${item.name} - Functionality not implemented`,
-      "info"
-    );
-    setOpenDropdownId(null);
-  };
-
-  const handlePasscode = (item) => {
-    addToast(
-      `Generate Passcode for ${item.name} - Functionality not implemented`,
-      "info"
-    );
-    setOpenDropdownId(null);
-  };
-
-  const handleInvoice = (item) => {
-    addToast(
-      `Generate Invoice for ${item.name} - Functionality not implemented`,
-      "info"
-    );
-    setOpenDropdownId(null);
-  };
-
-  const handleReceipt = (item) => {
-    addToast(
-      `Generate Receipt for ${item.name} - Functionality not implemented`,
-      "info"
-    );
-    setOpenDropdownId(null);
-  };
-
-  const handleSkillsTest = (item) => {
-    addToast(
-      `Skills Test for ${item.name} - Functionality not implemented`,
-      "info"
-    );
-    setOpenDropdownId(null);
-  };
-
-  const handleCommunicationEvaluation = (item) => {
-    addToast(
-      `Communication Evaluation for ${item.name} - Functionality not implemented`,
-      "info"
-    );
-    setOpenDropdownId(null);
-  };
-
-  const handleHRInteraction = (item) => {
-    addToast(
-      `HR Interaction for ${item.name} - Functionality not implemented`,
-      "info"
-    );
-    setOpenDropdownId(null);
-  };
-
-  const handleInterviewQuestions = (item) => {
-    addToast(
-      `Interview Questions for ${item.name} - Functionality not implemented`,
-      "info"
-    );
-    setOpenDropdownId(null);
-  };
-
-  const handleDocumentUpload = (item) => {
-    addToast(
-      `Document Upload for ${item.name} - Functionality not implemented`,
-      "info"
-    );
-    setOpenDropdownId(null);
-  };
-
-  const handleStudentContest = (item) => {
-    addToast(
-      `Student Contest for ${item.name} - Functionality not implemented`,
-      "info"
-    );
-    setOpenDropdownId(null);
-  };
-
-  const handleAptitudeAssessment = (item) => {
-    addToast(
-      `Aptitude Assessment for ${item.name} - Functionality not implemented`,
-      "info"
-    );
-    setOpenDropdownId(null);
-  };
-
-  const handleAttitudeAssessment = (item) => {
-    addToast(
-      `Attitude Assessment for ${item.name} - Functionality not implemented`,
-      "info"
-    );
-    setOpenDropdownId(null);
-  };
-
-  const handleAbilityAnalyser = (item) => {
-    addToast(
-      `Ability Analyser for ${item.name} - Functionality not implemented`,
-      "info"
-    );
-    setOpenDropdownId(null);
-  };
-
-  const handleCareerDashboard = (item) => {
-    addToast(
-      `Career Dashboard for ${item.name} - Functionality not implemented`,
-      "info"
-    );
+  const handleChangeTask = (item) => {
+    setSelectedItemForTaskChange(item);
+    setShowTaskChangeModal(true);
     setOpenDropdownId(null);
   };
 
@@ -402,54 +223,6 @@ const DataTable = ({
     setOpenDropdownId(openDropdownId === dataID ? null : dataID);
   };
 
-  const handleEditClick = (item) => {
-    const dataID = item.dataID;
-    if (editingRowId === dataID) {
-      setEditingRowId(null);
-      setEditingDataLocal({});
-    } else {
-      setEditingRowId(dataID);
-      setEditingDataLocal({
-        name: item.name || "",
-        phone: item.mobile || "", // Initialize with mobile
-        whatsapp: item.whatsapp || "",
-        email: item.email || "",
-        share: item.share || false,
-      });
-    }
-    setOpenDropdownId(null);
-  };
-
-  const handleFieldChange = (field, value) => {
-    if (field === "phone" || field === "whatsapp") {
-      // Allow only digits and limit to 10 digits
-      if (/^\d{0,10}$/.test(value)) {
-        setEditingDataLocal((prev) => {
-          const newData = { ...prev, [field]: value };
-          console.log("Updated editingData:", newData); // Debug log
-          return newData;
-        });
-      }
-    } else {
-      setEditingDataLocal((prev) => {
-        const newData = { ...prev, [field]: value };
-        console.log("Updated editingData:", newData); // Debug log
-        return newData;
-      });
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setEditingRowId(null);
-    setEditingDataLocal({});
-  };
-
-  const handleChangeTask = async (item) => {
-    setSelectedItemForTaskChange(item);
-    setShowTaskChangeModal(true);
-    setOpenDropdownId(null);
-  };
-  
   const cancelTaskChange = () => {
     setShowTaskChangeModal(false);
     setSelectedItemForTaskChange(null);
@@ -558,30 +331,6 @@ const DataTable = ({
                     >
                       <FaEllipsisH className="w-5 h-5" />
                     </button>
-                    {editingRowId === item.dataID && (
-                      <div className="flex space-x-1">
-                        <button
-                          title="Save"
-                          className="p-2 bg-green-500 text-white rounded-full shadow-md hover:scale-105 transition-transform duration-200"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSaveEdit(item);
-                          }}
-                        >
-                          <FaCheck className="w-4 h-4" />
-                        </button>
-                        <button
-                          title="Cancel"
-                          className="p-2 bg-red-500 text-white rounded-full shadow-md hover:scale-105 transition-transform duration-200"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCancelEdit();
-                          }}
-                        >
-                          <FaTimes className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
                     {openDropdownId === item.dataID && (
                       <div className="absolute z-10 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto top-full left-0">
                         <button
@@ -611,163 +360,6 @@ const DataTable = ({
                         >
                           <FaExchangeAlt className="mr-2" /> C-Task
                         </button>
-                        {/* <button
-                          className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleChangeLead(item);
-                          }}
-                        >
-                          <FaExchangeAlt className="mr-2" /> C-Lead
-                        </button> */}
-                        {/* <button
-                          className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleShareData(item);
-                          }}
-                        >
-                          <FaShareAlt className="mr-2" /> S-Data
-                        </button>
-                        <button
-                          className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleShareLog(item);
-                          }}
-                        >
-                          <FaShareAlt className="mr-2" /> S-Log
-                        </button>
-                        <button
-                          className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleMakeUser(item);
-                          }}
-                        >
-                          <FaUserPlus className="mr-2" /> Make User
-                        </button>
-                        <button
-                          className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handlePasscode(item);
-                          }}
-                        >
-                          <FaLock className="mr-2" /> Passcode
-                        </button>
-                        <button
-                          className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleInvoice(item);
-                          }}
-                        >
-                          <FaFileInvoice className="mr-2" /> Invoice
-                        </button>
-                        {item.paid && (
-                          <button
-                            className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleReceipt(item);
-                            }}
-                          >
-                            <FaReceipt className="mr-2" /> Receipt
-                          </button>
-                        )}
-                        <button
-                          className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSkillsTest(item);
-                          }}
-                        >
-                          <FaBrain className="mr-2" /> Skills Test
-                        </button>
-                        <button
-                          className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCommunicationEvaluation(item);
-                          }}
-                        >
-                          <FaComments className="mr-2" /> Communication
-                          Evaluation
-                        </button>
-                        <button
-                          className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleHRInteraction(item);
-                          }}
-                        >
-                          <FaUserTie className="mr-2" /> HR Interaction
-                        </button>
-                        <button
-                          className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleInterviewQuestions(item);
-                          }}
-                        >
-                          <FaQuestionCircle className="mr-2" /> Interview
-                          Questions
-                        </button>
-                        <button
-                          className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDocumentUpload(item);
-                          }}
-                        >
-                          <FaFileUpload className="mr-2" /> Document Upload
-                        </button>
-                        <button
-                          className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleStudentContest(item);
-                          }}
-                        >
-                          <FaTrophy className="mr-2" /> Student Contest
-                        </button>
-                        <button
-                          className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAptitudeAssessment(item);
-                          }}
-                        >
-                          <FaChartBar className="mr-2" /> Aptitude Assessment
-                        </button>
-                        <button
-                          className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAttitudeAssessment(item);
-                          }}
-                        >
-                          <FaHeart className="mr-2" /> Attitude Assessment
-                        </button>
-                        <button
-                          className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAbilityAnalyser(item);
-                          }}
-                        >
-                          <FaCogs className="mr-2" /> Ability Analyser
-                        </button>
-                        <button
-                          className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCareerDashboard(item);
-                          }}
-                        >
-                          <FaBriefcase className="mr-2" /> Career Dashboard
-                        </button> */}
                         <button
                           className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                           onClick={(e) => {
@@ -794,74 +386,24 @@ const DataTable = ({
                   <div className="space-y-2">
                     <div className="flex items-center space-x-2">
                       <FaUser className="text-blue-500 w-5 h-5" />
-                      {editingRowId === item.dataID ? (
-                        <input
-                          type="text"
-                          value={editingData.name}
-                          onChange={(e) => handleFieldChange("name", e.target.value)}
-                          className="px-2 py-1 border rounded text-sm font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="Enter name"
-                        />
-                      ) : (
-                        <span className="font-medium text-gray-800">{item.name}</span>
-                      )}
+                      <span className="font-medium text-gray-800">{item.name}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <FaEnvelope className="text-purple-500 w-5 h-5" />
-                      {editingRowId === item.dataID ? (
-                        <input
-                          type="email"
-                          value={editingData.email}
-                          onChange={(e) => handleFieldChange("email", e.target.value)}
-                          className="px-2 py-1 border rounded text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="Enter email"
-                        />
-                      ) : (
-                        <span className="text-gray-800">{item.email || "N/A"}</span>
-                      )}
+                      <span className="text-gray-800">{item.email || "N/A"}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <FaPhone className="text-green-500 w-5 h-5" />
-                      {editingRowId === item.dataID ? (
-                        <input
-                          type="tel"
-                          value={editingData.phone}
-                          onChange={(e) => handleFieldChange("phone", e.target.value)}
-                          className="px-2 py-1 border rounded text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="Enter phone"
-                        />
-                      ) : (
-                        <span className="text-gray-800">{item.mobile || "N/A"}</span>
-                      )}
+                      <span className="text-gray-800">{item.mobile || "N/A"}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <FaWhatsapp className="text-green-600 w-5 h-5" />
-                      {editingRowId === item.dataID ? (
-                        <input
-                          type="tel"
-                          value={editingData.whatsapp}
-                          onChange={(e) => handleFieldChange("whatsapp", e.target.value)}
-                          className="px-2 py-1 border rounded text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="Enter WhatsApp"
-                        />
-                      ) : (
-                        <span className="text-gray-800">{item.whatsapp || "N/A"}</span>
-                      )}
+                      <span className="text-gray-800">{item.whatsapp || "N/A"}</span>
                     </div>
-                    {editingRowId === item.dataID && (
-                      <div className="flex items-center space-x-2">
-                        <FaShareAlt className="text-blue-500 w-5 h-5" />
-                        <label className="flex items-center space-x-1">
-                          <input
-                            type="checkbox"
-                            checked={editingData.share}
-                            onChange={(e) => handleFieldChange("share", e.target.checked)}
-                            className="form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
-                          />
-                          <span className="text-sm text-gray-800">Share</span>
-                        </label>
-                      </div>
-                    )}
+                    <div className="flex items-center space-x-2">
+                      <FaShareAlt className="text-blue-500 w-5 h-5" />
+                      <span className="text-gray-800">{item.share ? "Yes" : "No"}</span>
+                    </div>
                     <div className="flex items-center space-x-2">
                       <FaUser className="text-blue-600 w-5 h-5" />
                       <span className="text-gray-800">
@@ -984,7 +526,6 @@ const DataTable = ({
             <h3 className="text-lg font-semibold mb-4 text-gray-900">
               Change Task for {selectedItemForTaskChange?.name}
             </h3>
-            
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Select New Task
@@ -1002,7 +543,6 @@ const DataTable = ({
                 ))}
               </select>
             </div>
-
             <div className="flex justify-end space-x-3">
               <button
                 type="button"
@@ -1021,6 +561,15 @@ const DataTable = ({
             </div>
           </div>
         </div>
+      )}
+      {/* Edit Data Form */}
+      {isEditDataFormOpen && (
+        <EditDataForm
+          setIsEditDataFormOpen={setIsEditDataFormOpen}
+          fetchData={fetchData}
+          userID={userID}
+          editingData={editingItem}
+        />
       )}
     </div>
   );
