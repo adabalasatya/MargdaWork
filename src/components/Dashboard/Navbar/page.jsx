@@ -62,7 +62,7 @@ const Navbar = () => {
   // Show loading skeleton until mounted to prevent hydration mismatch
   if (!isMounted) {
     return (
-      <div className="relative flex items-center justify-between px-3 py-2 bg-white text-gray-800 shadow-md rounded-lg">
+      <div className="relative flex items-center justify-between px-3 py-2  bg-white text-gray-800 shadow-md rounded-lg">
         {/* Mobile Menu Icon (Loading state) */}
         <div className="sm:hidden flex items-center">
           <div className="flex items-center px-3 py-2 text-xs font-medium text-gray-800 bg-white border-2 border-gray-300 rounded-lg shadow-md">
@@ -87,12 +87,12 @@ const Navbar = () => {
             </div>
           </div>
 
-          <div className="flex space-x-4 sm:space-x-8 ml-auto mr-16 whitespace-nowrap">
+          {/* <div className="flex space-x-4 sm:space-x-8 ml-auto mr-16 whitespace-nowrap">
             <div className="flex items-center px-3 py-2 text-xs font-medium text-gray-800 bg-white hover:bg-[#6247aa]  border-2 border-gray-300 rounded-lg shadow-md sm:px-4 sm:py-2 sm:text-sm">
               <div className="w-4 h-4 bg-gray-300 rounded mr-2 animate-pulse"></div>
               <span>Team-Support</span>
             </div>
-          </div>
+          </div> */}
 
           <div className="w-8 h-8 rounded-full bg-gray-300 animate-pulse"></div>
         </div>
@@ -101,7 +101,7 @@ const Navbar = () => {
   }
 
   return (
-    <div className="relative flex items-center justify-between px-3 py-2 bg-white text-gray-800 shadow-md rounded-lg">
+    <div className="relative flex items-center justify-between mt-1  m-1  px-2 py-2 bg-white text-gray-800 border-2 border-gray-300 shadow-md rounded-lg">
       {/* Mobile Menu Icon (Visible only on mobile screens) */}
       <div className="sm:hidden flex items-center">
         <button
@@ -152,13 +152,13 @@ const Navbar = () => {
             >
               <FaShoppingCart className="mr-2" /> Mart
             </Link> */}
-            <Link
+            {/* <Link
               href="/team-support"
               className="flex items-center px-3 py-2 text-xs font-medium text-gray-800 bg-white border-2 border-gray-300 rounded-lg shadow-md hover:bg-gradient-to-r from-blue-500 to-blue-600  hover:text-white transition-colors duration-300 ease-in-out"
               onClick={() => setIsMenuOpen(false)}
             >
               <FaUsers className="mr-2" /> Team-Support
-            </Link>
+            </Link> */}
           </div>
         </div>
       )}
@@ -177,12 +177,12 @@ const Navbar = () => {
 
         {/* Right Side Buttons */}
         <div className="flex space-x-4 sm:space-x-8 ml-auto mr-16 whitespace-nowrap">
-          <Link
+          {/* <Link
             href="/team-support"
             className="flex items-center px-3 py-2 text-xs font-medium text-gray-800 bg-white border-2 border-gray-300 rounded-lg shadow-md hover:bg-gradient-to-r from-blue-500 to-blue-600  hover:text-white transition-colors duration-300 ease-in-out sm:px-4 sm:py-2 sm:text-sm"
           >
             <FaUsers className="mr-2" /> Team-Support
-          </Link>
+          </Link> */}
         </div>
 
         {/* Profile Section */}

@@ -242,7 +242,7 @@ const TemplatesList = () => {
           <div>
             <div className="overflow-x-auto">
               <table className="min-w-full bg-white border border-gray-300">
-                <thead className="bg-gray-800 text-white">
+                <thead className="bg-blue-500 text-white">
                   <tr>
                     <th className="px-6 py-3 text-left">Type</th>
                     <th className="px-6 py-3 text-left">Template</th>
@@ -304,10 +304,13 @@ const TemplatesList = () => {
                 </tbody>
               </table>
             </div>
-            <div className="flex items-center justify-between mt-6">
-              <div className="text-sm text-gray-600">
+          </div>
+        )}
+      </div>
+      <div className="flex items-center justify-between mt-2">
+              <div className="text-sm ml-2 font-semibold text-gray-600">
                 Showing {indexOfFirstRecord + 1} to{" "}
-                {Math.min(indexOfLastRecord, filteredTemplates.length)} Records
+                {Math.min(indexOfLastRecord, filteredTemplates.length)} total entries
               </div>
               <div className="flex items-center space-x-2">
                 <button
@@ -327,7 +330,7 @@ const TemplatesList = () => {
                     onClick={() => setCurrentPage(page)}
                     className={`px-4 py-2 ${
                       currentPage === page
-                        ? "bg-orange-500 text-white"
+                        ? "bg-blue-500 text-white"
                         : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                     } rounded`}
                   >
@@ -347,9 +350,6 @@ const TemplatesList = () => {
                 </button>
               </div>
             </div>
-          </div>
-        )}
-      </div>
 
       {viewTemplate && viewedTemplateData && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">

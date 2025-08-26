@@ -33,6 +33,11 @@ import {
   FaWhatsapp,
   FaBuilding,
   FaTasks,
+  FaGlobe,
+  FaStreetView,
+  FaPinterest,
+  FaPlayCircle,
+  FaPlaceOfWorship,
 } from "react-icons/fa";
 import moment from "moment";
 import EditDataForm from "../ActionComponent/EditDataForm";
@@ -109,6 +114,7 @@ const DataTable = ({
   };
 
   const handleDelete = async (item) => {
+
     try {
       const response = await fetch(
         "https://www.margda.in/miraj/work/data/delete-data",
@@ -118,8 +124,7 @@ const DataTable = ({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            userID,
-            dataID: item.dataID,
+            dataIDs: [item.dataID],
           }),
         }
       );
@@ -230,8 +235,9 @@ const DataTable = ({
   };
 
   return (
-    <div className="bg-white rounded-xl border-2 border-gray-200 shadow-md p-6 mt-4">
-      <table className="w-full text-sm text-left border-spacing-x-4">
+    <div className="bg-white rounded-xl border-2 border-gray-200  shadow-md p-4 m-2 mt-3">
+     <div className="max-h-[500px] overflow-auto">
+       <table className="w-full text-sm text-left border-spacing-x-4">
         <thead>
           <tr className="text-gray-700 top-0 z-10">
             <th className="px-4 py-3 border border-gray-200">
@@ -300,7 +306,7 @@ const DataTable = ({
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200">
+        <tbody className="divide-y divide-gray-100">
           {currentRecords.length > 0 ? (
             currentRecords.map((item, i) => (
               <tr
@@ -308,7 +314,6 @@ const DataTable = ({
                 className={`transition-colors duration-200 ${
                   selectedRows.includes(item) ? "bg-blue-50" : ""
                 } ${getLeadTypeColor(item.leadID)}`}
-                onClick={() => toggleRowSelection(item)}
               >
                 <td className="px-4 py-3 border-r border-gray-200">
                   <input
@@ -385,28 +390,28 @@ const DataTable = ({
                 <td className="px-4 py-3 border-r border-gray-200">
                   <div className="space-y-2">
                     <div className="flex items-center space-x-2">
-                      <FaUser className="text-blue-500 w-5 h-5" />
-                      <span className="font-medium text-gray-800">{item.name}</span>
+                      <FaUser className="text-blue-500 text-sm" />
+                      <span className=" text-sm text-gray-800">{item.name}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <FaEnvelope className="text-purple-500 w-5 h-5" />
-                      <span className="text-gray-800">{item.email || "N/A"}</span>
+                      <FaEnvelope className="text-purple-500 text-sm" />
+                      <span className="text-gray-800 text-sm">{item.email || "N/A"}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <FaPhone className="text-green-500 w-5 h-5" />
-                      <span className="text-gray-800">{item.mobile || "N/A"}</span>
+                      <FaPhone className="text-green-500 text-sm" />
+                      <span className="text-gray-800 text-sm">{item.mobile || "N/A"}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <FaWhatsapp className="text-green-600 w-5 h-5" />
-                      <span className="text-gray-800">{item.whatsapp || "N/A"}</span>
+                      <FaWhatsapp className="text-green-600 text-sm" />
+                      <span className="text-gray-800 text-sm">{item.whatsapp || "N/A"}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <FaShareAlt className="text-blue-500 w-5 h-5" />
-                      <span className="text-gray-800">{item.share ? "Yes" : "No"}</span>
+                      <FaShareAlt className="text-blue-500 text-sm" />
+                      <span className="text-gray-800 text-sm">{item.share ? "Yes" : "No"}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <FaUser className="text-blue-600 w-5 h-5" />
-                      <span className="text-gray-800">
+                      <FaUser className="text-blue-600 text-sm" />
+                      <span className="text-gray-800 text-sm">
                         {Array.isArray(item.datatype)
                           ? item.datatype
                               .map((type) =>
@@ -430,8 +435,8 @@ const DataTable = ({
                     </div>
                     {item.typeID && (
                       <div className="flex items-center space-x-2">
-                        <FaTag className="text-purple-600 w-5 h-5" />
-                        <span className="text-gray-800">
+                        <FaTag className="text-purple-600 text-sm" />
+                        <span className="text-gray-800 text-sm">
                           Lead Type:{" "}
                           {leadTypes.find((type) => type.typeID == item.typeID)
                             ?.type || "Unknown"}{" "}
@@ -444,27 +449,27 @@ const DataTable = ({
                 <td className="px-4 py-3 border-r border-gray-200">
                   <div className="flex flex-col space-y-1">
                     <div className="flex items-center space-x-2">
-                      <FaBuilding className="text-green-500 w-5 h-5" />
-                      <span className="text-sm text-gray-800">Country:</span>
+                      <FaGlobe className="text-green-500 text-sm" />
+                      <span className="text-sm text-gray-800 ">Country:</span>
                       <span className="text-sm text-gray-800">{item.country_code || "N/A"}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <FaBuilding className="text-green-500 w-5 h-5" />
+                      <FaStreetView className="text-green-500 text-sm" />
                       <span className="text-sm text-gray-800">State:</span>
                       <span className="text-sm text-gray-800">{item.state || "N/A"}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <FaBuilding className="text-green-500 w-5 h-5" />
+                      <FaBuilding className="text-green-500 text-sm" />
                       <span className="text-sm text-gray-800">District:</span>
                       <span className="text-sm text-gray-800">{item.district || "N/A"}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <FaBuilding className="text-green-500 w-5 h-5" />
+                      <FaPinterest className="text-green-500 text-sm" />
                       <span className="text-sm text-gray-800">Pincode:</span>
                       <span className="text-sm text-gray-800">{item.pincode || "N/A"}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <FaBuilding className="text-green-500 w-5 h-5" />
+                      <FaPlaceOfWorship className="text-green-500 text-sm" />
                       <span className="text-sm text-gray-800">Place:</span>
                       <span className="text-sm text-gray-800">{item.address || "N/A"}</span>
                     </div>
@@ -473,13 +478,13 @@ const DataTable = ({
                 <td className="px-4 py-3 border-r border-gray-200">
                   <div className="flex flex-col space-y-1">
                     <div className="flex items-center space-x-2">
-                      <FaTasks className="text-blue-600 w-5 h-5" />
+                      <FaTasks className="text-blue-600 text-sm" />
                       <span className="text-sm text-gray-800">
                         Task: {item.taskName || "N/A"}
                       </span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <FaUserTie className="text-blue-600 w-5 h-5" />
+                      <FaUserTie className="text-blue-600 text-sm" />
                       <span className="text-sm text-gray-800">
                         Owner: {item.euserName || "N/A"}
                       </span>
@@ -519,6 +524,7 @@ const DataTable = ({
           )}
         </tbody>
       </table>
+     </div>
       {/* Task Change Modal */}
       {showTaskChangeModal && (
         <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm z-50">

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaEdit, FaTrash, FaPlus, FaSearch, FaArrowLeft } from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlus, FaSearch, FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { FiEdit, FiLayers } from "react-icons/fi";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -22,6 +22,8 @@ const ManageTasks = () => {
   const [userData, setUserData] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1); // State for current page
+  const [recordsPerPage, setRecordsPerPage] = useState(10); // State for records per page
 
   const { addToast } = useToast();
 
@@ -42,7 +44,7 @@ const ManageTasks = () => {
 
   const fetchTasks = async (userID) => {
     if (!userID) return;
-    
+
     try {
       setIsLoading(true);
       const response = await fetch(
@@ -82,7 +84,7 @@ const ManageTasks = () => {
 
     try {
       setIsLoading(true);
-      
+
       if (editTask) {
         // Edit existing task
         const response = await fetch(
@@ -195,12 +197,37 @@ const ManageTasks = () => {
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page on search
+  };
+
+  const handleRecordsPerPageChange = (e) => {
+    const value = parseInt(e.target.value);
+    setRecordsPerPage(value);
+    setCurrentPage(1); // Reset to first page when changing records per page
   };
 
   // Filter tasks based on search term
   const filteredTasks = tasks.filter((task) =>
     task.task.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Pagination calculations
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = filteredTasks.slice(indexOfFirstRecord, indexOfLastRecord);
+  const totalPages = Math.ceil(filteredTasks.length / recordsPerPage);
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
 
   const modalVariants = {
     hidden: { opacity: 0, scale: 0.95 },
@@ -267,34 +294,53 @@ const ManageTasks = () => {
         </button>
       </div>
 
-      <div className="flex justify-between items-center my-6">
-        <div className="flex items-center space-x-4">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search tasks..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="pl-10 pr-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
-            />
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => {
-              setEditTask(null);
-              setTaskName("");
-              setError("");
-              setIsModalOpen(true);
-            }}
-            disabled={isLoading}
-            className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg shadow hover:bg-gray-300 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <FaPlus className="mr-2" /> Add New Task
-          </motion.button>
-        </div>
-      </div>
+      
+<div className="flex justify-between items-center my-6">
+  {/* Left: Search Bar */}
+  <div className="flex items-center space-x-2">
+    <div className="relative">
+      <input
+        type="text"
+        placeholder="Search tasks..."
+        value={searchTerm}
+        onChange={handleSearchChange}
+        className="pl-10 pr-4 py-2 border rounded-lg shadow-sm focus:outline-none transition-all duration-200 w-64"
+      />
+      <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+    </div>
+  </div>
+
+  {/* Center: Records Per Page */}
+  <div className="flex items-center space-x-2">
+    <span className="text-sm font-semibold text-gray-600">Show</span>
+    <select
+      value={recordsPerPage}
+      onChange={handleRecordsPerPageChange}
+      className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+    >
+      <option value={10}>10</option>
+      <option value={20}>20</option>
+    </select>
+    <span className="text-sm font-semibold  text-gray-600">Records</span>
+  </div>
+
+  {/* Right: Add New Task Button */}
+  <motion.button
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.95 }}
+    onClick={() => {
+      setEditTask(null);
+      setTaskName("");
+      setError("");
+      setIsModalOpen(true);
+    }}
+    disabled={isLoading}
+    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg shadow transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+  >
+    <FaPlus className="mr-2" /> Add New Task
+  </motion.button>
+</div>
+
 
       {/* Modal for Add/Edit Task */}
       <AnimatePresence>
@@ -368,12 +414,11 @@ const ManageTasks = () => {
                   ) : (
                     <FaPlus className="mr-2" />
                   )}
-                  {isLoading 
-                    ? "Processing..." 
-                    : editTask 
-                    ? "Update Task" 
-                    : "Add Task"
-                  }
+                  {isLoading
+                    ? "Processing..."
+                    : editTask
+                    ? "Update Task"
+                    : "Add Task"}
                 </motion.button>
               </div>
             </motion.div>
@@ -408,8 +453,8 @@ const ManageTasks = () => {
                     </div>
                   </td>
                 </tr>
-              ) : filteredTasks.length > 0 ? (
-                filteredTasks.map((item, index) => (
+              ) : currentRecords.length > 0 ? (
+                currentRecords.map((item, index) => (
                   <motion.tr
                     key={item.taskID}
                     custom={index}
@@ -420,7 +465,7 @@ const ManageTasks = () => {
                     className="border-b last:border-b-0 hover:bg-gray-50 transition-colors duration-200"
                   >
                     <td className="px-6 py-4 text-gray-900">
-                      {index + 1}
+                      {indexOfFirstRecord + index + 1}
                     </td>
                     <td className="px-6 py-4 text-gray-900">
                       {item.task}
@@ -454,16 +499,49 @@ const ManageTasks = () => {
               ) : (
                 <tr>
                   <td colSpan="3" className="px-6 py-8 text-center text-gray-500">
-                    {searchTerm 
-                      ? `No tasks found matching "${searchTerm}"` 
-                      : "No tasks available"
-                    }
+                    {searchTerm
+                      ? `No tasks found matching "${searchTerm}"`
+                      : "No tasks available"}
                   </td>
                 </tr>
               )}
             </AnimatePresence>
           </tbody>
         </table>
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-between items-center mt-4">
+        {/* Left: Showing Entries */}
+        <div className="text-sm font-semibold text-gray-600">
+          Showing {filteredTasks.length > 0 ? indexOfFirstRecord + 1 : 0} to{" "}
+          {Math.min(indexOfLastRecord, filteredTasks.length)} of {filteredTasks.length} total entries
+        </div>
+
+        {/* Right: Pagination Buttons */}
+        <div className="flex items-center space-x-2">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handlePreviousPage}
+            disabled={currentPage === 1 || isLoading}
+            className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <FaArrowLeft className="inline mr-1" /> Previous
+          </motion.button>
+          <span className="text-md border border-gray-300 px-1 bg-blue-500 text-white rounded text-gray-600">
+            {currentPage}
+          </span>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages || isLoading}
+            className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+             <FaArrowRight className="inline mr-1" /> Next
+          </motion.button>
+        </div>
       </div>
     </div>
   );

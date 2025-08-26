@@ -524,9 +524,9 @@ const EmailCredentials = () => {
                   </table>
                 </div>
 
-                <div className="flex flex-col md:flex-row justify-between items-center mt-4 text-md font-semibold text-gray-500">
+                <div className="flex flex-col md:flex-row justify-between items-center mt-2 text-sm font-semibold text-gray-500">
                   <span>
-                    Showing {filteredCredentials.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredCredentials.length)} of {filteredCredentials.length} entries
+                    Showing {filteredCredentials.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredCredentials.length)} of {filteredCredentials.length} total entries
                   </span>
                   <div className="flex items-center gap-2 mt-4 md:mt-0">
                     <button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1} className="px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">

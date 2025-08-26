@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaEdit, FaTrash, FaPlus, FaSearch, FaArrowLeft, FaClone, FaObjectGroup, FaMinus } from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlus, FaSearch, FaArrowLeft, FaObjectGroup, FaMinus, FaArrowRight, FaArrowLeft as FaArrowLeftPagination } from "react-icons/fa";
 import { FiEdit, FiLayers } from "react-icons/fi";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -12,6 +12,9 @@ import { useToast } from "@/app/component/customtoast/page";
 
 const ManageLists = () => {
   const router = useRouter();
+  const { addToast } = useToast();
+
+  // State management
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editList, setEditList] = useState(null);
   const [listName, setListName] = useState("");
@@ -23,15 +26,14 @@ const ManageLists = () => {
   const [selectAll, setSelectAll] = useState(false);
   const [isMergeModalOpen, setIsMergeModalOpen] = useState(false);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
-  const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
   const [newListName, setNewListName] = useState("");
-  const [operationType, setOperationType] = useState(""); // "merge", "remove", "duplicate"
-
-  const { addToast } = useToast();
+  const [operationType, setOperationType] = useState(""); // "merge", "remove"
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage, setRecordsPerPage] = useState(10);
 
   useEffect(() => {
     // Only run on client side
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     const userData = JSON.parse(sessionStorage.getItem("userData"));
     if (!userData || !userData.pic) {
@@ -40,7 +42,7 @@ const ManageLists = () => {
       setUserID(userData.userID);
       fetchLists(userData.userID);
     }
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     // Update selectAll state based on selectedLists
@@ -50,6 +52,12 @@ const ManageLists = () => {
       setSelectAll(false);
     }
   }, [selectedLists, lists]);
+
+  // Pagination calculations
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = lists.slice(indexOfFirstRecord, indexOfLastRecord);
+  const totalPages = Math.ceil(lists.length / recordsPerPage);
 
   const fetchLists = async (userID) => {
     try {
@@ -63,11 +71,10 @@ const ManageLists = () => {
           body: JSON.stringify({ userID }),
         }
       );
-      
+
       const data = await response.json();
-      console.log(data)
       if (response.ok) {
-        setLists(data.Lists || []); // Ensure lists is an array even if empty
+        setLists(data.Lists || []);
       } else {
         setLists([]);
         addToast(data.message || "Failed to fetch lists", "error");
@@ -100,7 +107,7 @@ const ManageLists = () => {
         const data = await response.json();
         if (response.ok) {
           addToast("List updated successfully!", "success");
-          await fetchLists(userID); // Refresh the list
+          await fetchLists(userID);
         } else {
           addToast(data.message || "Failed to update list", "error");
         }
@@ -119,7 +126,7 @@ const ManageLists = () => {
         const data = await response.json();
         if (response.ok) {
           addToast("List added successfully!", "success");
-          await fetchLists(userID); // Refresh the list
+          await fetchLists(userID);
         } else {
           addToast(data.message || "Failed to add list", "error");
         }
@@ -149,10 +156,10 @@ const ManageLists = () => {
         }
       );
       const data = await response.json();
-      console.log(data)
       if (response.ok) {
         addToast("List deleted successfully!", "success");
-        setLists(lists.filter((item) => item.listID !== id)); // Update UI immediately
+        setLists(lists.filter((item) => item.listID !== id));
+        setSelectedLists(selectedLists.filter((item) => item.listID !== id));
       } else {
         addToast(data.message || "Failed to delete list", "error");
       }
@@ -174,18 +181,20 @@ const ManageLists = () => {
   };
 
   const toggleListSelection = (list) => {
-  if (selectedLists.some(selected => selected.listID === list.listID)) {
-    setSelectedLists(selectedLists.filter(selected => selected.listID !== list.listID));
-  } else {
-    setSelectedLists([...selectedLists, list]);
-  }
-};
+    if (selectedLists.some((selected) => selected.listID === list.listID)) {
+      setSelectedLists(
+        selectedLists.filter((selected) => selected.listID !== list.listID)
+      );
+    } else {
+      setSelectedLists([...selectedLists, list]);
+    }
+  };
 
   const toggleSelectAll = () => {
     if (selectAll) {
       setSelectedLists([]);
     } else {
-      setSelectedLists(lists.map(list => list.listID));
+      setSelectedLists([...lists]);
     }
     setSelectAll(!selectAll);
   };
@@ -210,91 +219,106 @@ const ManageLists = () => {
     setIsRemoveModalOpen(true);
   };
 
+  // Merge selected lists
+  const performMerge = async () => {
+    try {
+      if (selectedLists.length < 2) {
+        addToast("Please select at least two lists to merge", "error");
+        return;
+      }
+      if (!newListName.trim()) {
+        addToast("Please provide a new list name", "error");
+        return;
+      }
 
-  // --- Replace performListOperation with two clean functions ---
+      const listIDs = selectedLists.map((list) => list.listID);
 
-// Merge selected lists
-const performMerge = async () => {
-  try {
-    if (selectedLists.length < 2) {
-      addToast("Please select at least two lists to merge", "error");
-      return;
+      const response = await fetch(
+        "https://www.margda.in/miraj/work/lists/merge-lists",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userID: userID,
+            listIDs: listIDs,
+            newListName: newListName,
+          }),
+        }
+      );
+
+      const data = await response.json();
+      if (response.ok) {
+        addToast("Lists merged successfully!", "success");
+        await fetchLists(userID);
+        setSelectedLists([]);
+        setIsMergeModalOpen(false);
+      } else {
+        addToast(data.message || "Failed to merge lists", "error");
+      }
+    } catch (error) {
+      console.error("Error merging lists:", error);
+      addToast("Failed to merge lists", "error");
     }
-    if (!newListName.trim()) {
-      addToast("Please provide a new list name", "error");
-      return;
-    }
+  };
 
-    const listIDs = selectedLists.map(list => list.listID)
-    console.log(listIDs)
+  // Remove duplicates between two lists
+  const performRemoveDuplicates = async () => {
+    try {
+      if (selectedLists.length !== 2) {
+        addToast("Please select exactly two lists to remove duplicates", "error");
+        return;
+      }
 
-    const response = await fetch("https://www.margda.in/miraj/work/lists/merge-lists", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userID: userID,
-        listIDs: listIDs,
-        newListName: newListName,
-      }),
-    });
+      const [list1, list2] = selectedLists;
 
-    const data = await response.json();
-    if (response.ok) {
-      addToast("Lists merged successfully!", "success");
-      await fetchLists(userID);
-      setSelectedLists([]);
-      setIsMergeModalOpen(false);
-    } else {
-      addToast(data.message || "Failed to merge lists", "error");
-    }
-  } catch (error) {
-    console.error("Error merging lists:", error);
-    addToast("Failed to merge lists", "error");
-  }
-};
-
-// Remove duplicates between two lists
-const performRemoveDuplicates = async () => {
-  try {
-    if (selectedLists.length !== 2) {
-      addToast("Please select exactly two lists to remove duplicates", "error");
-      return;
-    }
-
-    const [list1, list2] = selectedLists;
-
-    console.log(list1.listID)
-    console.log(list2.listID)
-
-    const response = await fetch("https://www.margda.in/miraj/work/lists/remove-duplicates", {
-      method: "POST",
-      headers: {
+      const response = await fetch(
+        "https://www.margda.in/miraj/work/lists/remove-duplicates",
+        {
+          method: "POST",
+          headers: {
             "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        list1ID: list1.listID,
-        list2ID: list2.listID,
-      }),
-    });
+          },
+          body: JSON.stringify({
+            list1ID: list1.listID,
+            list2ID: list2.listID,
+          }),
+        }
+      );
 
-    const data = await response.json();
-    if (response.ok) {
-      addToast("Duplicates removed successfully!", "success");
-      await fetchLists(userID);
-      setSelectedLists([]);
-      setIsRemoveModalOpen(false);
-    } else {
-      addToast(data.message || "Failed to remove duplicates", "error");
+      const data = await response.json();
+      if (response.ok) {
+        addToast("Duplicates removed successfully!", "success");
+        await fetchLists(userID);
+        setSelectedLists([]);
+        setIsRemoveModalOpen(false);
+      } else {
+        addToast(data.message || "Failed to remove duplicates", "error");
+      }
+    } catch (error) {
+      console.error("Error removing duplicates:", error);
+      addToast("Failed to remove duplicates", "error");
     }
-  } catch (error) {
-    console.error("Error removing duplicates:", error);
-    addToast("Failed to remove duplicates", "error");
-  }
-};
+  };
 
+  const handleRecordsPerPageChange = (e) => {
+    const value = parseInt(e.target.value);
+    setRecordsPerPage(value);
+    setCurrentPage(1); // Reset to first page when changing records per page
+  };
 
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
-const modalVariants = {
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const modalVariants = {
     hidden: { opacity: 0, scale: 0.95 },
     visible: {
       opacity: 1,
@@ -375,7 +399,21 @@ const modalVariants = {
             <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           </div>
         </div>
-        
+
+         {/* Center: Records per page dropdown */}
+        <div className="flex items-center space-x-2">
+          <span className="text-sm  font-semibold text-gray-600">Show</span>
+          <select
+            value={recordsPerPage}
+            onChange={handleRecordsPerPageChange}
+            className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="10">10</option>
+            <option value="20">20</option>
+          </select>
+          <span className="text-sm font-semibold text-gray-600">Records</span>
+        </div>
+
         {/* Right side buttons */}
         <div className="flex items-center space-x-4">
           <motion.button
@@ -386,37 +424,36 @@ const modalVariants = {
               setListName("");
               setIsModalOpen(true);
             }}
-            className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition-colors duration-200"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg shadow transition-colors duration-200"
           >
             <FaPlus className="mr-2" /> Add New List
           </motion.button>
-          
+
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleMerge}
             className={`flex items-center px-4 py-2 rounded-lg shadow transition-colors duration-200 ${
-              selectedLists.length < 2 
-                ? "bg-green-600 text-white" 
+              selectedLists.length < 2
+                ? "bg-green-600 text-white"
                 : "bg-green-600 text-white"
             }`}
           >
             <FaObjectGroup className="mr-2" /> Merge
           </motion.button>
-          
+
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleRemove}
             className={`flex items-center px-4 py-2 rounded-lg shadow transition-colors duration-200 ${
-              selectedLists.length < 2 
-                ? "bg-red-500 text-white" 
+              selectedLists.length < 2
+                ? "bg-red-500 text-white"
                 : "bg-red-500 text-white"
             }`}
           >
             <FaMinus className="mr-2" /> Remove Duplicates
           </motion.button>
-          
         </div>
       </div>
 
@@ -574,14 +611,14 @@ const modalVariants = {
                 Remove Duplicates
               </h2>
               <div className="mb-6">
-  <p className="text-sm text-gray-700 mb-4">
-    This will compare the two selected lists and remove duplicate entries from the second list.
-  </p>
-  <p className="text-sm text-gray-500">
-    Selected lists: {selectedLists.length}
-  </p>
-</div>
-
+                <p className="text-sm text-gray-700 mb-4">
+                  This will compare the two selected lists and remove duplicate
+                  entries from the second list.
+                </p>
+                <p className="text-sm text-gray-500">
+                  Selected lists: {selectedLists.length}
+                </p>
+              </div>
               <div className="flex justify-end space-x-4">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -606,58 +643,7 @@ const modalVariants = {
         )}
       </AnimatePresence>
 
-      {/* Find Duplicates Modal */}
-      <AnimatePresence>
-        {isDuplicateModalOpen && (
-          <motion.div
-            className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-sm z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <motion.div
-              className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md"
-              variants={operationModalVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            >
-              <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-                Find Duplicates
-              </h2>
-              <div className="mb-6">
-                <p className="text-sm text-gray-700 mb-4">
-                  This will find common records (email, mobile, WhatsApp) across the selected lists.
-                </p>
-                <p className="text-sm text-gray-500">
-                  Selected lists: {selectedLists.length}
-                </p>
-              </div>
-              <div className="flex justify-end space-x-4">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setIsDuplicateModalOpen(false)}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200"
-                >
-                  Cancel
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={performListOperation}
-                  className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200"
-                >
-                  <FaClone className="mr-2" />
-                  Find Duplicates
-                </motion.button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
+      {/* Table */}
       <div className="overflow-x-auto bg-white border border-gray-300 rounded-xl shadow-lg">
         <table className="min-w-full">
           <thead className="bg-gray-100">
@@ -670,9 +656,6 @@ const modalVariants = {
                   className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                 />
               </th>
-              {/* <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                ID
-              </th> */}
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                 List
               </th>
@@ -698,8 +681,8 @@ const modalVariants = {
           </thead>
           <tbody>
             <AnimatePresence>
-              {lists.length > 0 ? (
-                lists.map((item, index) => (
+              {currentRecords.length > 0 ? (
+                currentRecords.map((item, index) => (
                   <motion.tr
                     key={item.listID}
                     custom={index}
@@ -711,17 +694,19 @@ const modalVariants = {
                   >
                     <td className="px-6 py-4">
                       <input
-  type="checkbox"
-  checked={selectedLists.some(selected => selected.listID === item.listID)}
-  onChange={() => toggleListSelection(item)}
-  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-/>
-
+                        type="checkbox"
+                        checked={selectedLists.some(
+                          (selected) => selected.listID === item.listID
+                        )}
+                        onChange={() => toggleListSelection(item)}
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      />
                     </td>
-                    {/* <td className="px-6 py-4 text-gray-600">{item.listID}</td> */}
                     <td className="px-6 py-4">
                       <Link
-                        href={`/list-data?item=${encodeURIComponent(JSON.stringify(item))}`}
+                        href={`/list-data?item=${encodeURIComponent(
+                          JSON.stringify(item)
+                        )}`}
                         className="text-indigo-600 hover:text-indigo-800 font-medium"
                       >
                         {item.name}
@@ -769,7 +754,7 @@ const modalVariants = {
               ) : (
                 <tr>
                   <td
-                    colSpan="9"
+                    colSpan="8"
                     className="px-6 py-4 text-center text-gray-500"
                   >
                     No Lists Available
@@ -779,6 +764,49 @@ const modalVariants = {
             </AnimatePresence>
           </tbody>
         </table>
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-between items-center mt-4">
+        {/* Left: Showing entries */}
+        <div className="text-sm font-semibold ml-2 text-gray-600">
+          Showing {indexOfFirstRecord + 1} to{" "}
+          {Math.min(indexOfLastRecord, lists.length)} of {lists.length} toatl entries
+        </div>
+
+
+        {/* Right: Pagination buttons */}
+        <div className="flex items-center space-x-2">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handlePreviousPage}
+            disabled={currentPage === 1}
+            className={`px-3 py-1 rounded-lg ${
+              currentPage === 1
+                ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                : "bg-blue-600 text-white hover:bg-blue-700"
+            }`}
+          >
+            <FaArrowLeftPagination className="inline mr-1" /> Previous
+          </motion.button>
+          <span className="text-md border border-gray-200 bg-blue-500 text-white rounded px-2 text-gray-600">
+            {currentPage}
+          </span>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className={`px-3 py-1 rounded-lg ${
+              currentPage === totalPages
+                ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                : "bg-blue-600 text-white hover:bg-blue-700"
+            }`}
+          >
+            Next <FaArrowRight className="inline ml-1" />
+          </motion.button>
+        </div>
       </div>
     </div>
   );

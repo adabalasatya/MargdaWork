@@ -1,10 +1,8 @@
-// Dashboard.jsx
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/app/component/customtoast/page";
-import HeaderSection from "./components/HeaderSection";
 import SearchSection from "./components/SearchSection";
 import CRMSection from "./components/CRMSection";
 import FilterTaskSection from "./components/FilterTaskSection";
@@ -16,6 +14,7 @@ import AddDataForm from "@/app/(dashboard)/(DataComponents)/AddDataForm/page";
 import FilterComponent from "./FilterComponent";
 import LeadTypeForm from "./ActionComponent/LeadTypeModal";
 import moment from "moment";
+import Papa from "papaparse";
 
 const sampleDataTypes = [
   { value: "P", label: "Individual" },
@@ -122,8 +121,6 @@ const Dashboard = () => {
           const storedLeadType = sessionStorage.getItem("selectedLeadType") || "";
           setSelectedLeadType(storedLeadType);
 
-          console.log(storedLeadType)
-          
           fetchData(parsedUserData.userID);
           fetchTasks(parsedUserData.userID);
           fetchLeadTypes();
@@ -279,6 +276,41 @@ const Dashboard = () => {
       addToast("Failed to update record", "error");
     }
   };
+
+  const handleDelete = async () => {
+  if (selectedRows.length === 0) {
+    addToast("No records selected for deletion", "error");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      "https://www.margda.in/miraj/work/data/delete-data",
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          dataIDs: selectedRows.map((row) => row.dataID),
+        }),
+      }
+    );
+    const data = await response.json();
+    if (response.ok) {
+      setDataDetails((prev) =>
+        prev.filter((item) => !selectedRows.includes(item))
+      );
+      setSelectedRows([]);
+      addToast("Selected records deleted successfully", "success");
+    } else {
+      addToast(data.message || "Failed to delete records", "error");
+    }
+  } catch (error) {
+    console.error("Error deleting records:", error);
+    addToast("Failed to delete records", "error");
+  }
+};
 
   // Filter data
   const filteredData = dataDetails.filter((item) => {
@@ -457,28 +489,27 @@ const Dashboard = () => {
   };
 
   const handleLeadTypeChange = (e) => {
-  const typeId = e.target.value;
-  setSelectedLeadType(typeId);
-  setCurrentPage(1);
-  setSelectedRows([]);
-  
-  // Save to sessionStorage immediately
-  if (typeof window !== "undefined") {
-    if (typeId) {
-      sessionStorage.setItem("selectedLeadType", typeId);
-    } else {
-      sessionStorage.removeItem("selectedLeadType");
+    const typeId = e.target.value;
+    setSelectedLeadType(typeId);
+    setCurrentPage(1);
+    setSelectedRows([]);
+
+    if (typeof window !== "undefined") {
+      if (typeId) {
+        sessionStorage.setItem("selectedLeadType", typeId);
+      } else {
+        sessionStorage.removeItem("selectedLeadType");
+      }
     }
-  }
-  
-  if (typeId) {
-    const selectedLead = leadTypes.find((lead) => lead.typeID == typeId);
-    const leadName = selectedLead ? selectedLead.type : typeId;
-    addToast("Filtering data for lead: " + leadName);
-  } else {
-    addToast("Showing all leads", "info");
-  }
-};
+
+    if (typeId) {
+      const selectedLead = leadTypes.find((lead) => lead.typeID == typeId);
+      const leadName = selectedLead ? selectedLead.type : typeId;
+      addToast("Filtering data for lead: " + leadName);
+    } else {
+      addToast("Showing all leads", "info");
+    }
+  };
 
   const handleResetFilters = () => {
     setFilterState({
@@ -512,14 +543,13 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen font-sans">
-      <HeaderSection setIsAddDataFormOpen={setIsAddDataFormOpen} />
-      
       <SearchSection
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         setCurrentPage={setCurrentPage}
         recordsPerPage={recordsPerPage}
         setRecordsPerPage={setRecordsPerPage}
+        setIsAddDataFormOpen={setIsAddDataFormOpen}
         handleFileUpload={(event) => {
           const file = event.target.files[0];
           setFile(file);
@@ -580,6 +610,7 @@ const Dashboard = () => {
         selectedTask={selectedTask}
         handleTaskChange={handleTaskChange}
         filteredData={filteredData}
+        handleDelete={handleDelete}
       />
 
       <FilterComponent

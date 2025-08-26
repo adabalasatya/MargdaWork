@@ -805,11 +805,11 @@ const handleDelete = async (id) => {
             </tbody>
           </table>
         </div>
-
+      </div>
         {filteredCampaigns.length > 0 && (
-          <div className="flex flex-col sm:flex-row justify-between items-center mt-4 space-y-3 sm:space-y-0">
-            <span className="text-sm text-gray-700">
-              Showing {startEntry} to {endEntry} of {filteredCampaigns.length} entries
+          <div className="flex flex-col sm:flex-row justify-between items-center mt-2 space-y-3 sm:space-y-0">
+            <span className="text-sm font-semibold ml-2 text-gray-700">
+              Showing {startEntry} to {endEntry} of {filteredCampaigns.length} total entries
             </span>
             <div className="flex space-x-2">
               <button
@@ -820,7 +820,7 @@ const handleDelete = async (id) => {
                 Previous
               </button>
               <span className="px-4 py-2 border border-blue-600 rounded-lg text-sm font-medium bg-blue-600 text-white">
-                {currentPage} of {totalPages}
+                {currentPage}
               </span>
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
@@ -832,7 +832,6 @@ const handleDelete = async (id) => {
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 };

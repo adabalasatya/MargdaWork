@@ -369,10 +369,10 @@ const EmailReport = () => {
       {/* Enhanced Pagination */}
       {filteredEmails.length > 0 && (
         <div className="flex flex-col sm:flex-row justify-between items-center mt-2 space-y-3 sm:space-y-0">
-          <div className="text-md font-semibold text-gray-600">
+          <div className="text-sm font-semibold text-gray-600">
             Showing {filteredEmails.length === 0 ? 0 : indexOfFirstEmail + 1} to{" "}
             {Math.min(indexOfLastEmail, filteredEmails.length)} of{" "}
-            {filteredEmails.length} total records
+            {filteredEmails.length} total entries
           </div>
           <div className="flex items-center space-x-2">
             <button

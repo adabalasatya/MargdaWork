@@ -1,27 +1,8 @@
 'use client';
 import React, { useState, useEffect } from "react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
 import Papa from "papaparse";
-import {
-  Plus,
-  Trash2,
-  Users,
-  Download,
-  Search,
-  Settings,
-  Info,
-} from "lucide-react";
-import { FaArrowLeft, FaEdit, FaTrash } from "react-icons/fa";
+import { Users, Settings } from "lucide-react";
+import { FaArrowLeft, FaEdit, FaSearch, FaTrash, FaDownload, FaPlus } from "react-icons/fa";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -54,7 +35,7 @@ const ListData = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [editingSubscriber, setEditingSubscriber] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState(null); // For single delete
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [pieData, setPieData] = useState([
     { name: "Active", value: 0, color: "#10b981" },
     { name: "Unconfirmed", value: 0, color: "#9ca3af" },
@@ -136,7 +117,6 @@ const ListData = () => {
         }
       } else {
         setSubscribers([]);
-        addToast(data.message || "Failed to fetch subscribers", "error");
       }
     } catch (error) {
       console.error("Error fetching subscribers:", error);
@@ -246,9 +226,10 @@ const ListData = () => {
     }
   };
 
-  const handleDeleteSubscriber = async (dataID) => {
+  const handleDeleteSubscriber = async (dataIDs) => {
     setLoading(true);
     try {
+
       const response = await fetch(
         "https://www.margda.in/miraj/work/list-data/delete-data",
         {
@@ -256,7 +237,7 @@ const ListData = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ dataID }),
+          body: JSON.stringify({ dataIDs: dataIDs }),
         }
       );
       const data = await response.json();
@@ -277,37 +258,17 @@ const ListData = () => {
     }
   };
 
-  const handleBulkDelete = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(
-        "https://www.margda.in/miraj/work/list-data/bulk-delete",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            dataIDs: selectedRows.map((row) => row.dataID),
-            listID: listData.listID,
-          }),
-        }
-      );
-      const data = await response.json();
-      if (response.ok) {
-        await fetchSubscribers(listData.listID);
-        setSelectedRows([]);
-        setShowDeleteConfirm(false);
-        addToast("Selected subscribers deleted successfully", "success");
-      } else {
-        addToast(data.message || "Failed to delete subscribers", "error");
-      }
-    } catch (error) {
-      console.error("Error deleting subscribers:", error);
-      addToast("Error deleting subscribers: " + error.message, "error");
-    } finally {
-      setLoading(false);
-    }
+
+  const handleVerify = () => {
+    addToast("Verify functionality not implemented yet.", "info");
+  };
+
+  const handleSubscribe = () => {
+    addToast("Subscribe functionality not implemented yet.", "info");
+  };
+
+  const handleBulkUnsubscribe = () => {
+    addToast("Bulk Unsubscribe functionality not implemented yet.", "info");
   };
 
   const downloadSample = () => {
@@ -616,7 +577,7 @@ const ListData = () => {
     );
   };
 
-  const DeleteConfirmModal = ({ onConfirm, onCancel, isBulk }) => (
+  const DeleteConfirmModal = ({ onConfirm, onCancel, isBulk, count }) => (
     <motion.div
       className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50"
       initial={{ opacity: 0 }}
@@ -636,7 +597,7 @@ const ListData = () => {
         </h2>
         <p className="mb-6 text-gray-600">
           {isBulk
-            ? `Are you sure you want to delete ${selectedRows.length} selected subscribers?`
+            ? `Are you sure you want to delete ${count} selected subscribers?`
             : "Are you sure you want to delete this subscriber?"}
           This action cannot be undone.
         </p>
@@ -688,164 +649,238 @@ const ListData = () => {
           </button>
         </div>
 
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setAddDataFormOpen(true)}
-              className="flex items-center px-4 py-2 bg-white text-sm border border-gray-300 rounded-md shadow-sm hover:scale-105"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add List Data
-            </button>
-            <button
-              onClick={() => document.getElementById("csv-upload").click()}
-              className="flex items-center px-4 py-2 bg-white text-sm border border-gray-300 rounded-md shadow-sm hover:scale-105"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Upload CSV
-            </button>
-            <button
-              onClick={downloadSample}
-              className="flex items-center px-4 py-2 bg-white text-sm border border-gray-300 rounded-md shadow-sm hover:scale-105"
-            >
-              Sample CSV
-            </button>
-            {selectedRows.length > 0 && (
+        {/* Header Section */}
+        <div className="bg-white border-2 border-gray-200 shadow-md rounded-xl px-6 py-4 mt-4">
+          <div className="flex items-center justify-between space-x-4">
+            {/* Left Side - Search */}
+            <div className="flex items-center bg-gray-100 rounded-xl px-4 py-2 flex-1 max-w-md">
+              <FaSearch className="text-gray-500 mr-2" />
+              <input
+                type="text"
+                placeholder="Search records..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="bg-transparent outline-none flex-1 text-gray-700"
+              />
+            </div>
+
+            {/* Center - Show Records */}
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium text-gray-600">Show:</span>
+              <input
+                type="number"
+                min="1"
+                max="500"
+                value={recordsPerPage}
+                onChange={handleRecordsPerPageChange}
+                className="border border-gray-300 rounded-lg px-3 py-1 w-20 text-center"
+              />
+              <span className="text-sm font-medium text-gray-600">records</span>
+            </div>
+
+            {/* Right Side - Buttons */}
+            <div className="flex items-center space-x-4">
+              {/* Add List Data */}
               <button
-                onClick={() => setShowDeleteConfirm(true)}
-                className="flex items-center px-4 py-2 bg-red-600 text-white text-sm border border-gray-300 rounded-md shadow-sm hover:scale-105"
+                onClick={() => setAddDataFormOpen(true)}
+                className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
               >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete Selected ({selectedRows.length})
+                <FaPlus className="w-4 h-4 mr-2" />
+                Add List Data
               </button>
-            )}
-          </div>
 
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-blue-500" />
-            <input
-              type="text"
-              placeholder="Search"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-            />
+              {/* Upload CSV */}
+              <label className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200 cursor-pointer">
+                <FaPlus className="w-4 h-4 mr-2" />
+                Upload CSV
+                <input
+                  id="csv-upload"
+                  type="file"
+                  accept=".csv"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </label>
+
+              {/* Sample CSV */}
+              <button
+                onClick={downloadSample}
+                className="flex items-center px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
+              >
+                <FaDownload className="mr-2 text-lg" />
+                Sample CSV
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* New Buttons Section (Verify, Subscribe, Unsubscribe) */}
+        <div className="bg-white border-2 border-gray-200 shadow-md rounded-xl px-6 py-3 mt-4">
+  <div className="flex items-center justify-between">
+    {/* Left Side - Action Buttons */}
+    <div className="flex items-center space-x-4">
+      <button
+        onClick={handleVerify}
+        className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
+      >
+        Verify
+      </button>
+      <button
+        onClick={handleSubscribe}
+        className="flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
+      >
+        Subscribe
+      </button>
+      <button
+        onClick={handleBulkUnsubscribe}
+        className="flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
+      >
+        Unsubscribe
+      </button>
+    </div>
+
+    {/* Right Side - Delete Button */}
+    <button
+  onClick={() => {
+    // Extract dataIDs from selected rows
+    const selectedDataIDs = selectedRows.map(row => row.dataID);
+    setDeleteTarget(selectedDataIDs);
+    setShowDeleteConfirm(true);
+  }}
+  className="flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
+>
+  <FaTrash className="w-4 h-4 mr-2" />
+  Delete Selected ({selectedRows.length})
+</button>
+  </div>
+</div>
+
       </div>
 
-      <div className="border-b border-gray-200 px-6 py-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-1">
-            <span className="text-sm text-gray-500">List:</span>
-            <span className="px-2 py-1 bg-blue-500 text-white text-xs rounded">
-              {listData ? listData.name : "Loading..."}
-            </span>
-          </div>
+     <div className="border-b border-gray-200 px-6 py-3 bg-white rounded-t-xl shadow-sm">
+  <div className="flex items-center justify-between">
+    {/* Left - List Info */}
+    <div className="flex items-center space-x-2">
+      <span className="text-sm font-medium text-gray-600">List:</span>
+      <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-semibold rounded-lg shadow">
+        {listData ? listData.name : "Loading..."}
+      </span>
+    </div>
 
-          <div className="flex items-center space-x-4">
-            <Link href="#">
-              <button className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:scale-105">
-                <Settings className="w-4 h-4 mr-2" />
-                Custom fields
-                <span className="ml-2 px-2 py-0.5 bg-gray-100 text-xs rounded-full">
-                  0
-                </span>
-              </button>
-            </Link>
-            <input
-              id="csv-upload"
-              type="file"
-              accept=".csv"
-              className="hidden"
-              onChange={handleFileUpload}
-            />
-            <button
-              onClick={() => setShowAutorespondersModal(true)}
-              className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:scale-105"
-            >
-              Autoresponders
-              <span className="ml-2 px-2 py-0.5 bg-gray-100 text-xs rounded-full">
-                0
-              </span>
-            </button>
-            <Link href="#">
-              <button className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:scale-105">
-                Segments
-                <span className="ml-2 px-2 py-0.5 bg-gray-100 text-xs rounded-full">
-                  0
-                </span>
-              </button>
-            </Link>
-            <button
-              onClick={() => setShowSubscribeFormModal(true)}
-              className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:scale-105"
-            >
-              Subscribe form
-              <span className="ml-2 px-2 py-0.5 bg-gray-100 text-xs rounded-full">
-                0
-              </span>
-            </button>
-            <Link href="#">
-              <button className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:scale-105">
-                <Settings className="w-4 h-4 mr-2" />
-                List settings
-              </button>
-            </Link>
-          </div>
-        </div>
-      </div>
+    {/* Right - Action Buttons */}
+    <div className="flex items-center space-x-3">
+      {/* Custom Fields */}
+      <Link href="#">
+        <button className="flex items-center px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white text-sm rounded-xl shadow-md hover:scale-105 transition-transform duration-200">
+          <Settings className="w-4 h-4 mr-2" />
+          Custom Fields
+          <span className="ml-2 px-2 py-0.5 bg-white/20 text-xs rounded-full">
+            0
+          </span>
+        </button>
+      </Link>
+
+      {/* Hidden File Upload */}
+      <input
+        id="csv-upload"
+        type="file"
+        accept=".csv"
+        className="hidden"
+        onChange={handleFileUpload}
+      />
+
+      {/* Autoresponders */}
+      <button
+        onClick={() => setShowAutorespondersModal(true)}
+        className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-sm rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
+      >
+        Autoresponders
+        <span className="ml-2 px-2 py-0.5 bg-white/20 text-xs rounded-full">
+          0
+        </span>
+      </button>
+
+      {/* Segments */}
+      <Link href="#">
+        <button className="flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-pink-600 text-white text-sm rounded-xl shadow-md hover:scale-105 transition-transform duration-200">
+          Segments
+          <span className="ml-2 px-2 py-0.5 bg-white/20 text-xs rounded-full">
+            0
+          </span>
+        </button>
+      </Link>
+
+      {/* Subscribe Form */}
+      <button
+        onClick={() => setShowSubscribeFormModal(true)}
+        className="flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
+      >
+        Subscribe Form
+        <span className="ml-2 px-2 py-0.5 bg-white/20 text-xs rounded-full">
+          0
+        </span>
+      </button>
+
+      {/* List Settings */}
+      <Link href="#">
+        <button className="flex items-center px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white text-sm rounded-xl shadow-md hover:scale-105 transition-transform duration-200">
+          <Settings className="w-4 h-4 mr-2" />
+          List Settings
+        </button>
+      </Link>
+    </div>
+  </div>
+</div>
+
 
       <div className="px-6 py-6">
-        <div className="flex gap-6 mb-8">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold">Show</span>
-            <input
-              type="number"
-              value={recordsPerPage}
-              onChange={handleRecordsPerPageChange}
-              className="border border-gray-300 p-2 rounded w-16 text-center"
-            />
-            <span className="text-sm font-bold">Records</span>
-          </div>
-        </div>
-
         {/* Filter Tabs */}
-        <div className="flex items-center space-x-4 mb-4">
-          <div className="flex items-center">
-            <label className="flex items-center text-sm text-gray-700">
-              <input
-                type="checkbox"
-                onChange={(e) => handleSelectAll(e.target.checked)}
-                checked={selectedRows.length >= currentRecords.length && currentRecords.length > 0}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <span className="ml-2">
-                Select All ({selectedRows.length} selected)
-              </span>
-            </label>
-          </div>
+       <div className="flex items-center justify-between space-x-4 mb-4 bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm">
+  {/* Left - Select All */}
+  <div className="flex items-center">
+    <label className="flex items-center text-sm text-gray-700 cursor-pointer">
+      <input
+        type="checkbox"
+        onChange={(e) => handleSelectAll(e.target.checked)}
+        checked={selectedRows.length >= currentRecords.length && currentRecords.length > 0}
+        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+      />
+      <span className="ml-2 font-medium">
+        Select All ({selectedRows.length} selected)
+      </span>
+    </label>
+  </div>
 
-          {filters.map((filter) => (
-            <button
-              key={filter.name}
-              onClick={() => setActiveFilter(filter.name)}
-              className={`flex items-center px-3 py-2 text-sm rounded border ${
-                activeFilter === filter.name
-                  ? "bg-blue-50 border-blue-200 text-blue-700"
-                  : "border-gray-300 text-gray-600 hover:bg-gray-50"
-              }`}
-            >
-              <span
-                className={`w-3 h-3 rounded-full mr-2 ${filter.color}`}
-              ></span>
-              {filter.name}
-              <span className="ml-1 px-1.5 py-0.5 bg-gray-100 text-xs rounded">
-                {filter.count}
-              </span>
-            </button>
-          ))}
-        </div>
+  {/* Right - Filters */}
+  <div className="flex items-center space-x-3">
+    {filters.map((filter) => (
+      <button
+        key={filter.name}
+        onClick={() => setActiveFilter(filter.name)}
+        className={`flex items-center px-4 py-2 text-sm font-medium rounded-xl shadow-sm transition-transform duration-200 hover:scale-105 ${
+          activeFilter === filter.name
+            ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
+            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+        }`}
+      >
+        <span
+          className={`w-3 h-3 rounded-full mr-2 ${filter.color}`}
+        ></span>
+        {filter.name}
+        <span
+          className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
+            activeFilter === filter.name
+              ? "bg-white/20 text-white"
+              : "bg-white text-gray-600 border border-gray-300"
+          }`}
+        >
+          {filter.count}
+        </span>
+      </button>
+    ))}
+  </div>
+</div>
+
 
         {/* Subscribers Table */}
         <div className="bg-white border border-gray-300 rounded-lg overflow-hidden">
@@ -969,7 +1004,7 @@ const ListData = () => {
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                             onClick={() => {
-                              setDeleteTarget(subscriber.dataID);
+                              setDeleteTarget([subscriber.dataID]);
                               setShowDeleteConfirm(true);
                             }}
                             className="text-red-500 hover:text-red-600"
@@ -1046,20 +1081,19 @@ const ListData = () => {
       </AnimatePresence>
 
       {/* Delete Confirmation Modal */}
-      <AnimatePresence>
-        {showDeleteConfirm && (
-          <DeleteConfirmModal
-            isBulk={deleteTarget === null}
-            onConfirm={() =>
-              deleteTarget ? handleDeleteSubscriber(deleteTarget) : handleBulkDelete()
-            }
-            onCancel={() => {
-              setShowDeleteConfirm(false);
-              setDeleteTarget(null);
-            }}
-          />
-        )}
-      </AnimatePresence>
+     <AnimatePresence>
+  {showDeleteConfirm && (
+    <DeleteConfirmModal
+      isBulk={Array.isArray(deleteTarget) && deleteTarget.length > 1}
+      count={Array.isArray(deleteTarget) ? deleteTarget.length : 1}
+      onConfirm={() => handleDeleteSubscriber(deleteTarget)}
+      onCancel={() => {
+        setShowDeleteConfirm(false);
+        setDeleteTarget(null);
+      }}
+    />
+  )}
+</AnimatePresence>
 
       {/* Autoresponders Modal */}
       <AnimatePresence>

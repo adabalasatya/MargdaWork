@@ -328,10 +328,10 @@ const SmsReport = () => {
       {/* Enhanced Pagination */}
       {filteredSms.length > 0 && (
         <div className="flex flex-col sm:flex-row justify-between items-center mt-2 space-y-3 sm:space-y-0">
-          <div className="text-md fon-semibold text-gray-600">
+          <div className="text-sm ml-2 font-semibold text-gray-600">
             Showing {filteredSms.length === 0 ? 0 : indexOfFirstSms + 1} to{" "}
             {Math.min(indexOfLastSms, filteredSms.length)} of{" "}
-            {filteredSms.length} total records
+            {filteredSms.length} total entries
           </div>
           <div className="flex items-center space-x-2">
             <button
