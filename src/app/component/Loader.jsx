@@ -4,7 +4,7 @@ import React from "react";
 
 const Loader = () => {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-700">
+    <div className="fixed inset-0 backdrop-blur-sm flex justify-center items-center z-700">
       <div className="flex flex-col space-x-2 bg-white p-16 rounded">
         <div className="text-base font-normal mb-3">Loading..</div>
         <div className="flex space-x-2">
