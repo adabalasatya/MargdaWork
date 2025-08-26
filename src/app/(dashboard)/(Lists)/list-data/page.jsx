@@ -634,7 +634,7 @@ const ListData = () => {
       />
       {loading && <Loader />}
 
-      <div className="border-b border-gray-200 px-6 py-4">
+      <div className="border-b border-gray-200 px-6 py-3">
         <div className="relative flex justify-center items-center mb-4">
           <h1 className="text-4xl font-bold text-gray-900 text-center">
             Subscriber Lists
@@ -650,7 +650,7 @@ const ListData = () => {
         </div>
 
         {/* Header Section */}
-        <div className="bg-white border-2 border-gray-200 shadow-md rounded-xl px-6 py-4 mt-4">
+        <div className="bg-white border-2 border-gray-200 shadow-md rounded-xl px-6 py-2 mt-3">
           <div className="flex items-center justify-between space-x-4">
             {/* Left Side - Search */}
             <div className="flex items-center bg-gray-100 rounded-xl px-4 py-2 flex-1 max-w-md">
@@ -683,15 +683,15 @@ const ListData = () => {
               {/* Add List Data */}
               <button
                 onClick={() => setAddDataFormOpen(true)}
-                className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
+                className="flex items-center px-4 py-2 text-sm  bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
               >
-                <FaPlus className="w-4 h-4 mr-2" />
+                <FaPlus className="text-sm mr-2" />
                 Add List Data
               </button>
 
               {/* Upload CSV */}
-              <label className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200 cursor-pointer">
-                <FaPlus className="w-4 h-4 mr-2" />
+              <label className="flex items-center px-4 py-2 text-sm  bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200 cursor-pointer">
+                <FaPlus className="sm mr-2" />
                 Upload CSV
                 <input
                   id="csv-upload"
@@ -705,9 +705,9 @@ const ListData = () => {
               {/* Sample CSV */}
               <button
                 onClick={downloadSample}
-                className="flex items-center px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
+                className="flex items-center px-4 py-2 text-sm  bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
               >
-                <FaDownload className="mr-2 text-lg" />
+                <FaDownload className="mr-2 text-sm" />
                 Sample CSV
               </button>
             </div>
@@ -715,25 +715,25 @@ const ListData = () => {
         </div>
 
         {/* New Buttons Section (Verify, Subscribe, Unsubscribe) */}
-        <div className="bg-white border-2 border-gray-200 shadow-md rounded-xl px-6 py-3 mt-4">
+        <div className="bg-white border-2 border-gray-200 shadow-md rounded-xl px-6 py-2 mt-3">
   <div className="flex items-center justify-between">
     {/* Left Side - Action Buttons */}
     <div className="flex items-center space-x-4">
       <button
         onClick={handleVerify}
-        className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
+        className="flex items-center px-4 py-2 text-sm  bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
       >
         Verify
       </button>
       <button
         onClick={handleSubscribe}
-        className="flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
+        className="flex items-center px-4 py-2  text-sm bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
       >
         Subscribe
       </button>
       <button
         onClick={handleBulkUnsubscribe}
-        className="flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
+        className="flex items-center px-4 py-2 text-sm  bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
       >
         Unsubscribe
       </button>
