@@ -6,6 +6,7 @@ import { FaArrowLeft } from "react-icons/fa";
 import { FiEye, FiTrash2, FiSearch, FiPlus, FiX, FiSend, FiRefreshCw, FiEdit} from "react-icons/fi";
 import { useToast } from "@/app/component/customtoast/page";
 import Loader from "@/app/component/Loader";
+import Swal from "sweetalert2";
 
 const EmailCampaign = () => {
   const router = useRouter();
@@ -41,7 +42,7 @@ const [isEditing, setIsEditing] = useState(false);
 
     const storedUserData = JSON.parse(sessionStorage.getItem("userData") || 'null');
     if (!storedUserData || !storedUserData.pic) {
-      router.push("/work/login");
+      router.push("/login");
       return;
     } else {
       setUserData(storedUserData);
@@ -185,34 +186,45 @@ const [isEditing, setIsEditing] = useState(false);
     }
   };
 
-  const handleSend = async (id) => {
-    setLoading(true);
-    try {
-      const response = await fetch(
-        "https://www.margda.in/miraj/work/email-campaign/start-campaign",
-        {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({ campaignID: id, userID }),
-        }
-      );
-      const data = await response.json();
-      if (response.ok) {
-        addToast(data.message, "success");
-        // Refresh campaigns after sending
-        await fetchData(userID);
-      } else {
-        addToast(data.message, "error");
+ const handleSend = async (id) => {
+  const result = await Swal.fire({
+    title: "Are you sure?",
+    text: "Do you want to send this campaign?",
+    icon: "success",
+    showCancelButton: true,
+    confirmButtonText: "Yes, Send it",
+    cancelButtonText: "Cancel",
+  });
+
+  if (!result.isConfirmed) return; 
+
+  setLoading(true);
+  try {
+    const response = await fetch(
+      "https://www.margda.in/miraj/work/email-campaign/start-campaign",
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ campaignID: id, userID }),
       }
-    } catch (error) {
-      console.error("Error sending campaign:", error);
-      addToast("Unknown Error, try again later", "error");
-    } finally {
-      setLoading(false);
+    );
+    const data = await response.json();
+    if (response.ok) {
+      addToast(data.message, "success");
+      await fetchData(userID); // refresh
+    } else {
+      addToast(data.message, "error");
     }
-  };
+  } catch (error) {
+    console.error("Error sending campaign:", error);
+    addToast("Unknown Error, try again later", "error");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleBack = () => {
     setIsModalOpen(false);
@@ -364,7 +376,16 @@ const updateCampaign = async () => {
 
 // Delete Campaign
 const handleDelete = async (id) => {
-  if (!confirm("Are you sure you want to delete this campaign?")) return;
+   const result = await Swal.fire({
+             title: "Are you sure to delete?",
+             text: "Do you want to delete this campaign?",
+             icon: "error",
+             showCancelButton: true,
+             confirmButtonText: "yes, delete it",
+             cancelButtonText: "Cancel",
+           });
+         
+           if (!result.isConfirmed) return; 
 
   setLoading(true);
   try {
@@ -453,7 +474,7 @@ const handleDelete = async (id) => {
   }
 
   return (
-    <div className="p-4 md:p-6 max-w-full mx-auto min-h-screen overflow-x-hidden">
+    <div className="p-4 md:p-6 max-w-full mx-auto min-h-[100px] overflow-hidden">
       {loading && <Loader />}
       
       {/* Header Row */}
@@ -486,14 +507,14 @@ const handleDelete = async (id) => {
       {/* Modal for Campaign Form */}
       {isModalOpen && (
   <div 
-    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     onClick={(e) => {
       if (e.target === e.currentTarget) {
         toggleModal();
       }
     }}
   >
-    <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden">
+    <div className="bg-white rounded-xl shadow-2xl max-w-2xl">
       <div className="bg-gray-50 p-4 flex justify-between items-center">
         <h3 className="text-lg font-semibold text-black">
           {isEditing ? "Edit Campaign" : "Create New Campaign"}
@@ -737,7 +758,7 @@ const handleDelete = async (id) => {
           {/* Right side search */}
           <div className="relative w-full lg:w-80">
             <FiSearch
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-500"
               size={16}
             />
             <input
@@ -750,7 +771,7 @@ const handleDelete = async (id) => {
           </div>
         </div>
 
-        <div className="w-full overflow-x-auto">
+        <div className="w-full max-h-[330px] min-h-[330px] overflow-auto">
           <table className="min-w-full text-sm border border-gray-200 rounded-lg">
             <thead className="bg-gray-100">
               <tr>
@@ -797,16 +818,15 @@ const handleDelete = async (id) => {
                   </td>
                 </tr>
               ) : paginatedCampaigns.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan="10"
-                    className="px-6 py-8 text-center text-gray-500"
-                  >
-                    {filteredCampaigns.length === 0 && campaigns.length > 0 
-                      ? "No campaigns found matching your search criteria." 
-                      : "No campaigns found."}
-                  </td>
-                </tr>
+               <tr>
+  <td colSpan="10" className="px-6 py-8">
+    <div className="flex items-center justify-center h-32 font-semibold text-gray-500 text-center">
+      {filteredCampaigns.length === 0 && campaigns.length > 0
+        ? "No campaigns found matching your search criteria."
+        : "No campaigns found."}
+    </div>
+  </td>
+</tr>
               ) : (
                 paginatedCampaigns.map((campaign) => (
                   <tr
@@ -905,7 +925,7 @@ const handleDelete = async (id) => {
       </div>
         {/* Enhanced Pagination */}
         {filteredCampaigns.length > 0 && (
-          <div className="flex flex-col sm:flex-row justify-between items-center mt-2 space-y-3 sm:space-y-0">
+          <div className="flex flex-col sm:flex-row justify-between items-center mt-6 space-y-3 sm:space-y-0">
             <span className="text-sm font-semibold ml-2 text-gray-700">
               Showing {startEntry} to {endEntry} of {filteredCampaigns.length} total entries
             </span>
@@ -913,19 +933,19 @@ const handleDelete = async (id) => {
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                className="px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
               >
-                Previous
+               {"<<"} Previous
               </button>
-              <span className="px-4 py-2 border border-blue-600 rounded-lg text-sm font-medium bg-blue-600 text-white">
+              <span className="px-4 py-2 border border-blue-600 rounded-lg text-[12px] font-medium bg-blue-600 text-white">
                 {currentPage}
               </span>
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages || totalPages === 0}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                className="px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
               >
-                Next
+                Next {">>"}
               </button>
             </div>
           </div>

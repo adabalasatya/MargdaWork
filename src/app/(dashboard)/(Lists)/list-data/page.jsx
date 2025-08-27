@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Swal from 'sweetalert2'; 
 import Loader from "@/app/component/Loader";
 import { useToast } from "@/app/component/customtoast/page";
 import AddListDataForm from "@/app/(dashboard)/(Lists)/AddListForm/page";
@@ -34,8 +35,6 @@ const ListData = () => {
   const [showCsvData, setShowCsvData] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [editingSubscriber, setEditingSubscriber] = useState(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState(null);
   const [pieData, setPieData] = useState([
     { name: "Active", value: 0, color: "#10b981" },
     { name: "Unconfirmed", value: 0, color: "#9ca3af" },
@@ -227,9 +226,26 @@ const ListData = () => {
   };
 
   const handleDeleteSubscriber = async (dataIDs) => {
+    // Check if any rows are selected
+    if (!dataIDs || dataIDs.length === 0) {
+      addToast("Please select at least one data from the table", "error");
+      return;
+    }
+
+    // Show SweetAlert2 confirmation
+    const result = await Swal.fire({
+      title: "Are you sure to delete?",
+      text: `Do you want to delete ${dataIDs.length > 1 ? 'these subscribers' : 'this subscriber'}?`,
+      icon: "error",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it",
+      cancelButtonText: "Cancel",
+    });
+
+    if (!result.isConfirmed) return;
+
     setLoading(true);
     try {
-
       const response = await fetch(
         "https://www.margda.in/miraj/work/list-data/delete-data",
         {
@@ -244,9 +260,7 @@ const ListData = () => {
       if (response.ok) {
         await fetchSubscribers(listData.listID);
         setSelectedRows([]);
-        setShowDeleteConfirm(false);
-        setDeleteTarget(null);
-        addToast("Subscriber deleted successfully", "success");
+        addToast("Subscriber(s) deleted successfully", "success");
       } else {
         addToast(data.message || "Failed to delete subscriber", "error");
       }
@@ -257,7 +271,6 @@ const ListData = () => {
       setLoading(false);
     }
   };
-
 
   const handleVerify = () => {
     addToast("Verify functionality not implemented yet.", "info");
@@ -577,50 +590,8 @@ const ListData = () => {
     );
   };
 
-  const DeleteConfirmModal = ({ onConfirm, onCancel, isBulk, count }) => (
-    <motion.div
-      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
-      <motion.div
-        className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full"
-        variants={modalVariants}
-        initial="hidden"
-        animate="visible"
-        exit="exit"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">
-          Confirm Deletion
-        </h2>
-        <p className="mb-6 text-gray-600">
-          {isBulk
-            ? `Are you sure you want to delete ${count} selected subscribers?`
-            : "Are you sure you want to delete this subscriber?"}
-          This action cannot be undone.
-        </p>
-        <div className="flex justify-end space-x-4">
-          <button
-            onClick={onCancel}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-          >
-            Delete
-          </button>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-
   return (
-    <div className="min-h-screen mt-4">
+    <div className="min-h-[100px] overflow-hidden">
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -635,25 +606,36 @@ const ListData = () => {
       {loading && <Loader />}
 
       <div className="border-b border-gray-200 px-6 py-3">
-        <div className="relative flex justify-center items-center mb-4">
-          <h1 className="text-4xl font-bold text-gray-900 text-center">
-            Subscriber Lists
-          </h1>
-          <button
-            onClick={handleBack}
-            className="absolute left-0 flex items-center text-white border border-gray-300 shadow-md p-2 rounded-md bg-blue-600 hover:scale-105 transition-all duration-200 text-sm font-medium"
-            aria-label="Go back to previous page"
-          >
-            <FaArrowLeft className="mr-2" size={16} />
-            Back
-          </button>
-        </div>
 
+       <div className="relative flex items-center justify-between mb-4">
+  {/* Back Button on the left */}
+  <button
+    onClick={handleBack}
+    className="flex items-center ml-2 text-white border border-gray-300 shadow-md p-1 rounded-md bg-blue-600 hover:scale-105 transition-all duration-200 text-sm"
+    aria-label="Go back to previous page"
+  >
+    <FaArrowLeft className="mr-2" size={12} />
+    Back
+  </button>
+
+  {/* Centered Title */}
+  <h1 className="text-2xl font-bold text-gray-900 text-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+    Subscriber Lists
+  </h1>
+
+  {/* Right side List Badge */}
+  <div className="flex mr-2 items-center space-x-2">
+    <span className="text-lg font-medium text-gray-600">List:</span>
+    <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-semibold rounded-lg shadow">
+      {listData ? listData.name : "Loading..."}
+    </span>
+  </div>
+</div>
         {/* Header Section */}
         <div className="bg-white border-2 border-gray-200 shadow-md rounded-xl px-6 py-2 mt-3">
           <div className="flex items-center justify-between space-x-4">
             {/* Left Side - Search */}
-            <div className="flex items-center bg-gray-100 rounded-xl px-4 py-2 flex-1 max-w-md">
+            <div className="flex items-center bg-gray-100 rounded-xl px-4 py-1 flex-1 max-w-md">
               <FaSearch className="text-gray-500 mr-2" />
               <input
                 type="text"
@@ -666,16 +648,16 @@ const ListData = () => {
 
             {/* Center - Show Records */}
             <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium text-gray-600">Show:</span>
+              <span className="text-[12px] font-medium text-gray-600">Show:</span>
               <input
                 type="number"
                 min="1"
                 max="500"
                 value={recordsPerPage}
                 onChange={handleRecordsPerPageChange}
-                className="border border-gray-300 rounded-lg px-3 py-1 w-20 text-center"
+                className="border border-gray-300 rounded-lg px-2 py-1 w-15 text-center"
               />
-              <span className="text-sm font-medium text-gray-600">records</span>
+              <span className="text-[12px] font-medium text-gray-600">Records</span>
             </div>
 
             {/* Right Side - Buttons */}
@@ -683,15 +665,15 @@ const ListData = () => {
               {/* Add List Data */}
               <button
                 onClick={() => setAddDataFormOpen(true)}
-                className="flex items-center px-4 py-2 text-sm  bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
+                className="flex items-center px-4 py-2 text-[12px] bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
               >
-                <FaPlus className="text-sm mr-2" />
+                <FaPlus className="text-[12px] mr-2" />
                 Add List Data
               </button>
 
               {/* Upload CSV */}
-              <label className="flex items-center px-4 py-2 text-sm  bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200 cursor-pointer">
-                <FaPlus className="sm mr-2" />
+              <label className="flex items-center px-4 py-2 text-[12px] bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200 cursor-pointer">
+                <FaPlus className="text-[12px] mr-2" />
                 Upload CSV
                 <input
                   id="csv-upload"
@@ -705,9 +687,9 @@ const ListData = () => {
               {/* Sample CSV */}
               <button
                 onClick={downloadSample}
-                className="flex items-center px-4 py-2 text-sm  bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
+                className="flex items-center px-4 py-2 text-[12px] bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
               >
-                <FaDownload className="mr-2 text-sm" />
+                <FaDownload className="mr-2 text-[12px]" />
                 Sample CSV
               </button>
             </div>
@@ -716,212 +698,199 @@ const ListData = () => {
 
         {/* New Buttons Section (Verify, Subscribe, Unsubscribe) */}
         <div className="bg-white border-2 border-gray-200 shadow-md rounded-xl px-6 py-2 mt-3">
-  <div className="flex items-center justify-between">
-    {/* Left Side - Action Buttons */}
-    <div className="flex items-center space-x-4">
-      <button
-        onClick={handleVerify}
-        className="flex items-center px-4 py-2 text-sm  bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
-      >
-        Verify
-      </button>
-      <button
-        onClick={handleSubscribe}
-        className="flex items-center px-4 py-2  text-sm bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
-      >
-        Subscribe
-      </button>
-      <button
-        onClick={handleBulkUnsubscribe}
-        className="flex items-center px-4 py-2 text-sm  bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
-      >
-        Unsubscribe
-      </button>
-    </div>
+          <div className="flex items-center justify-between">
+            {/* Left Side - Action Buttons */}
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={handleVerify}
+                className="flex items-center px-4 py-2 text-[12px] bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
+              >
+                Verify
+              </button>
+              <button
+                onClick={handleSubscribe}
+                className="flex items-center px-4 py-2 text-[12px] bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
+              >
+                Subscribe
+              </button>
+              <button
+                onClick={handleBulkUnsubscribe}
+                className="flex items-center px-4 py-2 text-[12px] bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
+              >
+                Unsubscribe
+              </button>
+            </div>
 
-    {/* Right Side - Delete Button */}
-    <button
-  onClick={() => {
-    // Extract dataIDs from selected rows
-    const selectedDataIDs = selectedRows.map(row => row.dataID);
-    setDeleteTarget(selectedDataIDs);
-    setShowDeleteConfirm(true);
-  }}
-  className="flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
->
-  <FaTrash className="w-4 h-4 mr-2" />
-  Delete Selected ({selectedRows.length})
-</button>
-  </div>
-</div>
-
+            {/* Right Side - Delete Button */}
+            <button
+              onClick={() => {
+                const selectedDataIDs = selectedRows.map(row => row.dataID);
+                handleDeleteSubscriber(selectedDataIDs);
+              }}
+              className="flex items-center px-3 py-2 text-[12px] bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
+            >
+              <FaTrash className="text-[12px] mr-2" />
+              Delete Selected ({selectedRows.length})
+            </button>
+          </div>
+        </div>
       </div>
 
-     <div className="border-b border-gray-200 px-6 py-3 bg-white rounded-t-xl shadow-sm">
-  <div className="flex items-center justify-between">
-    {/* Left - List Info */}
-    <div className="flex items-center space-x-2">
-      <span className="text-sm font-medium text-gray-600">List:</span>
-      <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-semibold rounded-lg shadow">
-        {listData ? listData.name : "Loading..."}
-      </span>
-    </div>
+      {/* <div className="border-b border-gray-200 px-6 py-2 bg-white rounded-t-xl shadow-sm">
+        <div className="flex items-center justify-between">
+         
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium text-gray-600">List:</span>
+            <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-semibold rounded-lg shadow">
+              {listData ? listData.name : "Loading..."}
+            </span>
+          </div>
 
-    {/* Right - Action Buttons */}
-    <div className="flex items-center space-x-3">
-      {/* Custom Fields */}
-      <Link href="#">
-        <button className="flex items-center px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white text-sm rounded-xl shadow-md hover:scale-105 transition-transform duration-200">
-          <Settings className="w-4 h-4 mr-2" />
-          Custom Fields
-          <span className="ml-2 px-2 py-0.5 bg-white/20 text-xs rounded-full">
-            0
-          </span>
-        </button>
-      </Link>
+          
+          <div className="flex items-center space-x-3">
+            <Link href="#">
+              <button className="flex items-center px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white text-[12px] rounded-xl shadow-md hover:scale-105 transition-transform duration-200">
+                <Settings className="w-4 h-4 mr-2" />
+                Custom Fields
+                <span className="ml-2 px-2 py-0.5 bg-white/20 text-xs rounded-full">
+                  0
+                </span>
+              </button>
+            </Link>
 
-      {/* Hidden File Upload */}
-      <input
-        id="csv-upload"
-        type="file"
-        accept=".csv"
-        className="hidden"
-        onChange={handleFileUpload}
-      />
+            <input
+              id="csv-upload"
+              type="file"
+              accept=".csv"
+              className="hidden"
+              onChange={handleFileUpload}
+            />
 
-      {/* Autoresponders */}
-      <button
-        onClick={() => setShowAutorespondersModal(true)}
-        className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-sm rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
-      >
-        Autoresponders
-        <span className="ml-2 px-2 py-0.5 bg-white/20 text-xs rounded-full">
-          0
-        </span>
-      </button>
+            <button
+              onClick={() => setShowAutorespondersModal(true)}
+              className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-[12px] rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
+            >
+              Autoresponders
+              <span className="ml-2 px-2 py-0.5 bg-white/20 text-xs rounded-full">
+                0
+              </span>
+            </button>
 
-      {/* Segments */}
-      <Link href="#">
-        <button className="flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-pink-600 text-white text-sm rounded-xl shadow-md hover:scale-105 transition-transform duration-200">
-          Segments
-          <span className="ml-2 px-2 py-0.5 bg-white/20 text-xs rounded-full">
-            0
-          </span>
-        </button>
-      </Link>
+            <Link href="#">
+              <button className="flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-pink-600 text-white text-[12px] rounded-xl shadow-md hover:scale-105 transition-transform duration-200">
+                Segments
+                <span className="ml-2 px-2 py-0.5 bg-white/20 text-xs rounded-full">
+                  0
+                </span>
+              </button>
+            </Link>
 
-      {/* Subscribe Form */}
-      <button
-        onClick={() => setShowSubscribeFormModal(true)}
-        className="flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
-      >
-        Subscribe Form
-        <span className="ml-2 px-2 py-0.5 bg-white/20 text-xs rounded-full">
-          0
-        </span>
-      </button>
+            <button
+              onClick={() => setShowSubscribeFormModal(true)}
+              className="flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-[12px] rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
+            >
+              Subscribe Form
+              <span className="ml-2 px-2 py-0.5 bg-white/20 text-xs rounded-full">
+                0
+              </span>
+            </button>
 
-      {/* List Settings */}
-      <Link href="#">
-        <button className="flex items-center px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white text-sm rounded-xl shadow-md hover:scale-105 transition-transform duration-200">
-          <Settings className="w-4 h-4 mr-2" />
-          List Settings
-        </button>
-      </Link>
-    </div>
-  </div>
-</div>
+            <Link href="#">
+              <button className="flex items-center px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white text-[12px] rounded-xl shadow-md hover:scale-105 transition-transform duration-200">
+                <Settings className="w-4 h-4 mr-2" />
+                List Settings
+              </button>
+            </Link>
+          </div>
+        </div>
+      </div> */}
 
-
-      <div className="px-6 py-6">
+      <div className="px-6 py-3">
         {/* Filter Tabs */}
-       <div className="flex items-center justify-between space-x-4 mb-4 bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm">
-  {/* Left - Select All */}
-  <div className="flex items-center">
-    <label className="flex items-center text-sm text-gray-700 cursor-pointer">
-      <input
-        type="checkbox"
-        onChange={(e) => handleSelectAll(e.target.checked)}
-        checked={selectedRows.length >= currentRecords.length && currentRecords.length > 0}
-        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-      />
-      <span className="ml-2 font-medium">
-        Select All ({selectedRows.length} selected)
-      </span>
-    </label>
-  </div>
+        <div className="flex items-center justify-between space-x-4 mb-4 bg-white border border-gray-200 rounded-xl px-4 py-2 shadow-sm">
+          <div className="flex items-center">
+            <label className="flex items-center text-sm text-gray-700 cursor-pointer">
+              <input
+                type="checkbox"
+                onChange={(e) => handleSelectAll(e.target.checked)}
+                checked={selectedRows.length >= currentRecords.length && currentRecords.length > 0}
+                className="text-[12px] text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <span className="ml-2 text-[12px] font-medium">
+                Select All ({selectedRows.length} selected)
+              </span>
+            </label>
+          </div>
 
-  {/* Right - Filters */}
-  <div className="flex items-center space-x-3">
-    {filters.map((filter) => (
-      <button
-        key={filter.name}
-        onClick={() => setActiveFilter(filter.name)}
-        className={`flex items-center px-4 py-2 text-sm font-medium rounded-xl shadow-sm transition-transform duration-200 hover:scale-105 ${
-          activeFilter === filter.name
-            ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
-            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-        }`}
-      >
-        <span
-          className={`w-3 h-3 rounded-full mr-2 ${filter.color}`}
-        ></span>
-        {filter.name}
-        <span
-          className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
-            activeFilter === filter.name
-              ? "bg-white/20 text-white"
-              : "bg-white text-gray-600 border border-gray-300"
-          }`}
-        >
-          {filter.count}
-        </span>
-      </button>
-    ))}
-  </div>
-</div>
-
+          <div className="flex items-center space-x-3">
+            {filters.map((filter) => (
+              <button
+                key={filter.name}
+                onClick={() => setActiveFilter(filter.name)}
+                className={`flex items-center px-4 py-2 text-[12px] rounded-xl shadow-sm transition-transform duration-200 hover:scale-105 ${
+                  activeFilter === filter.name
+                    ? "bg-gradient-to-r from-blue-400 to-blue-500 text-[12px] text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                <span
+                  className={`w-3 h-3 rounded-full mr-2 ${filter.color}`}
+                ></span>
+                {filter.name}
+                <span
+                  className={`ml-2 px-2 py-0.5text-[12px] rounded-full ${
+                    activeFilter === filter.name
+                      ? "bg-white/20 text-white"
+                      : "bg-white text-gray-600 border border-gray-300"
+                  }`}
+                >
+                  {filter.count}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Subscribers Table */}
-        <div className="bg-white border border-gray-300 rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
+        <div className="bg-white border border-gray-300 rounded-lg overflow-x-auto overflow-y-auto">
+          <div className="max-h-[283px] min-h-[283px]  overflow-auto ">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50 sticky top-0 z-10">
                 <tr>
-                  <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
                     Select
                   </th>
-                  <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
                     S/No
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
                     Name
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
                     Email
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
                     Mobile
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
                     Whatsapp
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
                     <div className="flex items-center">Status</div>
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
                     Unsubscribe
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
                     Total Sent
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
                     Never Opened
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
                     Failed
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
                     Action
                   </th>
                 </tr>
@@ -932,7 +901,7 @@ const ListData = () => {
                     <tr>
                       <td
                         colSpan="12"
-                        className="px-6 py-8 text-center text-gray-500"
+                        className="px-4 py-3 text-center text-gray-500"
                       >
                         Loading subscribers...
                       </td>
@@ -948,7 +917,7 @@ const ListData = () => {
                         variants={rowVariants}
                         className="hover:bg-gray-50"
                       >
-                        <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-2 py-3 whitespace-nowrap text-sm text-gray-500">
                           <input
                             type="checkbox"
                             checked={selectedRows.includes(subscriber)}
@@ -979,7 +948,7 @@ const ListData = () => {
                             onClick={() => handleUnsubscribe(subscriber.subsID)}
                             className="text-red-600 hover:text-red-900"
                           >
-                            <Users className="w-5 h-5" />
+                            <Users className="w-5 h-4" />
                           </button>
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -998,18 +967,15 @@ const ListData = () => {
                             onClick={() => handleEditSubscriber(subscriber)}
                             className="text-indigo-600 hover:text-indigo-800"
                           >
-                            <FaEdit />
+                            <FaEdit className="text-[12px]" />
                           </motion.button>
                           <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
-                            onClick={() => {
-                              setDeleteTarget([subscriber.dataID]);
-                              setShowDeleteConfirm(true);
-                            }}
+                            onClick={() => handleDeleteSubscriber([subscriber.dataID])}
                             className="text-red-500 hover:text-red-600"
                           >
-                            <FaTrash />
+                            <FaTrash className="text-[12px]" />
                           </motion.button>
                         </td>
                       </motion.tr>
@@ -1031,8 +997,8 @@ const ListData = () => {
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between p-2">
-          <div className="text-sm font-bold text-gray-500">
+        <div className="flex items-center justify-between mt-4">
+          <div className="text-[12px] font-bold text-gray-500">
             Showing {indexOfFirstRecord + 1} to{" "}
             {Math.min(indexOfLastRecord, filteredSubscribers.length)} Records
           </div>
@@ -1040,7 +1006,7 @@ const ListData = () => {
             <button
               onClick={handlePreviousPage}
               disabled={currentPage === 1}
-              className={`px-4 py-2 bg-gray-200 text-gray-700 rounded ${
+              className={`px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200${
                 currentPage === 1
                   ? "opacity-50 cursor-not-allowed"
                   : "hover:bg-gray-300"
@@ -1048,13 +1014,13 @@ const ListData = () => {
             >
               {"<<"} Previous
             </button>
-            <span className="px-4 py-2 bg-blue-600 text-white rounded">
+            <span className="px-4 py-2 bg-blue-600 text-[12px] text-white rounded">
               {currentPage}
             </span>
             <button
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
-              className={`px-4 py-2 bg-gray-200 text-gray-700 rounded ${
+              className={`px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 ${
                 currentPage === totalPages
                   ? "opacity-50 cursor-not-allowed"
                   : "hover:bg-gray-300"
@@ -1079,21 +1045,6 @@ const ListData = () => {
           />
         )}
       </AnimatePresence>
-
-      {/* Delete Confirmation Modal */}
-     <AnimatePresence>
-  {showDeleteConfirm && (
-    <DeleteConfirmModal
-      isBulk={Array.isArray(deleteTarget) && deleteTarget.length > 1}
-      count={Array.isArray(deleteTarget) ? deleteTarget.length : 1}
-      onConfirm={() => handleDeleteSubscriber(deleteTarget)}
-      onCancel={() => {
-        setShowDeleteConfirm(false);
-        setDeleteTarget(null);
-      }}
-    />
-  )}
-</AnimatePresence>
 
       {/* Autoresponders Modal */}
       <AnimatePresence>

@@ -7,6 +7,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaSearch } from "react-icons/fa";
 import { MdOutlineBusinessCenter } from "react-icons/md";
+import Swal from "sweetalert2";
 
 const SOURCE_PROVIDERS = {
   G: { name: "Gmail", host: "smtp.gmail.com", port: "465" },
@@ -271,7 +272,16 @@ const EmailCredentials = () => {
 
   // Delete Logic
   const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this provider?")) return;
+     const result = await Swal.fire({
+               title: "Are you sure to delete?",
+               text: "Do you want to delete this providers?",
+               icon: "error",
+               showCancelButton: true,
+               confirmButtonText: "yes, delete it",
+               cancelButtonText: "Cancel",
+             });
+           
+             if (!result.isConfirmed) return; 
     setLoading(true);
     try {
       const response = await fetch(
@@ -524,17 +534,17 @@ const EmailCredentials = () => {
                   </table>
                 </div>
 
-                <div className="flex flex-col md:flex-row justify-between items-center mt-2 text-sm font-semibold text-gray-500">
+                <div className="flex flex-col md:flex-row justify-between items-center mt-2 text-[12px] font-semibold text-gray-500">
                   <span>
                     Showing {filteredCredentials.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredCredentials.length)} of {filteredCredentials.length} total entries
                   </span>
                   <div className="flex items-center gap-2 mt-4 md:mt-0">
-                    <button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1} className="px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
-                      Previous
+                    <button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1} className="px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200">
+                      {"<<"} Previous
                     </button>
-                    <span className="px-4 py-2 border border-blue-600 rounded-lg text-sm font-medium bg-blue-600 text-white">{currentPage}</span>
-                    <button onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages || totalPages === 0} className="px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
-                      Next
+                    <span className="px-4 py-2 border border-blue-600 rounded-lg text-[12px] font-medium bg-blue-600 text-white">{currentPage}</span>
+                    <button onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages || totalPages === 0} className="px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200">
+                      Next {">>"}
                     </button>
                   </div>
                 </div>

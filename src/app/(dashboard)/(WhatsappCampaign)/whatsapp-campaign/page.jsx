@@ -14,6 +14,7 @@ import {
 } from "react-icons/fi";
 import { useToast } from "@/app/component/customtoast/page";
 import Loader from "@/app/component/Loader";
+import Swal from "sweetalert2";
 
 const WhatsAppCampaign = () => {
   const router = useRouter();
@@ -38,12 +39,11 @@ const WhatsAppCampaign = () => {
   const { addToast } = useToast();
 
   useEffect(() => {
-    // Check if we're in browser environment
     if (typeof window === 'undefined') return;
 
     const storedUserData = JSON.parse(sessionStorage.getItem("userData") || 'null');
     if (!storedUserData || !storedUserData.pic) {
-      router.push("/work/login");
+      router.push("/login");
       return;
     } else {
       setUserData(storedUserData);
@@ -55,7 +55,6 @@ const WhatsAppCampaign = () => {
     }
   }, [router]);
 
-  // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, itemsPerPage, dateRange.from, dateRange.to]);
@@ -151,13 +150,11 @@ const WhatsAppCampaign = () => {
     }
   };
 
-  // Date filter change handler
   const handleDateChange = (e) => {
     const { name, value } = e.target;
     setDateRange((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Clear dates button handler
   const handleClearDates = () => {
     setDateRange({ from: "", to: "" });
   };
@@ -169,6 +166,16 @@ const WhatsAppCampaign = () => {
   };
 
   const handleSend = async (id) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you want to send this campaign?",
+      icon: "success",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Send it",
+      cancelButtonText: "Cancel",
+    });
+    
+    if (!result.isConfirmed) return; 
     setLoading(true);
     try {
       const response = await fetch(
@@ -184,7 +191,6 @@ const WhatsAppCampaign = () => {
       const data = await response.json();
       if (response.ok) {
         addToast(data.message, "success");
-        // Refresh campaigns after sending
         await fetchData(userID);
       } else {
         addToast(data.message, "error");
@@ -214,7 +220,6 @@ const WhatsAppCampaign = () => {
     }
   };
 
-  
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     
@@ -224,10 +229,9 @@ const WhatsAppCampaign = () => {
     }
 
     if (isEditing) {
-    // Update flow
-    await updateCampaign();
-    return;
-  }
+      await updateCampaign();
+      return;
+    }
     
     try {
       setLoading(true);
@@ -268,109 +272,109 @@ const WhatsAppCampaign = () => {
   };
 
   const handleEdit = (campaign) => {
-  setCampaignForm({
-    id: campaign.campaignID,
-    name: campaign.name,
-    tempID: campaign.templateID || "",
-    listID: campaign.listID || "",
-  });
-  setIsEditing(true);
-  setIsModalOpen(true);
-};
+    setCampaignForm({
+      id: campaign.campaignID,
+      name: campaign.name,
+      tempID: campaign.templateID || "",
+      listID: campaign.listID || "",
+    });
+    setIsEditing(true);
+    setIsModalOpen(true);
+  };
 
   const updateCampaign = async () => {
-
-  try {
-    setLoading(true);
-    // Adjust the URL and body keys if your backend expects different names
-    const response = await fetch(
-      "https://www.margda.in/miraj/work/whatsapp-campaign/edit-campaign",
-      {
-        method: "PUT",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          campaignID: campaignForm.id,
-          name: campaignForm.name.trim(),
-          templateID: campaignForm.tempID,
-          listID: campaignForm.listID
-        }),
-      }
-    );
-
-    const data = await response.json();
-    if (response.ok) {
-      addToast(data.message || "Campaign updated successfully", "success");
-      await fetchData(userID);
-      setIsModalOpen(false);
-      setCampaignForm({
-        name: "",
-        tempID: "",
-        listID: "",
-      });
-      setIsEditing(false);
-      return true;
-    } else {
-      addToast(data.message || "Failed to update campaign", "error");
-      return false;
-    }
-  } catch (error) {
-    console.error("Error updating campaign:", error);
-    addToast("Unknown Error, try again later", "error");
-    return false;
-  } finally {
-    setLoading(false);
-  }
-};
-
-const handleDelete = async (id) => {
-    if (typeof window === 'undefined') return;
-    
-    if (window.confirm("Are you sure you want to delete this campaign?")) {
-      try {
-        setLoading(true);
-        // Add your delete API call here
-        const response = await fetch(
-          "https://www.margda.in/miraj/work/whatsapp-campaign/delete-campaign",
-          {
-            method: "DELETE",
-            headers: {
-              "content-type": "application/json",
-            },
-            body: JSON.stringify({ campaignID: id }),
-          }
-        );
-        
-        if (response.ok) {
-          addToast("Campaign deleted successfully", "success");
-          await fetchData(userID);
-        } else {
-          addToast("Failed to delete campaign", "error");
+    try {
+      setLoading(true);
+      const response = await fetch(
+        "https://www.margda.in/miraj/work/whatsapp-campaign/edit-campaign",
+        {
+          method: "PUT",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            campaignID: campaignForm.id,
+            name: campaignForm.name.trim(),
+            templateID: campaignForm.tempID,
+            listID: campaignForm.listID,
+          }),
         }
-      } catch (error) {
-        console.error("Error deleting campaign:", error);
-        addToast("Error deleting campaign", "error");
-      } finally {
-        setLoading(false);
+      );
+
+      const data = await response.json();
+      if (response.ok) {
+        addToast(data.message || "Campaign updated successfully", "success");
+        await fetchData(userID);
+        setIsModalOpen(false);
+        setCampaignForm({
+          name: "",
+          tempID: "",
+          listID: "",
+        });
+        setIsEditing(false);
+        return true;
+      } else {
+        addToast(data.message || "Failed to update campaign", "error");
+        return false;
       }
+    } catch (error) {
+      console.error("Error updating campaign:", error);
+      addToast("Unknown Error, try again later", "error");
+      return false;
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Enhanced filtering logic with search and date filters
+  const handleDelete = async (id) => {
+    const result = await Swal.fire({
+      title: "Are you sure to delete?",
+      text: "Do you want to delete this campaign?",
+      icon: "error",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it",
+      cancelButtonText: "Cancel",
+    });
+    
+    if (!result.isConfirmed) return; 
+    try {
+      setLoading(true);
+      const response = await fetch(
+        "https://www.margda.in/miraj/work/whatsapp-campaign/delete-campaign",
+        {
+          method: "DELETE",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({ campaignID: id }),
+        }
+      );
+      
+      if (response.ok) {
+        addToast("Campaign deleted successfully", "success");
+        await fetchData(userID);
+      } else {
+        addToast("Failed to delete campaign", "error");
+      }
+    } catch (error) {
+      console.error("Error deleting campaign:", error);
+      addToast("Error deleting campaign", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredCampaigns = campaigns.filter((campaign) => {
     if (!campaign) return false;
     
     let match = true;
 
-    // Search filter
     if (searchQuery && campaign.name) {
       if (!campaign.name.toLowerCase().includes(searchQuery.toLowerCase())) {
         match = false;
       }
     }
 
-    // Date filter
     if (match && dateRange.from) {
       const fromDate = new Date(dateRange.from);
       fromDate.setHours(0, 0, 0, 0);
@@ -409,7 +413,6 @@ const handleDelete = async (id) => {
     setCurrentPage(1);
   };
 
-  // Show loading if user data is not loaded yet
   if (!userData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -419,7 +422,7 @@ const handleDelete = async (id) => {
   }
 
   return (
-    <div className="p-4 md:p-6 max-w-full mx-auto min-h-screen overflow-x-hidden">
+    <div className="p-4 md:p-6 max-w-full mx-auto min-h-[100px] overflow-hidden">
       {loading && <Loader />}
       
       {/* Header Row */}
@@ -437,22 +440,7 @@ const handleDelete = async (id) => {
         <h2 className="text-xl md:text-2xl font-bold text-gray-800 text-center md:text-left">
           WhatsApp Campaign
         </h2>
-        <div className="w-full md:w-auto flex items-center gap-2">
-          <div className="relative flex-1 md:flex-none">
-            <FiSearch
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-              size={16}
-            />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-              }}
-              placeholder="Search campaigns..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-            />
-          </div>
+        <div className="w-full md:w-auto">
           <button
             onClick={toggleModal}
             disabled={loading}
@@ -464,60 +452,230 @@ const handleDelete = async (id) => {
         </div>
       </div>
 
-      {/* Filter Controls */}
-      <div className="flex flex-wrap items-center gap-4 w-full md:w-auto mb-4">
-        <div className="flex items-center gap-2">
-          <label className="text-sm text-gray-700">Show</label>
-          <select
-            value={itemsPerPage}
-            onChange={handleItemsPerPageChange}
-            className="p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {[10, 20, 50].map((val) => (
-              <option key={val} value={val}>
-                {val}
-              </option>
-            ))}
-          </select>
-          <span className="text-sm text-gray-700">records</span>
+      {/* WhatsApp Campaigns Table */}
+      <div className="bg-white p-4 md:p-6 rounded-lg border-2 border-gray-200 shadow-md w-full overflow-hidden">
+        {/* Filters and Search Inside Table */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+          {/* Filter Controls (Left) */}
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-700">Show</label>
+              <select
+                value={itemsPerPage}
+                onChange={handleItemsPerPageChange}
+                className="p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {[10, 20, 50].map((val) => (
+                  <option key={val} value={val}>
+                    {val}
+                  </option>
+                ))}
+              </select>
+              <span className="text-sm text-gray-700">records</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-700">From</label>
+              <input
+                type="date"
+                name="from"
+                value={dateRange.from}
+                onChange={handleDateChange}
+                className="p-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-700">To</label>
+              <input
+                type="date"
+                name="to"
+                value={dateRange.to}
+                onChange={handleDateChange}
+                className="p-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {(dateRange.from || dateRange.to) && (
+                <button
+                  type="button"
+                  onClick={handleClearDates}
+                  title="Clear date filters"
+                  className="flex items-center text-gray-500 hover:text-red-600 bg-gray-100 hover:bg-red-100 rounded-full p-1 ml-1 transition-colors"
+                >
+                  <FiX size={16} />
+                  <span className="sr-only">Clear</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Search Bar (Right) */}
+          <div className="relative w-full md:w-auto">
+            <FiSearch
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-500"
+              size={16}
+            />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search campaigns..."
+              className="w-full md:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            />
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <label className="text-sm text-gray-700">From</label>
-          <input
-            type="date"
-            name="from"
-            value={dateRange.from}
-            onChange={handleDateChange}
-            className="p-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="text-sm text-gray-700">To</label>
-          <input
-            type="date"
-            name="to"
-            value={dateRange.to}
-            onChange={handleDateChange}
-            className="p-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          {(dateRange.from || dateRange.to) && (
-            <button
-              type="button"
-              onClick={handleClearDates}
-              title="Clear date filters"
-              className="flex items-center text-gray-500 hover:text-red-600 bg-gray-100 hover:bg-red-100 rounded-full p-1 ml-1 transition-colors"
-            >
-              <FiX size={16} />
-              <span className="sr-only">Clear</span>
-            </button>
-          )}
+
+        <div className="w-full max-h-[335px] min-h-[335px] overflow-auto">
+          <table className="min-w-full text-sm border border-gray-200 rounded-lg">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
+                  Date
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
+                  Campaign
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
+                  Template
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
+                  List
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
+                  Success
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {loading ? (
+                <tr>
+                  <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-2"></div>
+                      Loading campaigns...
+                    </div>
+                  </td>
+                </tr>
+              ) : paginatedCampaigns.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="6"
+                    className="px-6 py-8 text-center text-gray-500"
+                  >
+                    {filteredCampaigns.length === 0 && campaigns.length > 0 
+                      ? "No campaigns found matching your search criteria." 
+                      : "No campaigns found."}
+                  </td>
+                </tr>
+              ) : (
+                paginatedCampaigns.map((campaign) => (
+                  <tr
+                    key={campaign.campaignID}
+                    className="hover:bg-gray-50 transition-colors duration-150"
+                  >
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      {new Date(campaign.edate).toLocaleString()}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap font-medium text-gray-900">
+                      {campaign.name}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        {campaign.templateName || "N/A"}
+                        {campaign.matter && (
+                          <button
+                            onClick={() => handleView(campaign.matter, "Template")}
+                            className="ml-2 text-blue-600 hover:text-blue-800 transition-colors duration-200"
+                            title="View Template"
+                          >
+                            <FiEye size={16} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        {campaign.listName || "N/A"}
+                        {campaign.listName && (
+                          <button
+                            onClick={() => handleView(campaign.listName, "List")}
+                            className="ml-2 text-blue-600 hover:text-blue-800 transition-colors duration-200"
+                            title="View List"
+                          >
+                            <FiEye size={16} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      {campaign.success || "N/A"}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex space-x-3">
+                        <button
+                          onClick={() => handleSend(campaign.campaignID)}
+                          disabled={loading}
+                          className="text-blue-600 hover:text-blue-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Resend Campaign"
+                        >
+                          <FiSend size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleEdit(campaign)}
+                          className="text-green-600 hover:text-green-800 transition-colors duration-200"
+                          title="Edit Campaign"
+                        >
+                          <FiEdit size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(campaign.campaignID)}
+                          className="text-red-600 hover:text-red-800 transition-colors duration-200"
+                          title="Delete Campaign"
+                        >
+                          <FiTrash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
+
+      {/* Pagination (Bottom of Page) */}
+      {filteredCampaigns.length > 0 && (
+        <div className="flex flex-col sm:flex-row justify-between items-center mt-8 space-y-3 sm:space-y-0">
+          <span className="text-[12px] font-semibold ml-2 text-gray-700">
+            Showing {startEntry} to {endEntry} of {filteredCampaigns.length} total entries
+          </span>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            >
+            {"<<"}  Previous
+            </button>
+            <span className="px-4 py-2 border border-blue-600 rounded-lg text-[12px] font-medium bg-blue-600 text-white">
+              {currentPage}
+            </span>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages || totalPages === 0}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            >
+              Next {">>"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modal for Campaign Form */}
       {isModalOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               toggleModal();
@@ -665,172 +823,6 @@ const handleDelete = async (id) => {
           </div>
         </div>
       )}
-
-      {/* WhatsApp Campaigns Table */}
-      <div className="bg-white p-4 md:p-6 rounded-lg border-2 border-gray-200 shadow-md w-full overflow-hidden">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
-          <h3 className="text-lg font-semibold text-gray-800">
-            WhatsApp Campaigns
-          </h3>
-        </div>
-
-        <div className="w-full overflow-x-auto">
-          <table className="min-w-full text-sm border border-gray-200 rounded-lg">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
-                  Campaign
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
-                  Template
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
-                  List
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
-                  Success
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {loading ? (
-                <tr>
-                  <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-2"></div>
-                      Loading campaigns...
-                    </div>
-                  </td>
-                </tr>
-              ) : paginatedCampaigns.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan="6"
-                    className="px-6 py-8 text-center text-gray-500"
-                  >
-                    {filteredCampaigns.length === 0 && campaigns.length > 0 
-                      ? "No campaigns found matching your search criteria." 
-                      : "No campaigns found."}
-                  </td>
-                </tr>
-              ) : (
-                paginatedCampaigns.map((campaign) => {
-                  return (
-                    <tr
-                      key={campaign.campaignID}
-                      className="hover:bg-gray-50 transition-colors duration-150"
-                    >
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        {new Date(campaign.edate).toLocaleString()}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap font-medium text-gray-900">
-                        {campaign.name}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          {campaign.templateName || "N/A"}
-                          {campaign.matter && (
-                            <button
-                              onClick={() =>
-                                handleView(campaign.matter, "Template")
-                              }
-                              className="ml-2 text-blue-600 hover:text-blue-800 transition-colors duration-200"
-                              title="View Template"
-                            >
-                              <FiEye size={16} />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          {campaign.listName || "N/A"}
-                          {campaign.listName && (
-                            <button
-                              onClick={() =>
-                                handleView(campaign.listName, "List")
-                              }
-                              className="ml-2 text-blue-600 hover:text-blue-800 transition-colors duration-200"
-                              title="View List"
-                            >
-                              <FiEye size={16} />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        {campaign.success || "N/A"}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="flex space-x-3">
-                          <button
-                            onClick={() => handleSend(campaign.campaignID)}
-                            disabled={loading}
-                            className="text-blue-600 hover:text-blue-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                            title="Resend Campaign"
-                          >
-                            <FiSend size={16} />
-                          </button>
-
-                          {/* Edit Campaign */}
-                                                  <button
-                                                    onClick={() => handleEdit(campaign)}
-                                                    className="text-green-600 hover:text-green-800 transition-colors duration-200"
-                                                    title="Edit Campaign"
-                                                  >
-                                                    <FiEdit size={16} />
-                                                  </button>
-                          
-                                                  {/* Delete Campaign */}
-                                                  <button
-                                                    onClick={() => handleDelete(campaign.campaignID)}
-                                                    className="text-red-600 hover:text-red-800 transition-colors duration-200"
-                                                    title="Delete Campaign"
-                                                  >
-                                                    <FiTrash2 size={16} />
-                                                  </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-        {filteredCampaigns.length > 0 && (
-          <div className="flex flex-col sm:flex-row justify-between items-center mt-2 space-y-3 sm:space-y-0">
-            <span className="text-sm font-semibold ml-2 text-gray-700">
-              Showing {startEntry} to {endEntry} of {filteredCampaigns.length} total entries
-            </span>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-              >
-                Previous
-              </button>
-              <span className="px-4 py-2 border border-blue-600 rounded-lg text-sm font-medium bg-blue-600 text-white">
-                {currentPage}
-              </span>
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages || totalPages === 0}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
     </div>
   );
 };

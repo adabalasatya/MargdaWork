@@ -162,7 +162,7 @@ const EmailReport = () => {
   const paginate = (pageNumber) => setCurrentTablePage(pageNumber);
 
   return (
-    <div className="flex-1 p-6 overflow-auto">
+    <div className="flex-1 p-6 min-h-[100px] overflow-hidden">
       <ToastContainer
         position="top-right"
         autoClose={5000}
@@ -262,7 +262,7 @@ const EmailReport = () => {
       </div>
 
       {/* Table Section */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white rounded-lg shadow overflow-y-auto max-h-[387px] min-h-[387px] ">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
@@ -368,8 +368,8 @@ const EmailReport = () => {
 
       {/* Enhanced Pagination */}
       {filteredEmails.length > 0 && (
-        <div className="flex flex-col sm:flex-row justify-between items-center mt-2 space-y-3 sm:space-y-0">
-          <div className="text-sm font-semibold text-gray-600">
+        <div className="flex flex-col sm:flex-row justify-between items-center mt-5 space-y-3 sm:space-y-0">
+          <div className="text-[12px] font-semibold text-gray-600">
             Showing {filteredEmails.length === 0 ? 0 : indexOfFirstEmail + 1} to{" "}
             {Math.min(indexOfLastEmail, filteredEmails.length)} of{" "}
             {filteredEmails.length} total entries
@@ -380,7 +380,7 @@ const EmailReport = () => {
                 paginate(currentTablePage > 1 ? currentTablePage - 1 : 1)
               }
               disabled={currentTablePage === 1}
-              className={`px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium flex items-center transition-colors duration-200 ${
+              className={`px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium flex items-center transition-colors duration-200 ${
                 currentTablePage === 1
                   ? "text-gray-400 cursor-not-allowed"
                   : "text-gray-700 hover:bg-gray-50"
@@ -389,7 +389,7 @@ const EmailReport = () => {
               <FiChevronLeft className="mr-1" />
               Previous
             </button>
-            <span className="px-4 py-2 border border-blue-600 rounded-lg text-sm font-medium bg-blue-600 text-white">
+            <span className="px-4 py-2 border border-blue-600 rounded-lg text-[12px] font-medium bg-blue-600 text-white">
               {currentTablePage}
             </span>
             <button
@@ -401,7 +401,7 @@ const EmailReport = () => {
                 )
               }
               disabled={currentTablePage === totalPages || totalPages === 0}
-              className={`px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium flex items-center transition-colors duration-200 ${
+              className={`px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium flex items-center transition-colors duration-200 ${
                 currentTablePage === totalPages || totalPages === 0
                   ? "text-gray-400 cursor-not-allowed"
                   : "text-gray-700 hover:bg-gray-50"

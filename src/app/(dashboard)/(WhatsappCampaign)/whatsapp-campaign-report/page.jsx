@@ -370,7 +370,7 @@ const WhatsappReport = () => {
   const filteredMessages = getFilteredMessages();
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-[100px] overflow-hidden flex flex-col">
       <ToastContainer position="top-right" autoClose={5000} />
       {loading && <Loader />}
 

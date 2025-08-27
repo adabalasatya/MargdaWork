@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useToast } from "@/app/component/customtoast/page";
+import Swal from "sweetalert2";
 
 const ManageLists = () => {
   const router = useRouter();
@@ -144,6 +145,16 @@ const ManageLists = () => {
   };
 
   const handleDelete = async (id) => {
+     const result = await Swal.fire({
+           title: "Are you sure to delete?",
+           text: "Do you want to delete this list?",
+           icon: "error",
+           showCancelButton: true,
+           confirmButtonText: "yes, delete it",
+           cancelButtonText: "Cancel",
+         });
+       
+         if (!result.isConfirmed) return; 
     try {
       const response = await fetch(
         "https://www.margda.in/miraj/work/lists/delete-list",
@@ -356,7 +367,7 @@ const ManageLists = () => {
   };
 
   return (
-    <div className="p-6 min-h-screen">
+    <div className="p-4 min-h-[100px] overflow-hidden">
       {/* Toast Container */}
       <ToastContainer
         position="top-right"
@@ -461,7 +472,7 @@ const ManageLists = () => {
       <AnimatePresence>
         {isModalOpen && (
           <motion.div
-            className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-sm z-50"
+            className="fixed inset-0 flex items-center justify-center  backdrop-blur-sm z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -535,7 +546,7 @@ const ManageLists = () => {
       <AnimatePresence>
         {isMergeModalOpen && (
           <motion.div
-            className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-sm z-50"
+            className="fixed inset-0 flex items-center justify-center  backdrop-blur-sm z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -644,8 +655,8 @@ const ManageLists = () => {
       </AnimatePresence>
 
       {/* Table */}
-      <div className="overflow-x-auto bg-white border border-gray-300 rounded-xl shadow-lg">
-        <table className="min-w-full">
+      <div className="overflow-x-auto bg-white border border-gray-300 rounded-xl shadow-lg max-h-[395px] min-h-[395px] overflow-y-auto">
+        <table className="min-w-full bg-white border border-gray-300">
           <thead className="bg-gray-100">
             <tr>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
@@ -767,7 +778,7 @@ const ManageLists = () => {
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex justify-between items-center mt-4">
+      <div className="flex justify-between items-center mt-6">
         {/* Left: Showing entries */}
         <div className="text-sm font-semibold ml-2 text-gray-600">
           Showing {indexOfFirstRecord + 1} to{" "}
@@ -782,15 +793,15 @@ const ManageLists = () => {
             whileTap={{ scale: 0.95 }}
             onClick={handlePreviousPage}
             disabled={currentPage === 1}
-            className={`px-3 py-1 rounded-lg ${
+            className={`px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 ${
               currentPage === 1
-                ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                ? "bg-gray-50 text-gray-500 cursor-not-allowed"
                 : "bg-blue-600 text-white hover:bg-blue-700"
             }`}
           >
             <FaArrowLeftPagination className="inline mr-1" /> Previous
           </motion.button>
-          <span className="text-md border border-gray-200 bg-blue-500 text-white rounded px-2 text-gray-600">
+          <span className="px-4 py-2 border border-blue-600 rounded-lg text-[12px] font-medium bg-blue-600 text-white">
             {currentPage}
           </span>
           <motion.button
@@ -798,9 +809,9 @@ const ManageLists = () => {
             whileTap={{ scale: 0.95 }}
             onClick={handleNextPage}
             disabled={currentPage === totalPages}
-            className={`px-3 py-1 rounded-lg ${
+            className={`px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 ${
               currentPage === totalPages
-                ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                ? "bg-gray-50 text-gray-500 cursor-not-allowed"
                 : "bg-blue-600 text-white hover:bg-blue-700"
             }`}
           >

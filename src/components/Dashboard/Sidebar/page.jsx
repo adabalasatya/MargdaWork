@@ -46,8 +46,8 @@ const Sidebar = ({ toggleSidebar }) => {
       }
       try {
         const parsedUserData = JSON.parse(userData);
-        if (!parsedUserData || !parsedUserData.pic) {
-          router.push("/work/login");
+        if (!parsedUserData) {
+          router.push("/login");
         }
       } catch (error) {
         console.error("Error parsing user data:", error);
@@ -77,9 +77,21 @@ const Sidebar = ({ toggleSidebar }) => {
       name: "Email Campaign",
       icon: <FaMailBulk />,
       items: [
-        { title: "Email Credentials", link: "/email-credentials", icon: <FaArrowAltCircleRight /> },
-        { title: "Email Campaign", link: "/email-campaign", icon: <FaArrowAltCircleRight /> },
-        { title: "Email Campaign Reports", link: "/campaign-report", icon: <FaArrowAltCircleRight /> },
+        {
+          title: "Email Credentials",
+          link: "/email-credentials",
+          icon: <FaArrowAltCircleRight />,
+        },
+        {
+          title: "Email Campaign",
+          link: "/email-campaign",
+          icon: <FaArrowAltCircleRight />,
+        },
+        {
+          title: "Email Campaign Reports",
+          link: "/campaign-report",
+          icon: <FaArrowAltCircleRight />,
+        },
         // { title: "Communicate", link: "/work/communicate", icon: <FaArrowAltCircleRight /> },
       ],
     },
@@ -87,9 +99,21 @@ const Sidebar = ({ toggleSidebar }) => {
       name: "Whatsapp campaign",
       icon: <FaWhatsapp />,
       items: [
-        { title: "Scan WhatsApp", link: "/qr-scan", icon: <FaArrowAltCircleRight /> },
-        { title: "Whatsapp Campaign", link: "/whatsapp-campaign", icon: <FaArrowAltCircleRight /> },
-        { title: "Whatsapp Campaign Reports", link: "/whatsapp-campaign-report", icon: <FaArrowAltCircleRight /> },
+        {
+          title: "Scan WhatsApp",
+          link: "/qr-scan",
+          icon: <FaArrowAltCircleRight />,
+        },
+        {
+          title: "Whatsapp Campaign",
+          link: "/whatsapp-campaign",
+          icon: <FaArrowAltCircleRight />,
+        },
+        {
+          title: "Whatsapp Campaign Reports",
+          link: "/whatsapp-campaign-report",
+          icon: <FaArrowAltCircleRight />,
+        },
         // { title: "Communicate", link: "/work/whatsapp-communicate", icon: <FaArrowAltCircleRight /> },
       ],
     },
@@ -98,10 +122,18 @@ const Sidebar = ({ toggleSidebar }) => {
       icon: <FaSms />,
       items: [
         // { title: "SIM/API Credentials", link: "/work/sim-api-credentials", icon: <FaArrowAltCircleRight /> },
-        { title: "Sms Campaign", link: "/sms-campaign", icon: <FaArrowAltCircleRight /> },
+        {
+          title: "Sms Campaign",
+          link: "/sms-campaign",
+          icon: <FaArrowAltCircleRight />,
+        },
         // { title: "Sms Lists", link: "/work/sms-lists", icon: <FaArrowAltCircleRight /> },
         // { title: "Sms Templates", link: "/work/Sms-templates", icon: <FaArrowAltCircleRight /> },
-        { title: "Sms Campaign Reports", link: "/sms-campaign-report", icon: <FaArrowAltCircleRight /> },
+        {
+          title: "Sms Campaign Reports",
+          link: "/sms-campaign-report",
+          icon: <FaArrowAltCircleRight />,
+        },
         // { title: "Sms Communicate", link: "/work/sms-communicate", icon: <FaArrowAltCircleRight /> },
       ],
     },
@@ -109,19 +141,39 @@ const Sidebar = ({ toggleSidebar }) => {
       name: "Templates",
       icon: <FaList />,
       items: [
-        { title: "All Templates", link: "/templates-list", icon: <FaArrowRight /> },
-        { title: "Add Template", link: "/add-template", icon: <FaArrowRight /> },
+        {
+          title: "All Templates",
+          link: "/templates-list",
+          icon: <FaArrowRight />,
+        },
+        {
+          title: "Add Template",
+          link: "/add-template",
+          icon: <FaArrowRight />,
+        },
       ],
     },
     {
       name: "Lists",
       icon: <FaList />,
-      items: [{ title: "Manage Lists", link: "/manage-lists", icon: <FaArrowRight /> }],
+      items: [
+        {
+          title: "Manage Lists",
+          link: "/manage-lists",
+          icon: <FaArrowRight />,
+        },
+      ],
     },
     {
       name: "Tasks",
       icon: <FaList />,
-      items: [{ title: "Manage Tasks", link: "/manage-tasks", icon: <FaArrowRight /> }],
+      items: [
+        {
+          title: "Manage Tasks",
+          link: "/manage-tasks",
+          icon: <FaArrowRight />,
+        },
+      ],
     },
   ];
 
@@ -151,9 +203,11 @@ const Sidebar = ({ toggleSidebar }) => {
       }
     };
     const scrollContainer = scrollContainerRef.current;
-    if (scrollContainer) scrollContainer.addEventListener("scroll", handleScroll);
+    if (scrollContainer)
+      scrollContainer.addEventListener("scroll", handleScroll);
     return () => {
-      if (scrollContainer) scrollContainer.removeEventListener("scroll", handleScroll);
+      if (scrollContainer)
+        scrollContainer.removeEventListener("scroll", handleScroll);
     };
   }, [scrollPositionKey]);
 
@@ -192,7 +246,9 @@ const Sidebar = ({ toggleSidebar }) => {
   const renderMenu = (menu) => (
     <div className="bg-white border-2 border-gray-300 rounded-lg shadow-md text-sm">
       <div
-        className={`p-4 flex items-center cursor-pointer ${!isOpen ? "justify-center" : "justify-between"}`}
+        className={`p-4 flex items-center cursor-pointer ${
+          !isOpen ? "justify-center" : "justify-between"
+        }`}
         onClick={toggleMenu(menu.name)}
       >
         <div className="flex items-center space-x-2">
@@ -201,23 +257,34 @@ const Sidebar = ({ toggleSidebar }) => {
         </div>
         {isOpen && (
           <svg
-            className={`w-4 h-4 transition-transform ${menuStates[menu.name] ? "rotate-180" : ""}`}
+            className={`w-4 h-4 transition-transform ${
+              menuStates[menu.name] ? "rotate-180" : ""
+            }`}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         )}
       </div>
       {menuStates[menu.name] && (
-        <div className="border-t border-gray-200" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="border-t border-gray-200"
+          onClick={(e) => e.stopPropagation()}
+        >
           {menu.items.map((item) => (
             <Link
               key={item.link || item.title}
               href={item.link}
               onClick={handleLinkClick}
-              className={`flex items-center px-3 py-2 text-[13px] font-medium rounded-md text-black hover:bg-gradient-to-r from-blue-500 to-blue-600 hover:text-white ${!isOpen ? "justify-center" : ""}`}
+              className={`flex items-center px-3 py-2 text-[13px] font-medium rounded-md text-black hover:bg-gradient-to-r from-blue-500 to-blue-600 hover:text-white ${
+                !isOpen ? "justify-center" : ""
+              }`}
             >
               {item.icon && <span className="text-sm">{item.icon}</span>}
               {isOpen && <span className="ml-2">{item.title}</span>}
@@ -230,20 +297,40 @@ const Sidebar = ({ toggleSidebar }) => {
 
   return (
     <>
-      {isMobile && isOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden" onClick={() => setIsOpen(false)} />}
-      <div className={`relative z-20 ${isMobile ? "fixed inset-y-0 left-0" : ""}`}>
+      {isMobile && isOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+      <div
+        className={`relative z-20 ${isMobile ? "fixed inset-y-0 left-0" : ""}`}
+      >
         <aside
           ref={sidebarRef}
-          className={`text-gray-900 transition-all duration-300 ease-in-out m-1 bg-white h-full ${isOpen ? "w-64" : "w-32"}`}
+          className={`text-gray-900 transition-all duration-300 ease-in-out m-1 bg-white h-full ${
+            isOpen ? "w-64" : "w-32"
+          }`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Single Card containing logo + menus */}
           <div className="bg-white border-2 border-gray-300 rounded-lg shadow-lg h-full flex flex-col">
             {/* Logo + Toggle */}
             <div className="flex items-center p-4 border-b border-gray-200">
-              {isOpen && <Image src="/margdalogo.png" alt="Logo" width={220} height={32} className="w-64 h-8 object-contain" priority />}
+              {isOpen && (
+                <Image
+                  src="/margdalogo.png"
+                  alt="Logo"
+                  width={220}
+                  height={32}
+                  className="w-64 h-8 object-contain"
+                  priority
+                />
+              )}
               <button
-                className={`${isOpen ? "ml-auto" : "mx-auto"} bg-white text-gray-900 p-2 rounded-full shadow hover:bg-gradient-to-r from-blue-500 to-blue-600 hover:text-white focus:outline-none transition-all duration-300`}
+                className={`${
+                  isOpen ? "ml-auto" : "mx-auto"
+                } bg-white text-gray-900 p-2 rounded-full shadow hover:bg-gradient-to-r from-blue-500 to-blue-600 hover:text-white focus:outline-none transition-all duration-300`}
                 onClick={() => setIsOpen(!isOpen)}
               >
                 <Menu className="w-6 h-6" />
@@ -251,9 +338,14 @@ const Sidebar = ({ toggleSidebar }) => {
             </div>
 
             {/* Scrollable Menu Items */}
-            <div ref={scrollContainerRef} className="p-1 space-y-2 overflow-x-hidden overflow-y-auto flex-1">
+            <div
+              ref={scrollContainerRef}
+              className="p-1 space-y-2 overflow-x-hidden overflow-y-auto flex-1"
+            >
               {menus.map((menu) => (
-                <React.Fragment key={menu.name}>{renderMenu(menu)}</React.Fragment>
+                <React.Fragment key={menu.name}>
+                  {renderMenu(menu)}
+                </React.Fragment>
               ))}
             </div>
           </div>

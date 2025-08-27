@@ -10,7 +10,7 @@ const FilterTaskSection = ({
   selectedTask,
   handleTaskChange,
   filteredData,
-  handleDelete, // New prop for handling deletion
+  handleDelete, 
 }) => {
   const getLeadTypeIcon = (typeID) => {
     switch (parseInt(typeID)) {

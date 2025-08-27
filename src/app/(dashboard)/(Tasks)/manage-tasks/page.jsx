@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useToast } from "@/app/component/customtoast/page";
+import Swal from "sweetalert2";
 
 const ManageTasks = () => {
   const router = useRouter();
@@ -144,9 +145,17 @@ const ManageTasks = () => {
   };
 
   const handleDelete = async (taskID) => {
-    if (!window.confirm("Are you sure you want to delete this task?")) {
-      return;
-    }
+   
+     const result = await Swal.fire({
+           title: "Are you sure to delete?",
+           text: "Do you want to delete this task?",
+           icon: "error",
+           showCancelButton: true,
+           confirmButtonText: "yes, delete it",
+           cancelButtonText: "Cancel",
+         });
+       
+         if (!result.isConfirmed) return; 
 
     try {
       setIsLoading(true);
@@ -262,7 +271,7 @@ const ManageTasks = () => {
   }
 
   return (
-    <div className="p-6 min-h-screen">
+    <div className="p-5 min-h-[100px] overflow-hidden">
       {/* Toast Container */}
       <ToastContainer
         position="top-right"
@@ -346,7 +355,7 @@ const ManageTasks = () => {
       <AnimatePresence>
         {isModalOpen && (
           <motion.div
-            className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-sm z-50"
+            className="fixed inset-0 flex items-center justify-center backdrop-blur-sm z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -427,8 +436,8 @@ const ManageTasks = () => {
       </AnimatePresence>
 
       {/* Tasks Table */}
-      <div className="overflow-x-auto bg-white border border-gray-300 rounded-xl shadow-lg">
-        <table className="min-w-full">
+      <div className="overflow-x-auto bg-white border border-gray-300 rounded-xl shadow-lg max-h-[388px] min-h-[388px] overflow-y-auto">
+        <table className="min-w-full bg-white border border-gray-300">
           <thead className="bg-gray-100">
             <tr>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
@@ -511,9 +520,9 @@ const ManageTasks = () => {
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex justify-between items-center mt-4">
+      <div className="flex justify-between ml-2 items-center mt-6">
         {/* Left: Showing Entries */}
-        <div className="text-sm font-semibold text-gray-600">
+        <div className="text-[12px] font-semibold text-gray-600">
           Showing {filteredTasks.length > 0 ? indexOfFirstRecord + 1 : 0} to{" "}
           {Math.min(indexOfLastRecord, filteredTasks.length)} of {filteredTasks.length} total entries
         </div>
@@ -525,11 +534,11 @@ const ManageTasks = () => {
             whileTap={{ scale: 0.95 }}
             onClick={handlePreviousPage}
             disabled={currentPage === 1 || isLoading}
-            className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             <FaArrowLeft className="inline mr-1" /> Previous
           </motion.button>
-          <span className="text-md border border-gray-300 px-1 bg-blue-500 text-white rounded text-gray-600">
+          <span className="px-4 py-2 border border-blue-600 rounded-lg text-[12px] font-medium bg-blue-600 text-white">
             {currentPage}
           </span>
           <motion.button
@@ -537,7 +546,7 @@ const ManageTasks = () => {
             whileTap={{ scale: 0.95 }}
             onClick={handleNextPage}
             disabled={currentPage === totalPages || isLoading}
-            className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
              <FaArrowRight className="inline mr-1" /> Next
           </motion.button>

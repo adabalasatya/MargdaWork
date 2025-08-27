@@ -73,7 +73,7 @@ const AddToTask = ({ setClose, item, userID, fetchData }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-400 bg-opacity-50 flex justify-center items-center z-50 backdrop-blur-sm">
+    <div className="fixed inset-0 flex justify-center items-center z-50 backdrop-blur-sm">
       <div className="flex flex-col bg-white px-16 py-9 w-1/2 max-w-md rounded-lg shadow-lg">
         <h2 className="text-xl font-semibold mb-4">Add to Task</h2>
         

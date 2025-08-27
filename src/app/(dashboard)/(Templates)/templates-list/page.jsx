@@ -6,6 +6,7 @@ import Link from "next/link";
 import { FaEdit, FaTrash, FaEye, FaSearch } from "react-icons/fa";
 import { useToast } from "@/app/component/customtoast/page";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 const TemplatesList = () => {
   const router = useRouter();
@@ -61,9 +62,18 @@ const TemplatesList = () => {
   };
 
   const handleDeleteTemplate = async (tempID) => {
-    if (!window.confirm("Are you sure you want to delete this template?")) {
-      return;
-    }
+   
+     const result = await Swal.fire({
+           title: "Are you sure to delete?",
+           text: "Do you want to delete this template?",
+           icon: "error",
+           showCancelButton: true,
+           confirmButtonText: "yes, delete it",
+           cancelButtonText: "Cancel",
+         });
+       
+         if (!result.isConfirmed) return; 
+   
     try {
       const response = await fetch(
         "https://www.margda.in/miraj/work/template/delete-template",
@@ -183,7 +193,7 @@ const TemplatesList = () => {
   };
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-[100px] overflow-hidden p-5">
       <div className="bg-white rounded-lg shadow-md p-6 border-2 border-gray-300">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-semibold">Templates</h1>
@@ -240,7 +250,7 @@ const TemplatesList = () => {
           </div>
         ) : (
           <div>
-            <div className="overflow-x-auto">
+            <div className="max-h-[330px] min-h-[330px] overflow-auto">
               <table className="min-w-full bg-white border border-gray-300">
                 <thead className="bg-blue-500 text-white">
                   <tr>
@@ -307,8 +317,8 @@ const TemplatesList = () => {
           </div>
         )}
       </div>
-      <div className="flex items-center justify-between mt-2">
-              <div className="text-sm ml-2 font-semibold text-gray-600">
+      <div className="flex items-center justify-between mt-6">
+              <div className="text-[12px] ml-2 font-semibold text-gray-600">
                 Showing {indexOfFirstRecord + 1} to{" "}
                 {Math.min(indexOfLastRecord, filteredTemplates.length)} total entries
               </div>
@@ -316,7 +326,7 @@ const TemplatesList = () => {
                 <button
                   onClick={handlePreviousPage}
                   disabled={currentPage === 1}
-                  className={`px-4 py-2 bg-gray-200 text-gray-700 rounded ${
+                  className={`px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 ${
                     currentPage === 1
                       ? "opacity-50 cursor-not-allowed"
                       : "hover:bg-gray-300"
@@ -330,7 +340,7 @@ const TemplatesList = () => {
                     onClick={() => setCurrentPage(page)}
                     className={`px-4 py-2 ${
                       currentPage === page
-                        ? "bg-blue-500 text-white"
+                        ? "px-4 py-2 border border-blue-600 rounded-lg text-[12px] font-medium bg-blue-600 text-white"
                         : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                     } rounded`}
                   >
@@ -340,7 +350,7 @@ const TemplatesList = () => {
                 <button
                   onClick={handleNextPage}
                   disabled={currentPage === totalPages}
-                  className={`px-4 py-2 bg-gray-200 text-gray-700 rounded ${
+                  className={`px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 ${
                     currentPage === totalPages
                       ? "opacity-50 cursor-not-allowed"
                       : "hover:bg-gray-300"
