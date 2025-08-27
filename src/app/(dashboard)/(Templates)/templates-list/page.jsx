@@ -250,7 +250,7 @@ const TemplatesList = () => {
           </div>
         ) : (
           <div>
-            <div className="max-h-[330px] min-h-[330px] overflow-auto">
+            <div className="md:max-h-[505px] overflow-auto">
               <table className="min-w-full bg-white border border-gray-300">
                 <thead className="bg-blue-500 text-white">
                   <tr>
@@ -317,7 +317,7 @@ const TemplatesList = () => {
           </div>
         )}
       </div>
-      <div className="flex items-center justify-between mt-6">
+      <div className="flex items-center justify-between mt-5">
               <div className="text-[12px] ml-2 font-semibold text-gray-600">
                 Showing {indexOfFirstRecord + 1} to{" "}
                 {Math.min(indexOfLastRecord, filteredTemplates.length)} total entries
@@ -334,19 +334,13 @@ const TemplatesList = () => {
                 >
                   {"<<"} Previous
                 </button>
-                {getPaginationRange().map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`px-4 py-2 ${
-                      currentPage === page
-                        ? "px-4 py-2 border border-blue-600 rounded-lg text-[12px] font-medium bg-blue-600 text-white"
-                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                    } rounded`}
-                  >
-                    {page}
-                  </button>
-                ))}
+               <button
+  className="px-4 py-2 border border-blue-600 rounded-lg text-[12px] font-medium bg-blue-600 text-white"
+  disabled
+>
+  {currentPage}
+</button>
+
                 <button
                   onClick={handleNextPage}
                   disabled={currentPage === totalPages}

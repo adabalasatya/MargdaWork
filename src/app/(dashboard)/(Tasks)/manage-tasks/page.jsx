@@ -436,7 +436,7 @@ const ManageTasks = () => {
       </AnimatePresence>
 
       {/* Tasks Table */}
-      <div className="overflow-x-auto bg-white border border-gray-300 rounded-xl shadow-lg max-h-[388px] min-h-[388px] overflow-y-auto">
+      <div className="overflow-x-auto bg-white border border-gray-300 rounded-xl shadow-lg md:max-h-[550px] overflow-y-auto">
         <table className="min-w-full bg-white border border-gray-300">
           <thead className="bg-gray-100">
             <tr>
@@ -471,7 +471,7 @@ const ManageTasks = () => {
                     animate="visible"
                     exit="hidden"
                     variants={rowVariants}
-                    className="border-b last:border-b-0 hover:bg-gray-50 transition-colors duration-200"
+                    className="border-b border-gray-300 last:border-b-0 hover:bg-gray-50 transition-colors duration-200"
                   >
                     <td className="px-6 py-4 text-gray-900">
                       {indexOfFirstRecord + index + 1}

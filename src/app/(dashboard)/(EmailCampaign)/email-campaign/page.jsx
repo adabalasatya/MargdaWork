@@ -771,7 +771,7 @@ const handleDelete = async (id) => {
           </div>
         </div>
 
-        <div className="w-full max-h-[330px] min-h-[330px] overflow-auto">
+        <div className="w-full md:max-h-[505px] overflow-auto">
           <table className="min-w-full text-sm border border-gray-200 rounded-lg">
             <thead className="bg-gray-100">
               <tr>

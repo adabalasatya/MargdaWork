@@ -1,6 +1,4 @@
-// components/Pagination.jsx
-"use client";
-
+"use client"
 const Pagination = ({
   indexOfFirstRecord,
   indexOfLastRecord,
@@ -24,21 +22,13 @@ const Pagination = ({
   };
 
   const getPaginationRange = () => {
-    const totalPageNumbers = 5; // Number of page buttons to show
-    if (totalPages <= totalPageNumbers) {
-      // If total pages are less than or equal to the desired number, show all pages
-      return Array.from({ length: totalPages }, (_, i) => i + 1);
-    }
-
+    const totalPageNumbers = 5;
     const halfRange = Math.floor(totalPageNumbers / 2);
     let startPage = Math.max(currentPage - halfRange, 1);
     let endPage = Math.min(startPage + totalPageNumbers - 1, totalPages);
-
-    // Adjust startPage if endPage is at the maximum to ensure totalPageNumbers buttons
     if (endPage - startPage + 1 < totalPageNumbers) {
       startPage = Math.max(endPage - totalPageNumbers + 1, 1);
     }
-
     return Array.from(
       { length: endPage - startPage + 1 },
       (_, i) => startPage + i
@@ -46,22 +36,20 @@ const Pagination = ({
   };
 
   return (
-    <div className="sticky bottom-0 bg-white p-4 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200">
-      <div className="text-[12px] font-semibold text-gray-600 mb-2 sm:mb-0">
+    <div className="flex items-center justify-between p-4">
+      <div className="text-sm font-semibold text-gray-600">
         Showing {indexOfFirstRecord + 1} to{" "}
         {Math.min(indexOfLastRecord, filteredData.length)} of{" "}
-        {filteredData.length} total Records
+        {filteredData.length} Records
         {(selectedTask || selectedLeadType) && (
           <span className="ml-2 text-blue-600">(Filtered)</span>
         )}
       </div>
-      <div className="flex items-center space-x-2 flex-wrap justify-center">
+      <div className="flex items-center space-x-2">
         <button
           onClick={handlePreviousPage}
           disabled={currentPage === 1}
-          aria-disabled={currentPage === 1}
-          aria-label="Previous page"
-          className={`px-4 py-2 bg-gray-200 text-sm text-gray-700 rounded-lg shadow-md ${
+          className={`px-4 py-2 bg-gray-200 text-gray-700 rounded-lg shadow-md ${
             currentPage === 1
               ? "opacity-50 cursor-not-allowed"
               : "hover:bg-gray-300 hover:scale-105 transition-transform duration-200"
@@ -73,8 +61,7 @@ const Pagination = ({
           <button
             key={page}
             onClick={() => setCurrentPage(page)}
-            aria-label={`Go to page ${page}`}
-            className={`px-4 py-2 text-sm ${
+            className={`px-4 py-2 ${
               currentPage === page
                 ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300 hover:scale-105 transition-transform duration-200"
@@ -86,9 +73,7 @@ const Pagination = ({
         <button
           onClick={handleNextPage}
           disabled={currentPage === totalPages}
-          aria-disabled={currentPage === totalPages}
-          aria-label="Next page"
-          className={`px-4 py-2 bg-gray-200 text-sm text-gray-700 rounded-lg shadow-md ${
+          className={`px-4 py-2 bg-gray-200 text-gray-700 rounded-lg shadow-md ${
             currentPage === totalPages
               ? "opacity-50 cursor-not-allowed"
               : "hover:bg-gray-300 hover:scale-105 transition-transform duration-200"

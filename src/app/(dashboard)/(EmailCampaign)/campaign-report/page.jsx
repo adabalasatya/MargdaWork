@@ -262,11 +262,11 @@ const EmailReport = () => {
       </div>
 
       {/* Table Section */}
-      <div className="bg-white rounded-lg shadow overflow-y-auto max-h-[387px] min-h-[387px] ">
+      <div className="bg-white rounded-lg shadow overflow-y-auto md:max-h-[550px]  ">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
-              <tr className="text-left text-sm text-gray-500">
+              <tr className="text-left text-[12px] text-gray-500">
                 <th className="p-4 font-medium uppercase tracking-wider">
                   Task
                 </th>
@@ -314,7 +314,7 @@ const EmailReport = () => {
                     key={email.emailsID}
                     className="hover:bg-gray-50 transition-colors duration-150"
                   >
-                    <td className="p-4 text-[15px]">
+                    <td className="p-4 text-[12px]">
                       {email.dataID &&
                         (email.taskName ? (
                           <div className="font-semibold">{email.taskName}</div>
@@ -330,26 +330,26 @@ const EmailReport = () => {
                           </button>
                         ))}
                     </td>
-                    <td className="p-4 text-[15px]">{email.sender}</td>
-                    <td className="p-4 text-[15px]">{email.receiver}</td>
-                    <td className="p-4 text-[14px]">
+                    <td className="p-4 text-[12px]">{email.sender}</td>
+                    <td className="p-4 text-[12px]">{email.receiver}</td>
+                    <td className="p-4 text-[12px]">
                       {email.subject || "N/A"}
                     </td>
-                    <td className="p-4 text-[14px]">{email.matter || "N/A"}</td>
-                    <td className="p-4 text-[14px]">
+                    <td className="p-4 text-[12px]">{email.matter || "N/A"}</td>
+                    <td className="p-4 text-[12px]">
                       {email.edate
                         ? new Date(email.edate).toLocaleString()
                         : "N/A"}
                     </td>
-                    <td className="p-4 text-[14px]">
+                    <td className="p-4 text-[12px]">
                       {email.campaignName || "N/A"}
                     </td>
-                    <td className="p-4 text-[14px]">
+                    <td className="p-4 text-[12px]">
                       {email.open_count || "N/A"}
                     </td>
-                    <td className="p-4 text-[14px]">
+                    <td className="p-4 text-[12px]">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        className={`px-2 py-1 rounded-full text-[12px] font-medium ${
                           email.success
                             ? "bg-green-100 text-green-800"
                             : "bg-red-100 text-red-800"

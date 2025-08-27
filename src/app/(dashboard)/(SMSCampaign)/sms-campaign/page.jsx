@@ -522,7 +522,7 @@ const SmsCampaign = () => {
           </div>
         </div>
 
-        <div className="w-full max-h-[333px] min-h-[333px] overflow-auto">
+        <div className="w-full md:max-h-[505px] overflow-auto">
           <table className="min-w-full text-sm border border-gray-200 rounded-lg">
             <thead className="bg-gray-100">
               <tr>
@@ -651,7 +651,7 @@ const SmsCampaign = () => {
       </div>
 
       {filteredCampaigns.length > 0 && (
-        <div className="flex flex-col sm:flex-row justify-between items-center mt-8 space-y-3 sm:space-y-0">
+        <div className="flex flex-col sm:flex-row justify-between items-center mt-5 space-y-3 sm:space-y-0">
           <span className="text-[12px] font-semibold ml-2 text-gray-600">
             Showing {startEntry} to {endEntry} of {filteredCampaigns.length} total entries
           </span>

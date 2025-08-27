@@ -247,11 +247,11 @@ const SmsReport = () => {
       </div>
 
       {/* Table Section */}
-      <div className="bg-white rounded-lg shadow overflow-hidden overflow-y-auto max-h-[387px] min-h-[387px]">
+      <div className="bg-white rounded-lg shadow overflow-hidden overflow-y-auto md:max-h-[550px]">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
-              <tr className="text-left text-sm text-gray-500">
+              <tr className="text-left text-[12px] text-gray-500">
                 <th className="p-4 font-medium uppercase tracking-wider">
                   Task
                 </th>
@@ -291,7 +291,7 @@ const SmsReport = () => {
                     key={sms.smsID}
                     className="hover:bg-gray-50 transition-colors duration-150"
                   >
-                    <td className="p-4 text-[15px]">
+                    <td className="p-4 text-[12px]">
                       {sms.dataID &&
                         (sms.taskName ? (
                           <div className="font-semibold">{sms.taskName}</div>
@@ -301,20 +301,20 @@ const SmsReport = () => {
                               setShowAddToTaskCon(true);
                               setSelectedItem(sms);
                             }}
-                            className="w-max bg-blue-500 px-1 py-1 rounded text-white hover:bg-blue-700"
+                            className="text-[12px] bg-blue-500 px-1 py-1 rounded text-white hover:bg-blue-700"
                           >
                             Add to Task
                           </button>
                         ))}
                     </td>
-                    <td className="p-4 text-[15px]">{sms.sender}</td>
-                    <td className="p-4 text-[15px]">{sms.receiver}</td>
+                    <td className="p-4 text-[12px]">{sms.sender}</td>
+                    <td className="p-4 text-[12px]">{sms.receiver}</td>
 
-                    <td className="p-4 text-[14px]">{sms.message || "N/A"}</td>
-                    <td className="p-4 text-[14px]">
+                    <td className="p-4 text-[12px]">{sms.message || "N/A"}</td>
+                    <td className="p-4 text-[12px]">
                       {sms.edate ? new Date(sms.edate).toLocaleString() : "N/A"}
                     </td>
-                    <td className="p-4 text-[14px]">
+                    <td className="p-4 text-[12px]">
                       {sms.campaignName || "N/A"}
                     </td>
                   </tr>
@@ -327,7 +327,7 @@ const SmsReport = () => {
 
       {/* Enhanced Pagination */}
       {filteredSms.length > 0 && (
-        <div className="flex flex-col sm:flex-row justify-between items-center mt-5 space-y-3 sm:space-y-0">
+        <div className="flex flex-col sm:flex-row justify-between items-center mt-6 space-y-3 sm:space-y-0">
           <div className="text-[12px] ml-2 font-semibold text-gray-600">
             Showing {filteredSms.length === 0 ? 0 : indexOfFirstSms + 1} to{" "}
             {Math.min(indexOfLastSms, filteredSms.length)} of{" "}

@@ -497,7 +497,7 @@ const ManageLists = () => {
                   value={listName}
                   onChange={(e) => setListName(e.target.value)}
                   placeholder="Enter list name"
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
                 />
                 {error && (
                   <motion.p
@@ -527,7 +527,7 @@ const ManageLists = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleSubmit}
-                  className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200"
                 >
                   {editList ? (
                     <FaEdit className="mr-2" />
@@ -655,7 +655,7 @@ const ManageLists = () => {
       </AnimatePresence>
 
       {/* Table */}
-      <div className="overflow-x-auto bg-white border border-gray-300 rounded-xl shadow-lg max-h-[395px] min-h-[395px] overflow-y-auto">
+      <div className="overflow-x-auto bg-white border border-gray-300 rounded-xl shadow-lg md:max-h-[550px] overflow-y-auto">
         <table className="min-w-full bg-white border border-gray-300">
           <thead className="bg-gray-100">
             <tr>
@@ -701,7 +701,7 @@ const ManageLists = () => {
                     animate="visible"
                     exit="hidden"
                     variants={rowVariants}
-                    className="border-b last:border-b-0 hover:bg-gray-50 transition-colors duration-200"
+                    className="border-b border-gray-300 last:border-b-0 hover:bg-gray-50 transition-colors duration-200"
                   >
                     <td className="px-6 py-4">
                       <input

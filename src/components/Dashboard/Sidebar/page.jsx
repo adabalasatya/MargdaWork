@@ -309,7 +309,7 @@ const Sidebar = ({ toggleSidebar }) => {
         <aside
           ref={sidebarRef}
           className={`text-gray-900 transition-all duration-300 ease-in-out m-1 bg-white h-full ${
-            isOpen ? "w-64" : "w-32"
+            isOpen ? "w-60" : "w-18"
           }`}
           onClick={(e) => e.stopPropagation()}
         >
