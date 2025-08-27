@@ -522,7 +522,7 @@ const SmsCampaign = () => {
           </div>
         </div>
 
-        <div className="w-full md:max-h-[505px] overflow-auto">
+        <div className="w-full md:max-h-[480px] overflow-auto">
           <table className="min-w-full text-sm border border-gray-200 rounded-lg">
             <thead className="bg-gray-100">
               <tr>

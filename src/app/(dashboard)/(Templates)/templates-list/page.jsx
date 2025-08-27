@@ -250,7 +250,7 @@ const TemplatesList = () => {
           </div>
         ) : (
           <div>
-            <div className="md:max-h-[505px] overflow-auto">
+            <div className="md:max-h-[480px] overflow-auto">
               <table className="min-w-full bg-white border border-gray-300">
                 <thead className="bg-blue-500 text-white">
                   <tr>

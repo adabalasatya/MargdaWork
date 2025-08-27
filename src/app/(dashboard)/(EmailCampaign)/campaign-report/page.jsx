@@ -262,7 +262,7 @@ const EmailReport = () => {
       </div>
 
       {/* Table Section */}
-      <div className="bg-white rounded-lg shadow overflow-y-auto md:max-h-[550px]  ">
+      <div className="bg-white rounded-lg shadow overflow-y-auto md:max-h-[520px]  ">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">

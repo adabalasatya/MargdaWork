@@ -266,7 +266,7 @@ const DataTable = ({
 
   return (
     <div className="bg-white rounded-xl border-2 border-gray-200 shadow-md p-4 m-2 mt-3">
-      <div className="overflow-auto max-h-[480px]">
+      <div className="overflow-auto max-h-[450px]">
         <table className="w-full text-sm text-left border-spacing-x-4">
           <thead>
             <tr className="text-gray-700 top-0 z-10">
