@@ -29,7 +29,7 @@ const AddTemplate = () => {
 
     const storedUserData = JSON.parse(sessionStorage.getItem("userData") || 'null');
     if (!storedUserData || !storedUserData.pic) {
-      router.push("/work/login");
+      router.push("/update-profile");
       return;
     } else {
       setUserData(storedUserData);

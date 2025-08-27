@@ -48,7 +48,7 @@ const SmsReport = () => {
   useEffect(() => {
     const userData = getUserData();
     if (!userData || !userData.pic) {
-      return router.push("/work/login");
+      return router.push("/update-profile");
     } else {
       const userID = userData.userID;
       setUserID(userID);

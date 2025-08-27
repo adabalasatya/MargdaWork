@@ -63,7 +63,7 @@ const EmailCredentials = () => {
   useEffect(() => {
     const userData = getUserData();
     if (!userData || !userData.pic) {
-      router.push("/login");
+      router.push("/update-profile");
     } else {
       setUserID(userData.userID);
       fetchData(userData.userID);

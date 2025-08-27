@@ -52,7 +52,7 @@ const ListData = () => {
   useEffect(() => {
     const userData = JSON.parse(sessionStorage.getItem("userData"));
     if (!userData || !userData.pic) {
-      router.push("/login");
+      router.push("/update-profile");
     } else {
       setUserID(userData.userID);
     }
@@ -112,14 +112,12 @@ const ListData = () => {
         } else {
           console.warn("No subscribers found for listID:", listID);
           setSubscribers([]);
-          addToast("No subscribers found for this list.", "info");
         }
       } else {
         setSubscribers([]);
       }
     } catch (error) {
       console.error("Error fetching subscribers:", error);
-      addToast("Error fetching subscribers: " + error.message, "error");
       setSubscribers([]);
     } finally {
       setIsLoading(false);

@@ -33,7 +33,7 @@ const AddListDataForm = ({ setClose, fetchData, listID }) => {
     if (typeof window !== "undefined") {
       const userData = JSON.parse(sessionStorage.getItem("userData"));
       if (!userData || !userData.pic) {
-        router.push("/work/login");
+        router.push("/mange-lists");
       } else {
         setUserID(userData.userID);
       }
@@ -85,7 +85,6 @@ const AddListDataForm = ({ setClose, fetchData, listID }) => {
       }
     } catch (error) {
       console.error("Error adding new record:", error);
-      addToast("Failed to add the record. Please try again.", "error");
     } finally {
       setIsLoading(false);
     }

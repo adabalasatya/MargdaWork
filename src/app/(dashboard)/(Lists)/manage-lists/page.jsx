@@ -38,7 +38,7 @@ const ManageLists = () => {
 
     const userData = JSON.parse(sessionStorage.getItem("userData"));
     if (!userData || !userData.pic) {
-      return router.push("/work/login");
+      return router.push("/update-profile");
     } else {
       setUserID(userData.userID);
       fetchLists(userData.userID);
@@ -78,11 +78,9 @@ const ManageLists = () => {
         setLists(data.Lists || []);
       } else {
         setLists([]);
-        addToast(data.message || "Failed to fetch lists", "error");
       }
     } catch (error) {
       console.error("Error fetching lists:", error);
-      addToast("Failed to fetch lists", "error");
     }
   };
 

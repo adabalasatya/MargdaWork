@@ -42,7 +42,7 @@ const [isEditing, setIsEditing] = useState(false);
 
     const storedUserData = JSON.parse(sessionStorage.getItem("userData") || 'null');
     if (!storedUserData || !storedUserData.pic) {
-      router.push("/login");
+      router.push("/update-profile");
       return;
     } else {
       setUserData(storedUserData);
@@ -143,7 +143,6 @@ const [isEditing, setIsEditing] = useState(false);
         setTemplates(filter);
       } else {
         setTemplates([]);
-        addToast("Templates Not Found");
       }
     } catch (error) {
       console.error("Error fetching templates:", error);

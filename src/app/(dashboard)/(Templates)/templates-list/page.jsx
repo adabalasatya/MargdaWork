@@ -27,7 +27,7 @@ const TemplatesList = () => {
     if (typeof window !== "undefined") {
       const userData = JSON.parse(sessionStorage.getItem("userData"));
       if (!userData || !userData.pic) {
-        return router.push("/login");
+        return router.push("/update-profile");
       } else {
         setUserID(userData.userID);
         setAccessToken(userData.accessToken || userData.access_token);
@@ -54,7 +54,7 @@ const TemplatesList = () => {
         const templates = data.Templates;
         setAllTemplates(templates);
       } else {
-        toast.error(data.message, "error");
+        console.error(data.message, "error");
       }
     } catch (error) {
       console.error("Error fetching templates:",  error);

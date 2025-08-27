@@ -59,10 +59,10 @@ const EditTemplate = () => {
         setAttachmentUrls(template.attach_url);
       } catch (error) {
         console.error('Error parsing template data:', error);
-        router.push("/work/templates-list");
+        router.push("/templates-list");
       }
     } else {
-      router.push("/work/templates-list");
+      router.push("/templates-list");
     }
   }, [searchParams]);
 

@@ -34,7 +34,7 @@ const ManageTasks = () => {
 
     const storedUserData = JSON.parse(sessionStorage.getItem("userData") || 'null');
     if (!storedUserData || !storedUserData.pic) {
-      router.push("/work/login");
+      router.push("/update-profile");
       return;
     } else {
       setUserData(storedUserData);
@@ -63,11 +63,9 @@ const ManageTasks = () => {
         setTasks(data.Tasks || []);
       } else {
         setTasks([]);
-        addToast(data.message || "Failed to fetch tasks", "error");
       }
     } catch (error) {
       console.error("Error fetching tasks:", error);
-      addToast("Failed to fetch tasks", "error");
       setTasks([]);
     } finally {
       setIsLoading(false);

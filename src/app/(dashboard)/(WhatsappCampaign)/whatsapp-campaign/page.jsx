@@ -43,7 +43,7 @@ const WhatsAppCampaign = () => {
 
     const storedUserData = JSON.parse(sessionStorage.getItem("userData") || 'null');
     if (!storedUserData || !storedUserData.pic) {
-      router.push("/login");
+      router.push("/update-profile");
       return;
     } else {
       setUserData(storedUserData);
@@ -83,7 +83,6 @@ const WhatsAppCampaign = () => {
       }
     } catch (error) {
       console.error("Error fetching campaigns:", error);
-      addToast("Failed to fetch campaigns", "error");
       setCampaigns([]);
     } finally {
       setLoading(false);
@@ -110,7 +109,6 @@ const WhatsAppCampaign = () => {
         setLists(data.Lists || []);
       } else {
         setLists([]);
-        addToast("Failed to fetch lists", "error");
       }
     } catch (error) {
       console.error("Error fetching lists:", error);
@@ -141,11 +139,9 @@ const WhatsAppCampaign = () => {
         setTemplates(filter);
       } else {
         setTemplates([]);
-        addToast("Failed to fetch templates", "error");
       }
     } catch (error) {
       console.error("Error fetching templates:", error);
-      addToast("Failed to fetch templates", "error");
       setTemplates([]);
     }
   };
