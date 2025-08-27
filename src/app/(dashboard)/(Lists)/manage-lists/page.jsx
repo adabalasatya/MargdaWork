@@ -655,7 +655,7 @@ const ManageLists = () => {
       </AnimatePresence>
 
       {/* Table */}
-      <div className="overflow-x-auto bg-white border border-gray-300 rounded-xl shadow-lg md:max-h-[550px] overflow-y-auto">
+      <div className="overflow-x-auto bg-white border border-gray-300 rounded-xl shadow-lg md:max-h-[520px] overflow-y-auto">
         <table className="min-w-full bg-white border border-gray-300">
           <thead className="bg-gray-100">
             <tr>
