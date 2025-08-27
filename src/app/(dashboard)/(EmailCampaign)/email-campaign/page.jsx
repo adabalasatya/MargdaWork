@@ -80,7 +80,7 @@ const [isEditing, setIsEditing] = useState(false);
         setCampaigns(data.data || []);
       } else {
         setCampaigns([]);
-        addToast("Failed to fetch campaigns", "error");
+       
       }
     } catch (error) {
       console.error("Error fetching campaigns:", error);
