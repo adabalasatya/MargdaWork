@@ -853,7 +853,7 @@ const ListData = () => {
 
         {/* Subscribers Table */}
         <div className="bg-white border border-gray-300 rounded-lg overflow-x-auto overflow-y-auto">
-          <div className="md:max-h-[430px] overflow-auto ">
+          <div className="md:max-h-[420px] overflow-auto ">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50 sticky top-0 z-10">
                 <tr>
