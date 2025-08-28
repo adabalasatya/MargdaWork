@@ -252,22 +252,17 @@ const DataTable = ({
 
   // Close dropdown when clicking outside
   useEffect(() => {
-  const handleClickOutside = (event) => {
-    if (
-      openDropdownId &&
-      dropdownRef.current &&
-      !dropdownRef.current.contains(event.target)
-    ) {
-      setOpenDropdownId(null);
-    }
-  };
+    const handleClickOutside = (event) => {
+      if (openDropdownId && dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpenDropdownId(null);
+      }
+    };
 
-  document.addEventListener("mousedown", handleClickOutside);
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  };
-}, [openDropdownId]);
-
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openDropdownId]);
 
   return (
     <div className="bg-white rounded-xl border-2 border-gray-200 shadow-md p-4 m-2 mt-3">
@@ -360,7 +355,7 @@ const DataTable = ({
                     />
                   </td>
                   <td className="px-4 py-3 border-r border-gray-200">
-                    <div ref={dropdownRef} className="relative flex items-center space-x-2">
+                    <div className="relative flex items-center space-x-2">
                       <button
                         title="Actions"
                         className="p-2 bg-gray-500 text-white rounded-full shadow-md hover:scale-105 transition-transform duration-200"
@@ -375,10 +370,11 @@ const DataTable = ({
                       {/* Inline dropdown menu */}
                       {openDropdownId === item.dataID && (
                         <div 
-                          className="absolute z-50 w-48 bg-white border border-gray-200 rounded-lg shadow-lg max-h-45 overflow-y-auto"
+                          ref={dropdownRef}
+                          className="absolute z-50 w-48 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto"
                           style={{
-                            top: "-200%",
-                            left: "45%"
+                            top: "100%",
+                            left: 0
                           }}
                         >
                           <button
