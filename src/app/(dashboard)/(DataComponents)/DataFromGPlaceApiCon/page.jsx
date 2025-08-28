@@ -10,11 +10,13 @@ import {
   FaTimes,
   FaUser,
   FaUserCog,
+  FaSpinner,
 } from "react-icons/fa";
 import { useToast } from "@/app/component/customtoast/page";
 
 const DataFromGPlaceApi = ({ setShow, userID }) => {
   const [loading, setLoading] = useState(false);
+  const [savingId, setSavingId] = useState(null);
   const [limit, setLimit] = useState("");
   const [query, setQuery] = useState("");
   const [data, setData] = useState([]);
@@ -54,18 +56,19 @@ const DataFromGPlaceApi = ({ setShow, userID }) => {
         setData(data.data);
       } else {
         addToast("Data not found, please enter valid keywords", "error");
+        setData([]);
       }
     } catch (error) {
       console.log(error);
+      addToast("Error searching data", "error");
     } finally {
-      setQuery("");
       setLoading(false);
     }
   };
 
-  const handleSave = async (item) => {
+  const handleSave = async (item, index) => {
     if (!item.phone || item.phone === "N/A") {
-      return addToast("This data don't have phone number", "error");
+      return addToast("This data doesn't have a phone number", "error");
     }
 
     const payload = {
@@ -78,7 +81,7 @@ const DataFromGPlaceApi = ({ setShow, userID }) => {
       userID: userID,
     };
 
-    setLoading(true);
+    setSavingId(index);
     try {
       const response = await fetch(
         "https://www.margda.in/miraj/work/data/data-extraction/google-map/save-data",
@@ -101,164 +104,246 @@ const DataFromGPlaceApi = ({ setShow, userID }) => {
       console.error(error);
       addToast("Error in adding data", "error");
     } finally {
-      setLoading(false);
+      setSavingId(null);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
-      <div className="flex flex-col space-x-2 bg-white p-16 pt-9 rounded w-[70%] h-[70%] overflow-y-scroll">
-        {/* {loading && <Loader />} */}
-        <div className="flex flex-row items-center text-center mb-4">
-          <div className="w-full">
-            <h2 className="text-xl font-semibold">Search Data</h2>
-          </div>
-          <div
-            onClick={() => setShow(false)}
-            className="my-auto font-normal border px-2 py-2 bg-red-500 text-white cursor-pointer hover:bg-red-600 hover:text-gray-500 rounded"
-          >
-            <FaTimes />
-          </div>
-        </div>
-
-        <div className="flex justify-center items-center mt-4">
-          <select
-            name="limit"
-            id="limit"
-            value={limit}
-            onChange={(e) => setLimit(e.target.value)}
-            className="w-24 py-2 mr-4 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
-            <option value="">Limit</option>
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="50">50</option>
-            <option value="80">80</option>
-            <option value="100">100</option>
-          </select>
-
-          <div className="relative flex items-center w-[80%] rounded">
-            <FaSearch className="absolute left-4 text-gray-500 text-lg" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Keyword With Location"
-              className="w-full py-2 pl-12 pr-4 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  getData();
-                }
-              }}
-            />
+    <div className="fixed inset-0 backdrop-blur-sm z-50 flex justify-center items-center p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-gray-500 to-gray-800  px-6 py-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                🌍 Google Places Data Search
+              </h2>
+              <p className="text-blue-100 text-sm mt-1">
+                Search and extract business data from Google Places
+              </p>
+            </div>
             <button
-              onClick={getData}
-              className="bg-blue-500 text-white px-4 py-2 w-max rounded ml-2 hover:bg-blue-600 transition duration-300"
+              onClick={() => setShow(false)}
+              className="text-white hover:bg-gray-500 hover:bg-opacity-20 rounded-full w-8 h-8 flex items-center justify-center transition-all"
             >
-              Search
+              <FaTimes />
             </button>
           </div>
         </div>
 
-        {data.length > 0 && (
-          <div className="flex flex-col justify-center">
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center gap-2">
-                <label className="text-gray-700">Show</label>
-                <select className="border rounded px-2 py-1">
-                  <option>10</option>
-                  <option>25</option>
-                  <option>50</option>
-                </select>
-                <span className="text-gray-700">records</span>
+        {/* Search Section */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex flex-col md:flex-row gap-4 items-end">
+            <div className="flex-shrink-0">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Results Limit
+              </label>
+              <select
+                name="limit"
+                id="limit"
+                value={limit}
+                onChange={(e) => setLimit(e.target.value)}
+                className="px-4 py-3 border border-gray-300 rounded-lg "
+              >
+                <option value="">Select</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="80">80</option>
+                <option value="100">100</option>
+              </select>
+            </div>
+
+            <div className="flex-1">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Search Query
+              </label>
+              <div className="relative flex items-center">
+                <FaSearch className="absolute left-4 text-gray-400 text-sm" />
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="e.g., restaurants in New York, plumbers in London"
+                  className="w-full py-3 pl-12 pr-4 border border-gray-300 rounded-lg"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      getData();
+                    }
+                  }}
+                />
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <table className="w-full text-sm text-left border-spacing-x-4">
-                <thead>
-                  <tr className="text-gray-600 top-0 bg-white z-10">
-                    <th className="px-4 py-3">
-                      <div className="flex items-center space-x-2">
-                        <FaUserCog className="text-blue-600 w-4 h-4" />
-                        <span>Actions</span>
-                      </div>
-                    </th>
-                    <th className="px-4 py-3">
-                      <div className="flex items-center space-x-2">
-                        <FaUser className="text-blue-600 w-4 h-4" />
-                        <span>Name</span>
-                      </div>
-                    </th>
-                    <th className="px-4 py-3">
-                      <div className="flex items-center space-x-2">
-                        <FaPhone className="text-yellow-600 w-4 h-4" />
-                        <span>Phone</span>
-                      </div>
-                    </th>
-                    <th className="px-4 py-3">
-                      <div className="flex items-center space-x-2">
-                        <FaMapMarkerAlt className="text-green-600 w-4 h-4" />
-                        <span>Address</span>
-                      </div>
-                    </th>
-                    <th className="px-4 py-3">
-                      <div className="flex items-center space-x-2">
-                        <FaMapMarkerAlt className="text-yellow-600 w-4 h-4" />
-                        <span>Pincode</span>
-                      </div>
-                    </th>
-                    <th className="px-4 py-3">
-                      <div className="flex items-center space-x-2">
-                        <FaGlobe className="text-yellow-600 w-4 h-4" />
-                        <span>Website</span>
-                      </div>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {data.map((item, index) => (
-                    <tr key={index}>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center space-x-2">
-                          <button
-                            title="Save"
-                            className="p-2 bg-green-500 text-white rounded-full shadow hover:bg-green-600 transition"
-                            onClick={() => handleSave(item)}
-                          >
-                            <FaSave className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">{item.name}</td>
-                      <td className="px-4 py-3 w-[140px]">
-                        <div className="flex">
-                          <span>{item.phone}</span>
-                        </div>
-                      </td>
-                      <td className="px-8 py-2">
-                        <div className="flex flex-col space-y-1">
-                          <p className="text-xs text-black">{item.address}</p>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">{item.pincode}</td>
-                      <td className="px-4 py-3">
-                        <a
-                          href={item.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-500 underline"
-                        >
-                          visit
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <button
+              onClick={getData}
+              disabled={loading}
+              className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 font-medium"
+            >
+              {loading ? (
+                <>
+                  <FaSpinner className="animate-spin" />
+                  Searching...
+                </>
+              ) : (
+                <>
+                  <FaSearch />
+                  Search
+                </>
+              )}
+            </button>
           </div>
-        )}
+        </div>
+
+        {/* Results Section */}
+        <div className="flex-1 overflow-hidden">
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <FaSpinner className="animate-spin text-blue-500 text-3xl mx-auto mb-4" />
+                <p className="text-gray-600">Searching for data...</p>
+              </div>
+            </div>
+          ) : data.length > 0 ? (
+            <div className="p-6">
+              {/* Results Header */}
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Found {data.length} results
+                </h3>
+                <div className="text-sm text-gray-600">
+                  Query: "{query}"
+                </div>
+              </div>
+
+              {/* Results Table */}
+              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div className="overflow-x-auto max-h-96">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-4 py-3 text-left">
+                          <div className="flex items-center gap-2 text-gray-700 font-semibold">
+                            <FaUserCog className="text-blue-600 w-4 h-4" />
+                            Actions
+                          </div>
+                        </th>
+                        <th className="px-4 py-3 text-left">
+                          <div className="flex items-center gap-2 text-gray-700 font-semibold">
+                            <FaUser className="text-blue-600 w-4 h-4" />
+                            Business Name
+                          </div>
+                        </th>
+                        <th className="px-4 py-3 text-left">
+                          <div className="flex items-center gap-2 text-gray-700 font-semibold">
+                            <FaPhone className="text-green-600 w-4 h-4" />
+                            Phone
+                          </div>
+                        </th>
+                        <th className="px-4 py-3 text-left">
+                          <div className="flex items-center gap-2 text-gray-700 font-semibold">
+                            <FaMapMarkerAlt className="text-red-600 w-4 h-4" />
+                            Address
+                          </div>
+                        </th>
+                        <th className="px-4 py-3 text-left">
+                          <div className="flex items-center gap-2 text-gray-700 font-semibold">
+                            <FaMapMarkerAlt className="text-orange-600 w-4 h-4" />
+                            Pincode
+                          </div>
+                        </th>
+                        <th className="px-4 py-3 text-left">
+                          <div className="flex items-center gap-2 text-gray-700 font-semibold">
+                            <FaGlobe className="text-purple-600 w-4 h-4" />
+                            Website
+                          </div>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {data.map((item, index) => (
+                        <tr key={index} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-4 py-3">
+                            <button
+                              title="Save to leads"
+                              className={`p-2 rounded-lg shadow transition-all ${
+                                item.phone && item.phone !== "N/A"
+                                  ? "bg-green-500 hover:bg-green-600 text-white"
+                                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                              }`}
+                              onClick={() => handleSave(item, index)}
+                              disabled={
+                                !item.phone || 
+                                item.phone === "N/A" || 
+                                savingId === index
+                              }
+                            >
+                              {savingId === index ? (
+                                <FaSpinner className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <FaSave className="w-4 h-4" />
+                              )}
+                            </button>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="font-medium text-gray-800">
+                              {item.name || "N/A"}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className={`${
+                              item.phone && item.phone !== "N/A"
+                                ? "text-green-700 font-medium"
+                                : "text-gray-400"
+                            }`}>
+                              {item.phone || "N/A"}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="text-gray-700 text-xs max-w-xs truncate">
+                              {item.address || "N/A"}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="text-gray-700">
+                              {item.pincode || "N/A"}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            {item.website && item.website !== "N/A" ? (
+                              <a
+                                href={item.website}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-500 hover:text-blue-700 underline text-sm"
+                              >
+                                Visit
+                              </a>
+                            ) : (
+                              <span className="text-gray-400 text-sm">N/A</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  No Results Yet
+                </h3>
+                <p className="text-gray-600">
+                  Enter a search query and click Search to find business data
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

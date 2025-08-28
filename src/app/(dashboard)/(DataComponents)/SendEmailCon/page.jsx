@@ -267,7 +267,7 @@ const SendEmailCon = ({
     <div className="fixed inset-0 backdrop-blur-sm z-50 flex justify-center items-center p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-green-600 to-emerald-700 px-6 py-4">
+        <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4">
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-xl font-semibold text-white flex items-center gap-2">
@@ -279,7 +279,7 @@ const SendEmailCon = ({
             </div>
             <button
               onClick={() => setSendEmail && setSendEmail(false)}
-              className="text-white hover:bg-green-500 rounded-full w-8 h-8 flex items-center justify-center transition-all"
+              className="text-white hover:bg-red-500 rounded-full w-8 h-8 flex items-center justify-center transition-all"
             >
               ✕
             </button>
@@ -442,7 +442,7 @@ const SendEmailCon = ({
             type="submit"
             onClick={handleSubmit}
             disabled={loading || !safeSelectedLeads.length || !selectedTemplate || !selectedService}
-            className="px-6 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-6 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {loading ? (
               <>

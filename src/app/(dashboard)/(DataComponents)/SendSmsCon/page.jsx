@@ -159,7 +159,7 @@ const SendSmsCon = ({ setClose, selectedLeads, setSelectedLeads, fetchData }) =>
     <div className="fixed inset-0 backdrop-blur-sm z-50 flex justify-center items-center p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-orange-500 to-red-600 px-6 py-4">
+        <div className="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-xl font-semibold text-white flex items-center gap-2">
@@ -171,7 +171,7 @@ const SendSmsCon = ({ setClose, selectedLeads, setSelectedLeads, fetchData }) =>
             </div>
             <button
               onClick={() => setClose(false)}
-              className="text-white hover:bg-orange-500 rounded-full w-8 h-8 flex items-center justify-center transition-all"
+              className="text-white hover:bg-purple-500 rounded-full w-8 h-8 flex items-center justify-center transition-all"
             >
               ✕
             </button>
@@ -263,7 +263,7 @@ const SendSmsCon = ({ setClose, selectedLeads, setSelectedLeads, fetchData }) =>
           <button
             onClick={handleSendSms}
             disabled={isLoading || smsTemplates.length === 0 || !templateID || !remarks || !followUpDateTime}
-            className="px-6 py-2 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-6 py-2 text-sm font-medium text-white bg-purple-500 rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isLoading ? (
               <>

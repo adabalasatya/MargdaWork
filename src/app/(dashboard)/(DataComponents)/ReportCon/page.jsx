@@ -72,13 +72,13 @@ export default function ReportCon({ setShow, userData }) {
     <div className="fixed inset-0 z-50 backdrop-blur-sm flex justify-center items-center p-4">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] overflow-hidden">
         {/* Header */}
-        <div className="bg-blue-600 px-6 py-4 flex justify-between items-center">
+        <div className="bg-gradient-to-r from-orange-600 to-orange-700 px-6 py-4 flex justify-between items-center">
           <h2 className="text-xl font-semibold text-white">
             {userLocalData?.user_data?.name} - Leads Report
           </h2>
           <button
             onClick={() => setShow(false)}
-            className="text-white hover:bg-blue-700 rounded px-2 py-1 transition-colors"
+            className="text-white hover:bg-orange-600 rounded px-2 py-1 transition-colors"
           >
             ✕
           </button>
@@ -136,7 +136,7 @@ export default function ReportCon({ setShow, userData }) {
         <div className="bg-gray-50 px-6 py-3 flex justify-end">
           <button
             onClick={() => setShow(false)}
-            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded transition-colors"
+            className="bg-orange-600 text-white px-4 py-2 rounded transition-colors"
           >
             Close
           </button>
