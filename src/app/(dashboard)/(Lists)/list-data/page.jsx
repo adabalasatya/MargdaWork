@@ -224,13 +224,11 @@ const ListData = () => {
   };
 
   const handleDeleteSubscriber = async (dataIDs) => {
-    // Check if any rows are selected
     if (!dataIDs || dataIDs.length === 0) {
       addToast("Please select at least one data from the table", "error");
       return;
     }
 
-    // Show SweetAlert2 confirmation
     const result = await Swal.fire({
       title: "Are you sure to delete?",
       text: `Do you want to delete ${dataIDs.length > 1 ? 'these subscribers' : 'this subscriber'}?`,
@@ -509,20 +507,8 @@ const ListData = () => {
     };
 
     return (
-      <motion.div
-        className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-      >
-        <motion.div
-          className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full"
-          variants={modalVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-          onClick={(e) => e.stopPropagation()}
-        >
+      <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Edit Subscriber</h2>
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
@@ -583,8 +569,8 @@ const ListData = () => {
               </button>
             </div>
           </form>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     );
   };
 
@@ -604,35 +590,27 @@ const ListData = () => {
       {loading && <Loader />}
 
       <div className="border-b border-gray-200 px-6 py-3">
-
-       <div className="relative flex items-center justify-between mb-4">
-  {/* Back Button on the left */}
-  <button
-    onClick={handleBack}
-    className="flex items-center ml-2 text-white border border-gray-300 shadow-md p-1 rounded-md bg-blue-600 hover:scale-105 transition-all duration-200 text-sm"
-    aria-label="Go back to previous page"
-  >
-    <FaArrowLeft className="mr-2" size={12} />
-    Back
-  </button>
-
-  {/* Centered Title */}
-  <h1 className="text-2xl font-bold text-gray-900 text-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-    Subscriber Lists
-  </h1>
-
-  {/* Right side List Badge */}
-  <div className="flex mr-2 items-center space-x-2">
-    <span className="text-lg font-medium text-gray-600">List:</span>
-    <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-semibold rounded-lg shadow">
-      {listData ? listData.name : "Loading..."}
-    </span>
-  </div>
-</div>
-        {/* Header Section */}
+        <div className="relative flex items-center justify-between mb-4">
+          <button
+            onClick={handleBack}
+            className="flex items-center ml-2 text-white border border-gray-300 shadow-md p-1 rounded-md bg-blue-600 hover:scale-105 transition-all duration-200 text-sm"
+            aria-label="Go back to previous page"
+          >
+            <FaArrowLeft className="mr-2" size={12} />
+            Back
+          </button>
+          <h1 className="text-2xl font-bold text-gray-900 text-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            Subscriber Lists
+          </h1>
+          <div className="flex mr-2 items-center space-x-2">
+            <span className="text-lg font-medium text-gray-600">List:</span>
+            <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-semibold rounded-lg shadow">
+              {listData ? listData.name : "Loading..."}
+            </span>
+          </div>
+        </div>
         <div className="bg-white border-2 border-gray-200 shadow-md rounded-xl px-6 py-2 mt-3">
           <div className="flex items-center justify-between space-x-4">
-            {/* Left Side - Search */}
             <div className="flex items-center bg-gray-100 rounded-xl px-4 py-1 flex-1 max-w-md">
               <FaSearch className="text-gray-500 mr-2" />
               <input
@@ -643,8 +621,6 @@ const ListData = () => {
                 className="bg-transparent outline-none flex-1 text-gray-700"
               />
             </div>
-
-            {/* Center - Show Records */}
             <div className="flex items-center space-x-2">
               <span className="text-[12px] font-medium text-gray-600">Show:</span>
               <input
@@ -657,10 +633,7 @@ const ListData = () => {
               />
               <span className="text-[12px] font-medium text-gray-600">Records</span>
             </div>
-
-            {/* Right Side - Buttons */}
             <div className="flex items-center space-x-4">
-              {/* Add List Data */}
               <button
                 onClick={() => setAddDataFormOpen(true)}
                 className="flex items-center px-4 py-2 text-[12px] bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
@@ -668,8 +641,6 @@ const ListData = () => {
                 <FaPlus className="text-[12px] mr-2" />
                 Add List Data
               </button>
-
-              {/* Upload CSV */}
               <label className="flex items-center px-4 py-2 text-[12px] bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200 cursor-pointer">
                 <FaPlus className="text-[12px] mr-2" />
                 Upload CSV
@@ -681,8 +652,6 @@ const ListData = () => {
                   className="hidden"
                 />
               </label>
-
-              {/* Sample CSV */}
               <button
                 onClick={downloadSample}
                 className="flex items-center px-4 py-2 text-[12px] bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
@@ -693,11 +662,8 @@ const ListData = () => {
             </div>
           </div>
         </div>
-
-        {/* New Buttons Section (Verify, Subscribe, Unsubscribe) */}
         <div className="bg-white border-2 border-gray-200 shadow-md rounded-xl px-6 py-2 mt-3">
           <div className="flex items-center justify-between">
-            {/* Left Side - Action Buttons */}
             <div className="flex items-center space-x-4">
               <button
                 onClick={handleVerify}
@@ -718,8 +684,6 @@ const ListData = () => {
                 Unsubscribe
               </button>
             </div>
-
-            {/* Right Side - Delete Button */}
             <button
               onClick={() => {
                 const selectedDataIDs = selectedRows.map(row => row.dataID);
@@ -736,15 +700,12 @@ const ListData = () => {
 
       {/* <div className="border-b border-gray-200 px-6 py-2 bg-white rounded-t-xl shadow-sm">
         <div className="flex items-center justify-between">
-         
           <div className="flex items-center space-x-2">
             <span className="text-sm font-medium text-gray-600">List:</span>
             <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-semibold rounded-lg shadow">
               {listData ? listData.name : "Loading..."}
             </span>
           </div>
-
-          
           <div className="flex items-center space-x-3">
             <Link href="#">
               <button className="flex items-center px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white text-[12px] rounded-xl shadow-md hover:scale-105 transition-transform duration-200">
@@ -755,7 +716,6 @@ const ListData = () => {
                 </span>
               </button>
             </Link>
-
             <input
               id="csv-upload"
               type="file"
@@ -763,7 +723,6 @@ const ListData = () => {
               className="hidden"
               onChange={handleFileUpload}
             />
-
             <button
               onClick={() => setShowAutorespondersModal(true)}
               className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-[12px] rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
@@ -773,7 +732,6 @@ const ListData = () => {
                 0
               </span>
             </button>
-
             <Link href="#">
               <button className="flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-pink-600 text-white text-[12px] rounded-xl shadow-md hover:scale-105 transition-transform duration-200">
                 Segments
@@ -782,7 +740,6 @@ const ListData = () => {
                 </span>
               </button>
             </Link>
-
             <button
               onClick={() => setShowSubscribeFormModal(true)}
               className="flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-[12px] rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
@@ -792,7 +749,6 @@ const ListData = () => {
                 0
               </span>
             </button>
-
             <Link href="#">
               <button className="flex items-center px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white text-[12px] rounded-xl shadow-md hover:scale-105 transition-transform duration-200">
                 <Settings className="w-4 h-4 mr-2" />
@@ -804,7 +760,6 @@ const ListData = () => {
       </div> */}
 
       <div className="px-6 py-3">
-        {/* Filter Tabs */}
         <div className="flex items-center justify-between space-x-4 mb-4 bg-white border border-gray-200 rounded-xl px-4 py-2 shadow-sm">
           <div className="flex items-center">
             <label className="flex items-center text-sm text-gray-700 cursor-pointer">
@@ -819,7 +774,6 @@ const ListData = () => {
               </span>
             </label>
           </div>
-
           <div className="flex items-center space-x-3">
             {filters.map((filter) => (
               <button
@@ -848,8 +802,6 @@ const ListData = () => {
             ))}
           </div>
         </div>
-
-        {/* Subscribers Table */}
         <div className="bg-white border border-gray-300 rounded-lg overflow-x-auto overflow-y-auto">
           <div className="md:max-h-[420px] overflow-auto ">
             <table className="min-w-full divide-y divide-gray-200">
@@ -993,8 +945,6 @@ const ListData = () => {
             </table>
           </div>
         </div>
-
-        {/* Pagination */}
         <div className="flex items-center justify-between mt-4">
           <div className="text-[12px] font-bold text-gray-500">
             Showing {indexOfFirstRecord + 1} to{" "}
@@ -1029,8 +979,6 @@ const ListData = () => {
           </div>
         </div>
       </div>
-
-      {/* Edit Subscriber Modal */}
       <AnimatePresence>
         {editDataFormOpen && editingSubscriber && (
           <EditSubscriberForm
@@ -1043,8 +991,6 @@ const ListData = () => {
           />
         )}
       </AnimatePresence>
-
-      {/* Autoresponders Modal */}
       <AnimatePresence>
         {showAutorespondersModal && (
           <motion.div
@@ -1115,8 +1061,6 @@ const ListData = () => {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Subscribe Form Modal */}
       <AnimatePresence>
         {showSubscribeFormModal && (
           <motion.div
@@ -1218,7 +1162,6 @@ const ListData = () => {
           </motion.div>
         )}
       </AnimatePresence>
-
       {csvData.length > 0 && showCsvData && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="border border-gray-500 relative bg-white shadow-lg rounded-lg overflow-x-auto overflow-y-auto max-h-[700px] w-3/4 p-6">
@@ -1270,7 +1213,6 @@ const ListData = () => {
           </div>
         </div>
       )}
-
       {addDataFormOpen && (
         <AddListDataForm
           listID={listData.listID}
