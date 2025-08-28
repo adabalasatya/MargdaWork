@@ -12,6 +12,7 @@ import {
   FiEdit,
   FiRefreshCw,
   FiX,
+  FiEye,
 } from "react-icons/fi";
 import Link from "next/link";
 import { toast, ToastContainer } from "react-toastify";
@@ -34,7 +35,128 @@ const EmailReport = () => {
   const [userID, setUserID] = useState("");
   const [selectedItem, setSelectedItem] = useState(null);
   const [showAddToTaskCon, setShowAddToTaskCon] = useState(false);
+  
+  // New state for message popup
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("");
+  
   const { addToast } = useToast();
+
+  // Function to strip HTML tags and convert HTML entities
+  const stripHtmlAndDecode = (html) => {
+    if (!html) return "";
+    
+    // Create a temporary DOM element to parse HTML
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = html;
+    
+    // Get text content (this automatically strips HTML tags)
+    const textContent = tempDiv.textContent || tempDiv.innerText || "";
+    
+    // Decode HTML entities
+    const decodedText = textContent
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&apos;/g, "'");
+    
+    return decodedText.trim();
+  };
+
+  // Function to truncate text and add "read more"
+  const TruncatedMessage = ({ message, maxLength = 30 }) => {
+    const cleanMessage = stripHtmlAndDecode(message);
+    
+    if (!cleanMessage) return <span className="text-gray-400">N/A</span>;
+    
+    if (cleanMessage.length <= maxLength) {
+      return <span>{cleanMessage}</span>;
+    }
+    
+    return (
+      <div className=" items-center gap-2">
+        <span>{cleanMessage.substring(0, maxLength)}...</span>
+        <button
+          onClick={() => {
+            setSelectedMessage(message);
+            setShowMessageModal(true);
+          }}
+          className="text-blue-600 hover:text-blue-800 font-medium text-xs underline flex items-center gap-1"
+        >
+          <FiEye size={12} />
+          Read More
+        </button>
+      </div>
+    );
+  };
+
+  // Message Modal Component
+  const MessageModal = () => {
+    if (!showMessageModal) return null;
+
+    const cleanMessage = stripHtmlAndDecode(selectedMessage);
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col">
+          {/* Modal Header */}
+          <div className="flex justify-between items-center p-4 border-b">
+            <h3 className="text-lg font-semibold text-gray-800">Full Message</h3>
+            <button
+              onClick={() => setShowMessageModal(false)}
+              className="text-gray-400 hover:text-gray-600 p-1"
+            >
+              <FiX size={20} />
+            </button>
+          </div>
+          
+          {/* Modal Content */}
+          <div className="p-4 overflow-y-auto flex-1">
+            {selectedSubject && (
+              <div className="mb-4">
+                <h4 className="font-medium text-gray-700 mb-2">Subject:</h4>
+                <p className="text-gray-600 bg-gray-50 p-2 rounded">{selectedSubject}</p>
+              </div>
+            )}
+            
+            <div>
+              <h4 className="font-medium text-gray-700 mb-2">Message:</h4>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                {/* Show both clean text and original HTML if needed */}
+                <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+                  {cleanMessage}
+                </div>
+                
+                {/* Optional: Show original HTML in a collapsible section */}
+                <details className="mt-4">
+                  <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700">
+                    View Original HTML
+                  </summary>
+                  <div className="mt-2 p-2 bg-gray-100 rounded text-xs font-mono text-gray-600 overflow-x-auto">
+                    {selectedMessage}
+                  </div>
+                </details>
+              </div>
+            </div>
+          </div>
+          
+          {/* Modal Footer */}
+          <div className="p-4 border-t bg-gray-50 flex justify-end">
+            <button
+              onClick={() => setShowMessageModal(false)}
+              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   useEffect(() => {
     // Ensure we're on the client side before accessing sessionStorage
@@ -262,7 +384,7 @@ const EmailReport = () => {
       </div>
 
       {/* Table Section */}
-      <div className="bg-white rounded-lg shadow overflow-y-auto md:max-h-[520px]  ">
+      <div className="bg-white rounded-lg shadow overflow-y-auto md:max-h-[520px]">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
@@ -279,7 +401,7 @@ const EmailReport = () => {
                 <th className="p-4 font-medium uppercase tracking-wider">
                   Subject
                 </th>
-                <th className="p-4 font-medium uppercase tracking-wider">
+                <th className="p-4 font-medium uppercase tracking-wider min-w-[200px]">
                   Message
                 </th>
                 <th className="p-4 font-medium uppercase tracking-wider">
@@ -335,7 +457,12 @@ const EmailReport = () => {
                     <td className="p-4 text-[12px]">
                       {email.subject || "N/A"}
                     </td>
-                    <td className="p-4 text-[12px]">{email.matter || "N/A"}</td>
+                    <td className="p-4 text-[12px] min-w-[200px]">
+                      <TruncatedMessage 
+                        message={email.matter} 
+                        maxLength={30}
+                      />
+                    </td>
                     <td className="p-4 text-[12px]">
                       {email.edate
                         ? new Date(email.edate).toLocaleString()
@@ -413,6 +540,10 @@ const EmailReport = () => {
           </div>
         </div>
       )}
+      
+      {/* Message Modal */}
+      <MessageModal />
+      
       {showAddToTaskCon && (
         <AddToTask
           setClose={setShowAddToTaskCon}
