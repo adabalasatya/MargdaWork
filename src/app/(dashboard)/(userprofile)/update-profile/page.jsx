@@ -47,7 +47,7 @@ const CustomImage = ({ src, alt, className, width, height, ...props }) => {
 
 const MyProfile = () => {
   const router = useRouter();
-  const { addToast } = useToast();
+  const { addToast } = useToast(); // Retained for compatibility, though not used
   const [step, setStep] = useState(1);
   const [formValues, setFormValues] = useState({
     pic_url: "",
@@ -172,19 +172,8 @@ const MyProfile = () => {
     const newErrors = validateStep();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      Object.values(newErrors).forEach((error) =>
-        addToast(error, "error", { toastId: Date.now() + Math.random() })
-      );
       return;
     }
-
-    const messages = [
-      "Personal details validated successfully!",
-      "Contact information validated successfully!",
-    ];
-    addToast(messages[step - 1], "success", {
-      toastId: Date.now() + Math.random(),
-    });
 
     setErrors({});
     setStep(step + 1);
@@ -195,106 +184,96 @@ const MyProfile = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  e.preventDefault();
+  setIsSubmitting(true);
 
-    const newErrors = validateStep();
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      Object.values(newErrors).forEach((error) =>
-        addToast(error, "error", { toastId: Date.now() + Math.random() })
-      );
-      setIsSubmitting(false);
-      return;
+  const newErrors = validateStep();
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors);
+    setIsSubmitting(false);
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+
+    if (file) {
+      formData.append("image", file);
+    } else if (formValues.pic_url) {
+      formData.append("pic_url", formValues.pic_url);
     }
 
-    try {
-      const formData = new FormData();
+    formData.append("userID", userData.userID);
+    formData.append("name", formValues.name);
+    formData.append("gender", formValues.gender);
+    formData.append("DOB", formValues.dob);
+    formData.append("email", formValues.email);
+    formData.append("mobile", formValues.mobile);
+    formData.append("languages", JSON.stringify(formValues.languages));
 
-      if (file) {
-        formData.append("image", file);
-      } else if (formValues.pic_url) {
-        formData.append("pic_url", formValues.pic_url);
+    const response = await fetch(
+      "https://www.margda.in/miraj/work/profile/update-profile",
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${userData.accessToken}`,
+        },
+        body: formData,
       }
+    );
 
-      formData.append("userID", userData.userID);
-      formData.append("name", formValues.name);
-      formData.append("gender", formValues.gender);
-      formData.append("DOB", formValues.dob);
-      formData.append("email", formValues.email);
-      formData.append("mobile", formValues.mobile);
-      formData.append("languages", JSON.stringify(formValues.languages));
+    // Check if response is JSON before parsing
+    const contentType = response.headers.get("content-type");
+    let data;
 
-      const response = await fetch(
-        "https://www.margda.in/miraj/work/profile/update-profile",
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${userData.accessToken}`,
-          },
-          body: formData,
-        }
+    if (contentType && contentType.includes("application/json")) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      throw new Error(
+        `Unexpected response format: ${text.substring(0, 100)}`
       );
+    }
 
-      // Check if response is JSON before parsing
-      const contentType = response.headers.get("content-type");
-      let data;
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to update profile");
+    }
 
-      if (contentType && contentType.includes("application/json")) {
-        data = await response.json();
-      } else {
-        const text = await response.text();
-        throw new Error(
-          `Unexpected response format: ${text.substring(0, 100)}`
-        );
-      }
+    const updatedUserData = {
+      ...userData,
+      pic: formValues.pic_url,
+      name: formValues.name,
+      gender: formValues.gender,
+      mobile: formValues.mobile,
+      email: formValues.email,
+      dob: formValues.dob,
+      languages: JSON.stringify(formValues.languages),
+    };
 
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to update profile");
-      }
+    if (typeof window !== "undefined") {
+      // Update sessionStorage with the new user data
+      sessionStorage.setItem("userData", JSON.stringify(updatedUserData));
 
-      addToast(
-        "Profile updated successfully! Redirecting to dashboard...",
-        "success",
-        {
-          toastId: Date.now() + Math.random(),
-          autoClose: 2000,
-        }
-      );
+      // Simulate a background refresh by updating the userData state
+      setUserData(updatedUserData);
 
-      const updatedUserData = {
-        ...userData,
-        pic: formValues.pic_url,
-        name: formValues.name,
-        gender: formValues.gender,
-        mobile: formValues.mobile,
-        email: formValues.email,
-        dob: formValues.dob,
-        languages: JSON.stringify(formValues.languages),
-      };
-      
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem("userData", JSON.stringify(updatedUserData));
-      }
+      // Show toast notification
+      addToast("Profile Updated Successfully", "success");
 
+      // Navigate to dashboard after a short delay to allow toast to be visible
       setTimeout(() => {
         router.push("/dashboard");
-      }, 200);
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      addToast(
-        error.message ||
-          "An error occurred while updating your profile. Please try again later.",
-        "error",
-        {
-          toastId: Date.now() + Math.random(),
-          autoClose: 5000,
-        }
-      );
-    } finally {
-      setIsSubmitting(false);
+      }, 1500); // Adjust delay (1.5 seconds) to match toast visibility duration
     }
-  };
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    if (typeof window !== "undefined") {
+      addToast("Failed to update profile", "error");
+    }
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <div className="min-h-screen flex flex-col py-12 px-4 sm:px-6 lg:px-8">
@@ -372,7 +351,11 @@ const MyProfile = () => {
                   >
                     Profile Picture
                   </label>
-                  <div className="relative">
+                  <label
+                   htmlFor="profilePic"
+                   className="relative cursor-pointer flex flex-col items-center"
+                  >
+                    <div className="relative">
                     <CustomImage
                       src={
                         formValues.pic_url ||
@@ -390,6 +373,7 @@ const MyProfile = () => {
                       <FaUser className="text-sm" />
                     </label>
                   </div>
+                  </label>
                   <input
                     type="file"
                     onChange={handleProfilePicChange}

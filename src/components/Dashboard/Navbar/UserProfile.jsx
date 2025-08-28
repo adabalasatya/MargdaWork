@@ -17,10 +17,12 @@ const UserProfile = () => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   let mouseLeaveTimeout;
 
-  // Memoize user data to prevent unnecessary computations
+  // Initialize user data and listen for updates
   useEffect(() => {
     // Only access sessionStorage on client side
-    if (typeof window !== "undefined") {
+    if (typeof window === "undefined") return;
+
+    const loadUserData = () => {
       const storedUserData = sessionStorage.getItem("userData");
       if (!storedUserData) {
         router.push("/login");
@@ -37,24 +39,39 @@ const UserProfile = () => {
           router.push("/login");
         }
       }
-    }
+    };
+
+    // Initial load
+    loadUserData();
+
+    // Listen for custom event dispatched by MyProfile
+    const handleStorageUpdate = () => {
+      loadUserData();
+    };
+
+    window.addEventListener("userDataUpdated", handleStorageUpdate);
+
+    // Optional: Polling mechanism as fallback (every 5 seconds)
+    const interval = setInterval(() => {
+      loadUserData();
+    }, 5000);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener("userDataUpdated", handleStorageUpdate);
+      clearInterval(interval);
+      clearTimeout(mouseLeaveTimeout);
+    };
   }, [router]);
 
   // Memoized values for better performance
-  const userName = useMemo(
-    () => (userData ? userData.name : "User"),
-    [userData]
-  );
-  
-  const profilePicUrl = useMemo(
-    () => (userData ? userData.pic : null),
-    [userData]
-  );
-  
+  const userName = useMemo(() => (userData ? userData.name : "User"), [userData]);
+  const profilePicUrl = useMemo(() => (userData ? userData.pic : null), [userData]);
   const userInitial = useMemo(
     () => (userData && userData.name ? userData.name.charAt(0).toUpperCase() : "U"),
     [userData]
   );
+  const userEmail = useMemo(() => (userData ? userData.email : ""), [userData]);
 
   const toggleProfileMenu = useCallback(() => {
     setIsProfileMenuOpen((prev) => !prev);
@@ -68,22 +85,21 @@ const UserProfile = () => {
   const handleMouseLeave = useCallback(() => {
     mouseLeaveTimeout = setTimeout(() => {
       setIsProfileMenuOpen(false);
-    }, 200); // 200ms delay to prevent flickering
+    }, 200);
   }, []);
 
   const handleLogout = useCallback(() => {
     setIsLoggingOut(true);
     if (typeof window !== "undefined") {
       sessionStorage.removeItem("userData");
-      localStorage.removeItem("userData"); // Also remove from localStorage if exists
+      localStorage.removeItem("userData");
       localStorage.removeItem("authToken");
       sessionStorage.removeItem("authToken");
     }
-    // Use router.push instead of window.location.href for better Next.js navigation
     router.push("/login");
   }, [router]);
 
-  // Don't render anything until we've checked for user data (prevents hydration issues)
+  // Don't render until user data is checked
   if (typeof window !== "undefined" && userData === null) {
     return null;
   }
@@ -96,7 +112,7 @@ const UserProfile = () => {
     >
       <button
         onClick={toggleProfileMenu}
-        className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 focus:outline-none cursor-pointer"
+        className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 focus:outline-none cursor-pointer max-w-xs"
       >
         <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-orange-500 flex items-center justify-center bg-gradient-to-r from-orange-400 to-orange-500">
           {profilePicUrl ? (
@@ -106,16 +122,14 @@ const UserProfile = () => {
               className="w-full h-full object-cover"
             />
           ) : (
-            <span className="text-white font-bold text-sm">
-              {userInitial}
-            </span>
+            <span className="text-white font-bold text-sm">{userInitial}</span>
           )}
         </div>
-        <span className="text-sm font-medium text-gray-700 cursor-pointer">
-          {userName && userName.length > 10
-            ? `${userName.slice(0, 10)}...`
-            : userName}
-        </span>
+        <div className="flex items-center space-x-1 text-sm font-medium text-gray-700 truncate">
+          <span title={userName}>
+            {userName && userName.length > 8 ? `${userName.slice(0, 8)}...` : userName}
+          </span>
+        </div>
         <FaChevronDown
           className={`w-3 h-3 text-gray-500 transition-transform cursor-pointer ${
             isProfileMenuOpen ? "rotate-180" : ""
@@ -124,7 +138,7 @@ const UserProfile = () => {
       </button>
 
       {isProfileMenuOpen && (
-        <div className="absolute right-0 mt-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 transform transition-all duration-300 ease-in-out cursor-pointer">
+        <div className="absolute right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 transform transition-all duration-300 ease-in-out cursor-pointer w-48">
           <div className="p-2 space-y-1">
             {userData && (
               <div className="px-3 py-2">
@@ -137,87 +151,28 @@ const UserProfile = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <span className="text-white font-bold text-sm">
-                        {userInitial}
-                      </span>
+                      <span className="text-white font-bold text-sm">{userInitial}</span>
                     )}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-700">
-                      {userName && userName.length > 15
-                        ? `${userName.slice(0, 15)}...`
-                        : userName}
+                    <p className="text-sm font-medium text-gray-700" title={userName}>
+                      {userName && userName.length > 15 ? `${userName.slice(0, 15)}...` : userName}
                     </p>
-                    <p className="text-xs text-gray-500">
-                      {userData.email}
+                    <p className="text-xs text-gray-500" title={userEmail}>
+                      {userEmail && userEmail.length > 20 ? `${userEmail.slice(0, 20)}...` : userEmail}
                     </p>
                   </div>
                 </div>
               </div>
             )}
-            
-            {/* Commented out links remain commented but converted to Next.js format */}
-            {/* <Link
-              href="/data-share"
-              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-300 cursor-pointer"
-              onClick={() => setIsProfileMenuOpen(false)}
-            >
-              <span className="w-5 h-5 mr-2 flex items-center justify-center">
-                📤
-              </span>
-              <span>Data Share</span>
-            </Link>
-            <Link
-              href="/authorisation"
-              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-300 cursor-pointer"
-              onClick={() => setIsProfileMenuOpen(false)}
-            >
-              <span className="w-5 h-5 mr-2 flex items-center justify-center">
-                🔐
-              </span>
-              <span>Authorisation</span>
-            </Link>
-            <Link
-              href="/knowledge-royalty"
-              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-300 cursor-pointer"
-              onClick={() => setIsProfileMenuOpen(false)}
-            >
-              <FaCrown className="w-5 h-5 mr-2 text-yellow-500" />
-              <span>Knowledge Royalty</span>
-            </Link> */}
-            
             <Link
               href="/update-profile"
               className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-300 cursor-pointer"
               onClick={() => setIsProfileMenuOpen(false)}
             >
-              <span className="w-5 h-5 mr-2 flex items-center justify-center">
-                👤
-              </span>
+              <span className="w-5 h-5 mr-2 flex items-center justify-center">👤</span>
               <span>Profile</span>
             </Link>
-            
-            {/* <Link
-              href="/credential"
-              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-300 cursor-pointer"
-              onClick={() => setIsProfileMenuOpen(false)}
-            >
-              <span className="w-5 h-5 mr-2 flex items-center justify-center">
-                🔑
-              </span>
-              <span>Credential</span>
-            </Link>
-            <Link
-              href="/email-auth"
-              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-300 cursor-pointer"
-              onClick={() => setIsProfileMenuOpen(false)}
-            >
-              <span className="w-5 h-5 mr-2 flex items-center justify-center">
-                📧
-              </span>
-              <span>Email App Password</span>
-            </Link> */}
-            
             <Link
               href="/qr-scan"
               className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-300 cursor-pointer"
@@ -226,14 +181,6 @@ const UserProfile = () => {
               <FaQrcode className="w-5 h-5 mr-2 text-gray-700" />
               <span>WhatsApp Scan</span>
             </Link>
-            
-            {/* <div className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-300 cursor-pointer">
-              <span className="w-5 h-5 mr-2 flex items-center justify-center">
-                ⛓️‍💥
-              </span>
-              <span>Refer Code {userData?.user_data?.refercode}</span>
-            </div> */}
-            
             <button
               onClick={handleLogout}
               disabled={isLoggingOut}
