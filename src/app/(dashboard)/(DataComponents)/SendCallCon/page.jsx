@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { useToast } from "@/app/component/customtoast/page";
 
-const CallCon = ({ setShowCallCon, selectedLeads, setSelectedLeads, fetchData }) => {
+const CallCon = ({ setShowCallCon, selectedLeads = [], setSelectedLeads, fetchData }) => {
   const router = useRouter();
   const { addToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +33,9 @@ const CallCon = ({ setShowCallCon, selectedLeads, setSelectedLeads, fetchData })
   }, [router]);
 
   useEffect(() => {
-    check();
+    if (selectedLeads && selectedLeads.length > 0) {
+      check();
+    }
   }, [selectedLeads]);
 
   const check = () => {
@@ -53,6 +55,11 @@ const CallCon = ({ setShowCallCon, selectedLeads, setSelectedLeads, fetchData })
   };
 
   const handleCall = async () => {
+    if (!selectedLeads || selectedLeads.length === 0) {
+      addToast("No lead selected for calling.", "warning");
+      return;
+    }
+
     if (selectedLeads.length > 1) {
       addToast("Please select only one lead for calling.", "warning");
       return;
@@ -94,9 +101,9 @@ const CallCon = ({ setShowCallCon, selectedLeads, setSelectedLeads, fetchData })
         const data = await response.json();
         if (response.ok) {
           addToast(data.message || "Call initiated successfully.", "success");
-          setSelectedLeads([]);
+          if (setSelectedLeads) setSelectedLeads([]);
           if (fetchData) fetchData();
-          setShowCallCon(false);
+          if (setShowCallCon) setShowCallCon(false);
         } else {
           if (response.status == 402) {
             addToast(data.message, "error", 10000);
@@ -113,8 +120,15 @@ const CallCon = ({ setShowCallCon, selectedLeads, setSelectedLeads, fetchData })
     }
   };
 
+  // Don't render if no leads are selected (for prerendering safety)
+  if (!selectedLeads || selectedLeads.length === 0) {
+    return null;
+  }
+
+  const currentLead = selectedLeads[0];
+
   return (
-    <div className="fixed inset-0  backdrop-blur-sm z-50 flex justify-center items-center p-4">
+    <div className="fixed inset-0 backdrop-blur-sm z-50 flex justify-center items-center p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
@@ -122,11 +136,11 @@ const CallCon = ({ setShowCallCon, selectedLeads, setSelectedLeads, fetchData })
             <div>
               <h2 className="text-xl font-semibold text-white">📞 Initiate Call</h2>
               <p className="text-blue-100 text-sm mt-1">
-                {selectedLeads[0]?.name} • {selectedLeads[0]?.mobile}
+                {currentLead?.name || 'Unknown'} • {currentLead?.mobile || 'No number'}
               </p>
             </div>
             <button
-              onClick={() => setShowCallCon(false)}
+              onClick={() => setShowCallCon && setShowCallCon(false)}
               className="text-white hover:bg-red-500 rounded-full w-8 h-8 flex items-center justify-center transition-all"
             >
               ✕
@@ -174,7 +188,7 @@ const CallCon = ({ setShowCallCon, selectedLeads, setSelectedLeads, fetchData })
               id="remarks"
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
-              className="w-full px-4 py-3 border border-gary-300 rounded-lg resize-none"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg resize-none"
               rows="3"
               placeholder="Enter your remarks about the call..."
             />
@@ -199,7 +213,7 @@ const CallCon = ({ setShowCallCon, selectedLeads, setSelectedLeads, fetchData })
         {/* Footer */}
         <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3">
           <button
-            onClick={() => setShowCallCon(false)}
+            onClick={() => setShowCallCon && setShowCallCon(false)}
             disabled={isLoading}
             className="px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
           >

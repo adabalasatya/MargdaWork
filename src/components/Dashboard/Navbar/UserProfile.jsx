@@ -141,9 +141,9 @@ const UserProfile = () => {
         <div className="absolute right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 transform transition-all duration-300 ease-in-out cursor-pointer w-48">
           <div className="p-2 space-y-1">
             {userData && (
-              <div className="px-3 py-2">
+              <div className="px-1 py-3">
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-orange-500 flex items-center justify-center bg-gradient-to-r from-orange-400 to-orange-500">
+                  <div className="w-22 h-8 rounded-full overflow-hidden border-2 border-orange-500 flex items-center justify-center bg-gradient-to-r from-orange-400 to-orange-500">
                     {profilePicUrl ? (
                       <img
                         src={profilePicUrl}
