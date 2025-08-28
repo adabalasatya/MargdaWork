@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import {
   FaPhone,
   FaWhatsapp,
@@ -14,6 +14,7 @@ const CRMSection = ({
   setShowSendWhatsapp,
   setShowEmailSend,
   setShowSmsSend,
+  setShowReportCon,
 }) => {
   return (
     <div className="bg-white z-20 border-2 border-gray-200 w-fit  m-2 shadow-md rounded-xl px-6 py-2 mt-3">
@@ -86,9 +87,7 @@ const CRMSection = ({
         </button> */}
 
         <button
-          onClick={() =>
-            addToast("Work Report functionality not implemented", "info")
-          }
+          onClick={() => setShowReportCon(true)}
           className="flex items-center px-4 py-2 text-sm bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
         >
           <FaRegHandPointRight className="mr-2 text-sm" /> Work Report

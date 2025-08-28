@@ -67,7 +67,9 @@ const DataTable = ({
   const [showTaskChangeModal, setShowTaskChangeModal] = useState(false);
   const [selectedItemForTaskChange, setSelectedItemForTaskChange] = useState(null);
   const [selectedTaskId, setSelectedTaskId] = useState("");
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const dropdownRef = useRef(null);
+  const buttonRef = useRef(null);
 
   const getLeadTypeColor = (typeID) => {
     switch (parseInt(typeID)) {
@@ -116,16 +118,16 @@ const DataTable = ({
   };
 
   const handleDelete = async (item) => {
-     const result = await Swal.fire({
-           title: "Are you sure to delete?",
-           text: "Do you want to delete this contact?",
-           icon: "error",
-           showCancelButton: true,
-           confirmButtonText: "yes, delete it",
-           cancelButtonText: "Cancel",
-         });
-       
-         if (!result.isConfirmed) return; 
+    const result = await Swal.fire({
+      title: "Are you sure to delete?",
+      text: "Do you want to delete this contact?",
+      icon: "error",
+      showCancelButton: true,
+      confirmButtonText: "yes, delete it",
+      cancelButtonText: "Cancel",
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       const response = await fetch(
@@ -242,10 +244,36 @@ const DataTable = ({
     setSelectedTaskId("");
   };
 
-  const toggleDropdown = (dataID) => {
+  const calculateDropdownPosition = (buttonElement) => {
+    if (!buttonElement) return { top: 0, left: 0 };
+    
+    const buttonRect = buttonElement.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const dropdownHeight = 200; // Approximate dropdown height
+    
+    let top = buttonRect.bottom + window.scrollY;
+    let left = buttonRect.left + window.scrollX;
+    
+    // Check if dropdown would go below viewport
+    if (buttonRect.bottom + dropdownHeight > viewportHeight) {
+      top = buttonRect.top + window.scrollY - dropdownHeight;
+    }
+    
+    // Ensure dropdown doesn't go off screen horizontally
+    const dropdownWidth = 192; // w-48 = 12rem = 192px
+    if (left + dropdownWidth > window.innerWidth) {
+      left = window.innerWidth - dropdownWidth - 10;
+    }
+    
+    return { top, left };
+  };
+
+  const toggleDropdown = (dataID, buttonElement) => {
     if (openDropdownId === dataID) {
       setOpenDropdownId(null);
     } else {
+      const position = calculateDropdownPosition(buttonElement);
+      setDropdownPosition(position);
       setOpenDropdownId(dataID);
     }
   };
@@ -266,10 +294,11 @@ const DataTable = ({
 
   return (
     <div className="bg-white rounded-xl border-2 border-gray-200 shadow-md p-4 m-2 mt-3">
-      <div className="overflow-auto max-h-[440px]">
+      {/* SOLUTION 1: Using relative positioning with better overflow handling */}
+      <div className="overflow-auto max-h-[450px] relative">
         <table className="w-full text-sm text-left border-spacing-x-4">
-          <thead>
-            <tr className="text-gray-700 top-0 z-10">
+          <thead className="sticky top-0 bg-white z-20">
+            <tr className="text-gray-700">
               <th className="px-4 py-3 border border-gray-200">
                 <div className="flex items-center space-x-2">
                   <input
@@ -357,73 +386,20 @@ const DataTable = ({
                   <td className="px-4 py-3 border-r border-gray-200">
                     <div className="relative flex items-center space-x-2">
                       <button
+                        ref={(el) => {
+                          if (openDropdownId === item.dataID) {
+                            buttonRef.current = el;
+                          }
+                        }}
                         title="Actions"
                         className="p-2 bg-gray-500 text-white rounded-full shadow-md hover:scale-105 transition-transform duration-200"
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleDropdown(item.dataID);
+                          toggleDropdown(item.dataID, e.currentTarget);
                         }}
                       >
                         <FaEllipsisH className="w-5 h-5" />
                       </button>
-                      
-                      {/* Inline dropdown menu */}
-                      {openDropdownId === item.dataID && (
-                        <div 
-                          ref={dropdownRef}
-                          className="absolute z-50 w-48 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto"
-                          style={{
-                            top: "100%",
-                            left: 0
-                          }}
-                        >
-                          <button
-                            className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleView(item);
-                            }}
-                          >
-                            <FaEye className="mr-2" /> View
-                          </button>
-                          <button
-                            className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditClick(item);
-                            }}
-                          >
-                            <FaEdit className="mr-2" /> Edit
-                          </button>
-                          <button
-                            className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleChangeTask(item);
-                            }}
-                          >
-                            <FaExchangeAlt className="mr-2" /> C-Task
-                          </button>
-                          <button
-                            className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleLeadType(item);
-                            }}
-                          >
-                            <FaTag className="mr-2" /> Lead Type
-                          </button>
-                          <button
-                            className="flex items-center w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(item);
-                            }}
-                          >
-                            <FaTrash className="mr-2" /> Delete
-                          </button>
-                        </div>
-                      )}
                     </div>
                   </td>
                   <td className="px-4 py-3 border-r border-gray-200">
@@ -566,6 +542,70 @@ const DataTable = ({
           </tbody>
         </table>
       </div>
+
+      {/* Action Dropdown,table container */}
+      {openDropdownId && (
+        <div 
+          className="fixed z-[9999] w-48 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto"
+          style={{
+            top: `${dropdownPosition.top}px`,
+            left: `${dropdownPosition.left}px`,
+          }}
+        >
+          <button
+            className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              const item = currentRecords.find(record => record.dataID === openDropdownId);
+              if (item) handleView(item);
+            }}
+          >
+            <FaEye className="mr-2 text-blue-500" /> View
+          </button>
+          <button
+            className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              const item = currentRecords.find(record => record.dataID === openDropdownId);
+              if (item) handleEditClick(item);
+            }}
+          >
+            <FaEdit className="mr-2 text-green-500" /> Edit
+          </button>
+          <button
+            className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              const item = currentRecords.find(record => record.dataID === openDropdownId);
+              if (item) handleChangeTask(item);
+            }}
+          >
+            <FaExchangeAlt className="mr-2 text-blue-500" /> C-Task
+          </button>
+          <button
+            className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              const item = currentRecords.find(record => record.dataID === openDropdownId);
+              if (item) handleLeadType(item);
+            }}
+          >
+            <FaTag className="mr-2 text-purple-500" /> Lead Type
+          </button>
+          <div className="border-t border-gray-100">
+            <button
+              className="flex items-center w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                const item = currentRecords.find(record => record.dataID === openDropdownId);
+                if (item) handleDelete(item);
+              }}
+            >
+              <FaTrash className="mr-2" /> Delete
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Task Change Modal */}
       {showTaskChangeModal && (

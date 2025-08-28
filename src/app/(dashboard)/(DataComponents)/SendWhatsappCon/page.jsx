@@ -144,7 +144,7 @@ const WhatsAppCon = ({ selectedLeads, setClose, userID, setSelectedLeads }) => {
       } else {
         if (response.status === 402) {
           addToast(data.message, "error", { autoClose: 10000 });
-          return router.push("/shop");
+          return router.push("/dasboard");
         }
         addToast(data.message, "error");
       }
@@ -183,30 +183,69 @@ const WhatsAppCon = ({ selectedLeads, setClose, userID, setSelectedLeads }) => {
   const canSendMessage = profile && profile.active;
 
   return (
-    <div className="fixed inset-0 backdrop-blur-sm z-50 flex justify-center items-center">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Send WhatsApp</h2>
-          <button
-            onClick={() => setClose(false)}
-            className="text-red-500 hover:text-red-700 text-xl font-bold w-8 h-8 flex items-center justify-center"
-            aria-label="Close"
-          >
-            ✖
-          </button>
+    <div className="fixed inset-0 backdrop-blur-sm z-50 flex justify-center items-center p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-green-600 to-emerald-700 px-6 py-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                💬 Send WhatsApp Message
+              </h2>
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-green-100 text-sm">
+                  {selectedLeads?.length} lead{selectedLeads?.length !== 1 ? 's' : ''} selected
+                </p>
+                <div className="flex items-center gap-1">
+                  <div className={`w-2 h-2 rounded-full ${canSendMessage ? 'bg-green-300' : 'bg-red-300'}`}></div>
+                  <span className="text-xs text-green-100">
+                    {canSendMessage ? 'Connected' : 'Disconnected'}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => setClose(false)}
+              className="text-white hover:bg-green-500 rounded-full w-8 h-8 flex items-center justify-center transition-all"
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
-        {/* Template Selection */}
-        <div className="mb-6">
-          <div className="flex flex-col">
-            <label htmlFor="template" className="font-bold mb-2">
-              Template
+        {/* Body */}
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)] space-y-6">
+          {/* WhatsApp Status Alert */}
+          {!canSendMessage && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-center gap-3">
+                <div className="text-red-500 text-xl">⚠️</div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-red-800">WhatsApp Not Connected</h3>
+                  <p className="text-red-600 text-sm mt-1">
+                    Please scan the QR code to connect your WhatsApp account first.
+                  </p>
+                </div>
+                <Link
+                  href="/qr-scan"
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Connect Now
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* Template Selection */}
+          <div>
+            <label htmlFor="template" className="block text-sm font-semibold text-gray-700 mb-2">
+              Message Template
             </label>
             <select
               name="template"
               id="template"
               onChange={handleTemplateChange}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg"
             >
               <option value="">Select Template</option>
               {templates.length > 0 &&
@@ -217,96 +256,112 @@ const WhatsAppCon = ({ selectedLeads, setClose, userID, setSelectedLeads }) => {
                 ))}
             </select>
           </div>
-        </div>
 
-        {/* Header Image */}
-        {headerUrl && (
-          <div className="mb-6">
-            <label className="font-bold mb-2 block">Header Image</label>
-            <div className="w-full max-w-xs">
-              <CustomImage
-                src={headerUrl}
-                alt="Header"
-                width={300}
-                height={200}
-                className="w-full h-auto rounded-lg border border-gray-300"
+          {/* Header Image */}
+          {headerUrl && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Header Image
+              </label>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 inline-block">
+                <CustomImage
+                  src={headerUrl}
+                  alt="Header"
+                  width={300}
+                  height={200}
+                  className="w-full max-w-sm h-auto rounded-lg border border-gray-300"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Message Content */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Message Content
+            </label>
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                className="w-full bg-transparent border-none outline-none resize-none text-gray-800"
+                rows={6}
+                placeholder="Your WhatsApp message will appear here when you select a template..."
+                disabled={!selectedTemplate}
               />
             </div>
           </div>
-        )}
 
-        {/* Message */}
-        <div className="mb-4">
-          <label className="font-bold mb-2 block">Message</label>
-          <textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none resize-vertical"
-            rows={5}
-            placeholder="Type your message here..."
-          />
-        </div>
+          {/* Remarks and Follow-up */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="remarks" className="block text-sm font-semibold text-gray-700 mb-2">
+                Campaign Remarks
+              </label>
+              <textarea
+                name="remarks"
+                id="remarks"
+                value={remarks}
+                onChange={(e) => setRemarks(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg  resize-none"
+                rows={3}
+                placeholder="Enter campaign remarks"
+              />
+            </div>
 
-        {/* Remarks */}
-        <div className="flex flex-col mb-4">
-          <label htmlFor="remarks" className="font-bold mb-2">
-            Remarks
-          </label>
-          <textarea
-            name="remarks"
-            id="remarks"
-            value={remarks}
-            onChange={(e) => setRemarks(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 resize-vertical"
-            rows={3}
-            placeholder="Enter remarks"
-          />
-        </div>
-
-        {/* Follow Up date and time */}
-        <div className="flex justify-between mb-6">
-          <div className="flex flex-col">
-            <label htmlFor="followup-date-time" className="font-bold mb-2">
-              Follow up date
-            </label>
-            <input
-              name="followup-date-time"
-              id="followup-date-time"
-              value={followUpDateTime}
-              onChange={(e) => setFollowUpDateTime(e.target.value)}
-              type="datetime-local"
-              className="px-3 py-2 border border-gray-400 rounded font-light focus:ring-2 focus:ring-blue-500 focus:outline-none text-base focus:border-blue-500"
-            />
+            <div>
+              <label htmlFor="followup-date-time" className="block text-sm font-semibold text-gray-700 mb-2">
+                Follow-up Schedule
+              </label>
+              <input
+                name="followup-date-time"
+                id="followup-date-time"
+                value={followUpDateTime}
+                onChange={(e) => setFollowUpDateTime(e.target.value)}
+                type="datetime-local"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg transition-colors"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex justify-end gap-4">
-          {!canSendMessage && (
-            <Link
-              href="/qr-scan"
-              className="bg-red-400 text-white px-4 py-2 rounded-lg hover:bg-red-500 transition-colors text-center"
-            >
-              Scan WhatsApp First
-            </Link>
-          )}
-          
-          {canSendMessage && (
-            <button
-              onClick={sendMessage}
-              disabled={loading || !selectedTemplate}
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {loading ? "Sending..." : "Send"}
-            </button>
-          )}
-
+        {/* Footer */}
+        <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3">
           <button
             onClick={() => setClose(false)}
-            className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+            disabled={loading}
+            className="px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
+          
+          {canSendMessage ? (
+            <button
+              onClick={sendMessage}
+              disabled={loading || !selectedTemplate || !remarks || !followUpDateTime}
+              className="px-6 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <span>💬</span>
+                  Send Message
+                </>
+              )}
+            </button>
+          ) : (
+            <Link
+              href="/qr-scan"
+              className="px-6 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors inline-flex items-center gap-2"
+            >
+              <span>📱</span>
+              Connect WhatsApp
+            </Link>
+          )}
         </div>
       </div>
     </div>

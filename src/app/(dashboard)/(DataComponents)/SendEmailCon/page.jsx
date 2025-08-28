@@ -37,7 +37,6 @@ const SendEmailCon = ({
   const [remarks, setRemarks] = useState("");
   const [followUpDateTime, setFollowUpDateTime] = useState("");
   const [error, setError] = useState("");
-
   const [esps, setEsps] = useState([]);
 
   useEffect(() => {
@@ -62,7 +61,7 @@ const SendEmailCon = ({
 
       if (response.ok) {
         const data = await response.json();
-        setEsps(Array.isArray(data.data) ? data.data : []); // Ensure it's an array
+        setEsps(Array.isArray(data.data) ? data.data : []);
       }
     } catch (error) {
       console.error("Error fetching credentials:", error);
@@ -87,7 +86,7 @@ const SendEmailCon = ({
 
       if (response.ok) {
         const data = await response.json();
-        const templates = Array.isArray(data.Templates) ? data.Templates : []; // Ensure it's an array
+        const templates = Array.isArray(data.Templates) ? data.Templates : [];
         const filter = templates.filter((template) => template.temptype === "E");
         setTemplates(filter);
       }
@@ -161,7 +160,6 @@ const SendEmailCon = ({
       return;
     }
 
-    // Ensure selectedLeads is an array and has items
     if (!Array.isArray(selectedLeads) || selectedLeads.length === 0) {
       setError("No leads selected");
       return;
@@ -261,175 +259,204 @@ const SendEmailCon = ({
     }
   };
 
-  // Add safety checks for rendering
   const safeSelectedLeads = Array.isArray(selectedLeads) ? selectedLeads : [];
   const safeTemplates = Array.isArray(templates) ? templates : [];
   const safeEsps = Array.isArray(esps) ? esps : [];
 
   return (
-    <div className="fixed inset-0 backdrop-blur-sm z-50 flex justify-center items-center">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Send Email</h2>
-          <button
-            onClick={() => setSendEmail && setSendEmail(false)}
-            className="text-red-500 hover:text-red-700 text-xl font-bold w-8 h-8 flex items-center justify-center"
-            aria-label="Close"
-          >
-            ✖
-          </button>
+    <div className="fixed inset-0 backdrop-blur-sm z-50 flex justify-center items-center p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-green-600 to-emerald-700 px-6 py-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                📧 Send Email Campaign
+              </h2>
+              <p className="text-green-100 text-sm mt-1">
+                {safeSelectedLeads.length} lead{safeSelectedLeads.length !== 1 ? 's' : ''} selected
+              </p>
+            </div>
+            <button
+              onClick={() => setSendEmail && setSendEmail(false)}
+              className="text-white hover:bg-green-500 rounded-full w-8 h-8 flex items-center justify-center transition-all"
+            >
+              ✕
+            </button>
+          </div>
         </div>
-        {error && <div className="text-red-500 mb-4 p-2 bg-red-50 rounded">{error}</div>}
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          {/* Email Service Selection */}
-          <div className="flex flex-col">
-            <label htmlFor="emailService" className="font-bold mb-2">
-              Select Email Service
-            </label>
-            <select
-              id="emailService"
-              value={selectedService}
-              onChange={handleServiceChange}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            >
-              <option value="">Select ESP</option>
-              {safeEsps.map((service) => (
-                <option key={service.credID} value={service.credID}>
-                  {service.name}
-                </option>
-              ))}
-            </select>
-          </div>
 
-          {/* Template Selection */}
-          <div className="flex flex-col">
-            <label htmlFor="template" className="font-bold mb-2">
-              Select Template
-            </label>
-            <select
-              id="template"
-              value={selectedTemplate ? selectedTemplate.tempID : ""}
-              onChange={(e) => {
-                const selected = safeTemplates.find(
-                  (template) => template.tempID === parseInt(e.target.value)
-                );
-                handleTemplateSelection(selected);
-              }}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            >
-              <option value="">Select a template</option>
-              {safeTemplates.length > 0 ? (
-                safeTemplates.map((template) => (
-                  <option key={template.tempID} value={template.tempID}>
-                    {template.template}
-                  </option>
-                ))
-              ) : (
-                <option disabled>No templates available</option>
-              )}
-            </select>
+        {/* Error Display */}
+        {error && (
+          <div className="mx-6 mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {error}
           </div>
+        )}
 
-          {/* Subject */}
-          <div className="flex flex-col">
-            <label htmlFor="subject" className="font-bold mb-2">
-              Subject
-            </label>
-            <input
-              type="text"
-              name="subject"
-              id="subject"
-              value={emailDetails.subject}
-              onChange={handleChange}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:bg-gray-100"
-              placeholder={
-                selectedTemplate ? "Subject from template" : "Enter subject"
-              }
-              disabled={!!selectedTemplate}
-            />
-          </div>
+        {/* Body */}
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            {/* Service and Template Selection */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="emailService" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Email Service Provider
+                </label>
+                <select
+                  id="emailService"
+                  value={selectedService}
+                  onChange={handleServiceChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg transition-colors"
+                >
+                  <option value="">Select ESP</option>
+                  {safeEsps.map((service) => (
+                    <option key={service.credID} value={service.credID}>
+                      {service.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          {/* Body */}
-          <div className="flex flex-col">
-            <label htmlFor="body" className="font-bold mb-2">
-              Body
-            </label>
-            <textarea
-              name="body"
-              id="body"
-              value={emailDetails.body}
-              onChange={handleChange}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none resize-vertical"
-              rows={5}
-              placeholder={
-                selectedTemplate ? "Body from template" : "Email body"
-              }
-            />
-          </div>
+              <div>
+                <label htmlFor="template" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Email Template
+                </label>
+                <select
+                  id="template"
+                  value={selectedTemplate ? selectedTemplate.tempID : ""}
+                  onChange={(e) => {
+                    const selected = safeTemplates.find(
+                      (template) => template.tempID === parseInt(e.target.value)
+                    );
+                    handleTemplateSelection(selected);
+                  }}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+                >
+                  <option value="">Select a template</option>
+                  {safeTemplates.length > 0 ? (
+                    safeTemplates.map((template) => (
+                      <option key={template.tempID} value={template.tempID}>
+                        {template.template}
+                      </option>
+                    ))
+                  ) : (
+                    <option disabled>No templates available</option>
+                  )}
+                </select>
+              </div>
+            </div>
 
-          {/* Preview Section */}
-          <div className="flex flex-col">
-            <label htmlFor="preview" className="font-bold mb-2">
-              Preview
-            </label>
-            <div
-              id="preview"
-              className="px-4 py-2 border border-gray-300 rounded overflow-x-auto max-h-40"
-              dangerouslySetInnerHTML={{ __html: emailDetails.body }}
-            />
-          </div>
-
-          {/* Remarks */}
-          <div className="flex flex-col">
-            <label htmlFor="remarks" className="font-bold mb-2">
-              Remarks
-            </label>
-            <textarea
-              name="remarks"
-              id="remarks"
-              value={remarks}
-              onChange={(e) => setRemarks(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 resize-vertical"
-              rows={3}
-              placeholder="Enter remarks"
-            />
-          </div>
-
-          {/* Follow Up date and time */}
-          <div className="flex justify-between">
-            <div className="flex flex-col">
-              <label htmlFor="followup-date-time" className="font-bold mb-2">
-                Follow up date
+            {/* Subject */}
+            <div>
+              <label htmlFor="subject" className="block text-sm font-semibold text-gray-700 mb-2">
+                Email Subject
               </label>
               <input
-                name="followup-date-time"
-                id="followup-date-time"
-                value={followUpDateTime}
-                onChange={(e) => setFollowUpDateTime(e.target.value)}
-                type="datetime-local"
-                className="px-3 py-2 border border-gray-400 rounded font-light focus:ring-2 focus:ring-blue-500 focus:outline-none text-base focus:border-blue-500"
+                type="text"
+                name="subject"
+                id="subject"
+                value={emailDetails.subject}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+                placeholder={selectedTemplate ? "Subject from template" : "Enter email subject"}
+                disabled={!!selectedTemplate}
               />
             </div>
-          </div>
 
-          {/* Buttons */}
-          <div className="flex justify-end gap-4 pt-4">
-            <button
-              type="button"
-              onClick={() => setSendEmail && setSendEmail(false)}
-              className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading || !safeSelectedLeads.length || !selectedTemplate}
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {loading ? "Sending..." : "Send Email"}
-            </button>
-          </div>
-        </form>
+            {/* Body */}
+            <div>
+              <label htmlFor="body" className="block text-sm font-semibold text-gray-700 mb-2">
+                Email Content
+              </label>
+              <textarea
+                name="body"
+                id="body"
+                value={emailDetails.body}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg  resize-none"
+                rows={6}
+                placeholder={selectedTemplate ? "Content from template" : "Enter email content"}
+              />
+            </div>
+
+            {/* Preview */}
+            {emailDetails.body && (
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Email Preview
+                </label>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 max-h-32 overflow-y-auto">
+                  <div
+                    className="text-sm prose prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{ __html: emailDetails.body }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Remarks and Follow-up */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="remarks" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Remarks
+                </label>
+                <textarea
+                  name="remarks"
+                  id="remarks"
+                  value={remarks}
+                  onChange={(e) => setRemarks(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg resize-none"
+                  rows={3}
+                  placeholder="Enter campaign remarks"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="followup-date-time" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Follow-up Schedule
+                </label>
+                <input
+                  name="followup-date-time"
+                  id="followup-date-time"
+                  value={followUpDateTime}
+                  onChange={(e) => setFollowUpDateTime(e.target.value)}
+                  type="datetime-local"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+                />
+              </div>
+            </div>
+          </form>
+        </div>
+
+        {/* Footer */}
+        <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={() => setSendEmail && setSendEmail(false)}
+            disabled={loading}
+            className="px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            onClick={handleSubmit}
+            disabled={loading || !safeSelectedLeads.length || !selectedTemplate || !selectedService}
+            className="px-6 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Sending...
+              </>
+            ) : (
+              <>
+                <span>📧</span>
+                Send Email
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );
