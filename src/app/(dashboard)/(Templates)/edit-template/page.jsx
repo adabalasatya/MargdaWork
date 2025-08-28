@@ -4,6 +4,24 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/app/component/customtoast/page";
+import { 
+  FaFileAlt, 
+  FaEnvelope, 
+  FaWhatsapp, 
+  FaSms,
+  FaUpload,
+  FaTrash,
+  FaPlus,
+  FaEye,
+  FaPaperPlane,
+  FaArrowLeft,
+  FaImage,
+  FaPaperclip,
+  FaCheck,
+  FaEdit,
+  FaTimes
+} from "react-icons/fa";
+import { IoMdClose } from "react-icons/io";
 import axios from "axios";
 import LoadingProgress from "@/app/component/LoadingProgress";
 
@@ -24,11 +42,18 @@ const EditTemplate = () => {
   const [attachmentUrls, setAttachmentUrls] = useState([]);
   const [headerFile, setHeaderFile] = useState(null);
   const [headerUrl, setHeaderUrl] = useState(null);
-
   const [isUploading, setIsUploading] = useState(false);
   const [uploadingMessage, setUploadingMessage] = useState("");
   const [uploadProgress, setUploadProgress] = useState("");
+
   const { addToast } = useToast();
+
+  // Template type configuration
+  const templateTypes = {
+    E: { label: "Email Template", icon: FaEnvelope, color: "text-blue-600", bgColor: "bg-blue-100" },
+    W: { label: "WhatsApp Template", icon: FaWhatsapp, color: "text-green-600", bgColor: "bg-green-100" },
+    S: { label: "SMS Template", icon: FaSms, color: "text-purple-600", bgColor: "bg-purple-100" }
+  };
 
   // Safe localStorage access
   const getUserData = () => {
@@ -43,7 +68,6 @@ const EditTemplate = () => {
   const accessToken = userLocalData ? userLocalData.access_token : null;
 
   useEffect(() => {
-    // Get template data from query parameters
     const templateData = searchParams.get('template');
     if (templateData) {
       try {
@@ -95,13 +119,7 @@ const EditTemplate = () => {
       if (response.ok) {
         const users = result.data;
         users.map((user) => {
-          user.label = `${user.name}, ${user.email.slice(
-            0,
-            4
-          )}******${user.email.slice(
-            user.email.length - 3,
-            user.email.length
-          )}`;
+          user.label = `${user.name}, ${user.email.slice(0, 4)}******${user.email.slice(user.email.length - 3, user.email.length)}`;
           user.value = user.userID;
           return user;
         });
@@ -117,23 +135,33 @@ const EditTemplate = () => {
   const handleHeaderFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      if (!allowedTypes.includes(file.type)) {
+        addToast("Please select a valid image file (JPG, JPEG, PNG)", "error");
+        return;
+      }
       setHeaderFile(file);
     }
   };
 
   const handleHeaderFileDelete = () => {
     setHeaderFile(null);
+    const fileInput = document.getElementById('header');
+    if (fileInput) {
+      fileInput.value = '';
+    }
   };
 
   const handleSubmit = async () => {
     const newErrors = {};
+    
     if (!templateType.trim()) {
       newErrors.templateType = "Template type is required.";
     }
     if (!templateName.trim()) {
       newErrors.templateName = "Template Name is required.";
     }
-    if (!message) {
+    if (!message.trim()) {
       newErrors.message = "Message is required";
     }
     if (templateType === "E") {
@@ -141,10 +169,14 @@ const EditTemplate = () => {
         newErrors.subject = "Subject is required";
       }
     }
+    
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
+
+    setErrors({});
+
     let payload;
     if (templateType !== "E") {
       payload = {
@@ -163,49 +195,15 @@ const EditTemplate = () => {
         message,
       };
     }
-    if (headerFile) {
-      const formData = new FormData();
-      formData.append("files", headerFile);
-      setIsUploading(true);
-      setUploadingMessage("Uploading Header File");
-      const uploadRes = await axios.post(
-        "https://www.margda.in/miraj/work/template/upload-file",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
-            );
-            setUploadProgress(percentCompleted);
-          },
-        }
-      );
-      setUploadingMessage("");
-      setIsUploading(false);
-      if (uploadRes.status === 200) {
-        payload.headerFileUrl = uploadRes.data.fileUrls[0];
-      } else {
-        payload.headerFileUrl = null;
-      }
-    } else if (headerUrl) {
-      payload.headerFileUrl = headerUrl;
-    }
-    payload.templateFileUrls = [];
-    if (attachmentFiles.length > 0) {
-      setIsUploading(true);
-      setUploadingMessage("Uploading Attachment Files");
-      const formData = new FormData();
 
-      attachmentFiles.forEach((file) => {
-        if (file) {
-          formData.append("files", file);
-        }
-      });
-      try {
+    try {
+      if (headerFile) {
+        const formData = new FormData();
+        formData.append("files", headerFile);
+        setIsUploading(true);
+        setUploadingMessage("Uploading Header File");
+        setUploadProgress(0);
+
         const uploadRes = await axios.post(
           "https://www.margda.in/miraj/work/template/upload-file",
           formData,
@@ -222,40 +220,89 @@ const EditTemplate = () => {
             },
           }
         );
+
         setUploadingMessage("");
         setIsUploading(false);
+
         if (uploadRes.status === 200) {
-          payload.templateFileUrls.push(...uploadRes.data.fileUrls);
+          payload.headerFileUrl = uploadRes.data.fileUrls[0];
         } else {
-          payload.templateFileUrls = [];
+          payload.headerFileUrl = null;
         }
-      } catch (error) {
+      } else if (headerUrl) {
+        payload.headerFileUrl = headerUrl;
+      }
+
+      payload.templateFileUrls = [];
+
+      if (attachmentFiles.length > 0) {
+        setIsUploading(true);
+        setUploadingMessage("Uploading Attachment Files");
+        setUploadProgress(0);
+
+        const formData = new FormData();
+        attachmentFiles.forEach((file) => {
+          if (file) {
+            formData.append("files", file);
+          }
+        });
+
+        try {
+          const uploadRes = await axios.post(
+            "https://www.margda.in/miraj/work/template/upload-file",
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+                Authorization: `Bearer ${accessToken}`,
+              },
+              onUploadProgress: (progressEvent) => {
+                const percentCompleted = Math.round(
+                  (progressEvent.loaded * 100) / progressEvent.total
+                );
+                setUploadProgress(percentCompleted);
+              },
+            }
+          );
+
+          if (uploadRes.status === 200) {
+            payload.templateFileUrls.push(...uploadRes.data.fileUrls);
+          }
+        } catch (error) {
+          console.error("Attachment upload error:", error);
+        }
+
         setUploadingMessage("");
         setIsUploading(false);
       }
-    }
-    if (attachmentUrls && attachmentUrls.length > 0) {
-      payload.templateFileUrls.push(...attachmentUrls);
-    }
-    const apiUrl = "https://www.margda.in/miraj/work/template/edit-template";
-    try {
+
+      if (attachmentUrls && attachmentUrls.length > 0) {
+        payload.templateFileUrls.push(...attachmentUrls);
+      }
+
+      const apiUrl = "https://www.margda.in/miraj/work/template/edit-template";
       const response = await fetch(apiUrl, {
-        method: "put",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
+
       const data = await response.json();
       if (response.ok) {
         addToast(data.message, "success");
-        return router.push("/templates-list");
+        router.push("/templates-list");
       } else {
-        return addToast(data.message, "error");
+        addToast(data.message, "error");
       }
     } catch (error) {
-      console.log(error);
-      return addToast(error, "error");
+      console.error("Submit error:", error);
+      addToast(error.message || "An error occurred while updating", "error");
+    } finally {
+      setIsUploading(false);
+      setUploadingMessage("");
+      setUploadProgress(0);
     }
   };
 
@@ -263,13 +310,15 @@ const EditTemplate = () => {
     const file = event.target.files[0];
     if (file) {
       const updatedFiles = [...attachmentFiles];
-      updatedFiles[index] = file; // Update the specific index with the selected file
+      updatedFiles[index] = file;
       setAttachmentFiles(updatedFiles);
     }
   };
 
   const handleAddAttachmentFilesInput = () => {
-    setAttachmentFiles([...attachmentFiles, null]); // Add a placeholder for a new file
+    if (attachmentFiles.length + (attachmentUrls?.length || 0) < 4) {
+      setAttachmentFiles([...attachmentFiles, null]);
+    }
   };
 
   const handleRemoveAttachmentFilesInput = (index) => {
@@ -282,290 +331,422 @@ const EditTemplate = () => {
     setAttachmentUrls(updatedUrls);
   };
 
+  const handleInputChange = (field, value) => {
+    if (errors[field]) {
+      setErrors({ ...errors, [field]: "" });
+    }
+    
+    switch (field) {
+      case 'templateName':
+        setTemplateName(value);
+        break;
+      case 'subject':
+        setSubject(value);
+        break;
+      case 'message':
+        setMessage(value);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const getTemplateTypeDisplay = () => {
+    return templateTypes[templateType] || { label: "Template", icon: FaFileAlt, color: "text-gray-600", bgColor: "bg-gray-100" };
+  };
+
+  const typeInfo = getTemplateTypeDisplay();
+  const TypeIcon = typeInfo.icon;
+
   return (
-    <div className="flex flex-col  justify-start items-start p-2">
+    <div className="min-h-screen  py-4 px-2">
       {isUploading && (
         <LoadingProgress
           progress={uploadProgress}
           uploadMessage={uploadingMessage}
         />
       )}
-      <div className="text-3xl font-semibold font-sans mt-4 text-center w-full">
-  Template
-</div>
-
-      <div
-        className="bg-white self-center justify-between flex flex-col p-4 mt-4 rounded-md border-2 shadow-md border-gray-300"
-        style={{ minWidth: "98%" }}
-      >
-        <div className="flex flex-row text-base font-normal justify-between w-full">
-          <div className="flex flex-col items-start w-full">
-            <label htmlFor="template-type" className="font-bold text-center p-1">
-              Template Type
-            </label>
-            <select
-              disabled
-              name="template-type"
-              id="template-type"
-              value={templateType}
-              onChange={(e) => {
-                setTemplateType(e.target.value);
-                setErrors({ ...errors, ["templateType"]: "" });
-              }}
-              className="px-3  w-[90%] py-2 border border-gray-400 rounded font-light focus:ring-blue-500 text-base focus:border-blue-500 "
-            >
-              <option value="">Select Template Type</option>
-              <option value="W">Whatsapp</option>
-              <option value="E">Email</option>
-              <option value="S">Sms</option>
-            </select>
-            {errors.templateType && (
-              <p className="text-red-500 text-sm mt-1">{errors.templateType}</p>
-            )}
-          </div>
-          <div className="flex flex-col items-start w-full">
-            <label htmlFor="template-name" className="font-bold p-1">
-              Template Name
-            </label>
-            <input
-              type="text"
-              name="template-name"
-              id="template-name"
-              value={templateName}
-              onChange={(e) => {
-                setTemplateName(e.target.value);
-                setErrors({ ...errors, ["templateName"]: "" });
-              }}
-              placeholder="Enter Template Name Here"
-              className="px-3  w-[90%] py-2 border border-gray-400 rounded font-light focus:ring-blue-500 text-base focus:border-blue-500 "
-            />
-            {errors.templateName && (
-              <p className="text-red-500 text-sm mt-1">{errors.templateName}</p>
-            )}
-          </div>
-        </div>
-        {templateType !== "W" && (
-          <div className="flex flex-row text-base font-normal justify-between w-1/2 mt-4">
-            {templateType === "E" && (
-              <div className="flex flex-col items-start w-full">
-                <label htmlFor="template-id" className="font-bold p-1">
-                  Subject
-                </label>
-                <input
-                  type="text"
-                  name="template-subject"
-                  id="template-subject"
-                  value={subject}
-                  onChange={(e) => {
-                    setSubject(e.target.value);
-                    setErrors({ ...errors, ["subject"]: "" });
-                  }}
-                  placeholder="Enter Subject Here"
-                  className="px-3  w-[90%] py-2 border border-gray-400 rounded font-light focus:ring-blue-500 text-base focus:border-blue-500 "
-                />
-                {errors.subject && (
-                  <p className="text-red-500 text-sm mt-1">{errors.subject}</p>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {templateType === "W" && (
-          <div className="flex flex-row text-base font-normal justify-between w-1/2 mt-4">
-            <div className="flex flex-col items-start w-full">
-              <label
-                htmlFor="header"
-                className="px-4 py-2 bg-blue-600 text-white rounded cursor-pointer hover:bg-blue-700"
-              >
-                {headerUrl || headerFile
-                  ? "Change Header File"
-                  : "Select Header File"}
-              </label>
-              {headerFile && (
-                <div className="flex items-center justify-between border border-gray-300 rounded p-2 mt-3 hover:bg-red-300">
-                  <button
-                    onClick={handleHeaderFileDelete}
-                    className="text-red-600 hover:text-red-800"
-                    aria-label="Remove File"
-                  >
-                    <span className="text-gray-700">{headerFile.name}</span>✖
-                  </button>
-                </div>
-              )}
-              <input
-                type="file"
-                name="header"
-                className="hidden"
-                id="header"
-                onChange={handleHeaderFileChange}
-                accept="image/*"
-              />
-              <div className="text-red-500 mt-3">
-                Allowed only .jpg, .png,.jpeg formats
-              </div>
-            </div>
-          </div>
-        )}
-        {headerUrl && !headerFile && (
-          <a href={headerUrl} className="w-max" target="_blank" rel="noopener noreferrer">
-            <div className="flex items-start justify-start border border-gray-300 rounded p-2 mt-3 text-base font-normal w-full">
-              {"Header File"}
-            </div>
-          </a>
-        )}
-        <div className="mt-6">
-          <div className="flex flex-col">
-            <label
-              htmlFor="template-message"
-              className="text-base font-normal p-1"
-            >
-              Message
-            </label>
-
-            <div>
-              <textarea
-                name="message"
-                id="template-message"
-                placeholder="Message"
-                rows={5}
-                value={message}
-                onChange={(e) => {
-                  const newText = e.target.value;
-                  setMessage(newText); // Update state normally if within limit
-                }}
-                className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-              ></textarea>
-            </div>
-
-            <div className="justify-end flex text-sm mr-3 mt-3">
-              Length: {message.length}
-            </div>
-            {templateType == "E" && (
-              <div className="flex flex-col justify-start items-start">
-                <label htmlFor="preview" className="text-base font-normal p-1">
-                  Preview
-                </label>
-                <div
-                  id="preview"
-                  style={{
-                    border: "1px solid #ccc",
-                    padding: "10px",
-                    marginTop: "10px",
-                    overflowX: "scroll",
-                    maxHeight: "400px",
-                    overflowY: "scroll",
-                  }}
-                  className="w-full p-2 mb-4 border-gray-300 flex flex-col items-start"
-                  dangerouslySetInnerHTML={{
-                    __html: message ? message : "Preview Will be Show Here",
-                  }}
-                />
-              </div>
-            )}
-            {errors.message && (
-              <p className="text-red-500 text-sm mt-1">{errors.message}</p>
-            )}
-          </div>
+      
+      {/* Header Section */}
+      <div className="max-w-7xl mx-auto mb-4">
+        <div className="text-center mb-4">
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">Edit Template</h1>
         </div>
 
-        {templateType && templateType.trim() !== "S" && (
-          <div>
-            <div className="flex flex-col text-base font-bold justify-between items-start w-[90%] mt-6">
-              <h1 className="text-lg font-bold mt-6">
-                {attachmentUrls && attachmentUrls.length > 0
-                  ? "Change Attachments"
-                  : "Attachment"}
-              </h1>
-              {attachmentFiles.map((file, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-4 mt-6 border px-4 py-1 pl-1"
-                >
-                  <input
-                    type="file"
-                    id={`attachmet${index}`}
-                    onChange={(e) => handleAttachmentFilesChange(e, index)}
-                    className="hidden"
-                  />
+        {/* Template Type Indicator */}
+        <div className="flex justify-center mb-6">
+          <div className="inline-flex items-center bg-white px-6 py-3 rounded-full shadow-md border-2 border-gray-100">
+            <TypeIcon className={`${typeInfo.color} text-xl mr-3`} />
+            <span className="font-semibold text-gray-800">{typeInfo.label}</span>
+          </div>
+        </div>
+      </div>
 
-                  <label
-                    htmlFor={`attachmet${index}`}
-                    className="px-4 py-2 bg-gray-400 text-white rounded cursor-pointer hover:bg-gray-500"
-                  >
-                    {file ? "Change File" : `${index + 1}. Choose File`}
+      {/* Main Form Container */}
+      <div className="max-w-6xl mx-auto">
+        <div className="bg-white rounded-3xl shadow-md border border-gray-200 overflow-hidden">
+          <div className="p-8 md:p-12">
+            
+            {/* Basic Information Section */}
+            <div className="mb-10">
+              <div className="flex items-center mb-6">
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-3">1</div>
+                <h2 className="text-2xl font-bold text-gray-800">Basic Information</h2>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="space-y-2">
+                  <label htmlFor="template-type" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Template Type
                   </label>
-                  {file ? (
-                    <button
-                      onClick={() => handleRemoveAttachmentFilesInput(index)}
-                      className="text-red-600 px-4 hover:bg-gray-300 rounded"
+                  <div className="relative">
+                    <select
+                      disabled
+                      name="template-type"
+                      id="template-type"
+                      value={templateType}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-600 cursor-not-allowed transition-all duration-200"
                     >
-                      <span className="text-gray-600 ">{file.name} </span>
-                      <sup>X</sup>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleRemoveAttachmentFilesInput(index)}
-                      className="text-red-400 hover:text-red-800"
-                    >
-                      X
-                    </button>
+                      <option value="">Select Template Type</option>
+                      <option value="W">WhatsApp</option>
+                      <option value="E">Email</option>
+                      <option value="S">SMS</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <TypeIcon className={typeInfo.color} />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="template-name" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Template Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="template-name"
+                    id="template-name"
+                    value={templateName}
+                    onChange={(e) => handleInputChange('templateName', e.target.value)}
+                    placeholder="Enter a descriptive template name"
+                    className={`w-full px-4 py-3 border-2 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none ${
+                      errors.templateName ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  />
+                  {errors.templateName && (
+                    <p className="text-red-500 text-sm mt-2 flex items-center">
+                      <span className="mr-1">⚠</span>
+                      {errors.templateName}
+                    </p>
                   )}
                 </div>
-              ))}
-              {attachmentFiles.length +
-                (attachmentUrls ? attachmentUrls.length : 0) <
-              4 ? (
-                <button
-                  onClick={handleAddAttachmentFilesInput}
-                  className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500 mt-6"
-                >
-                  {attachmentFiles.length === 0
-                    ? "Add Attachment"
-                    : "Add another attachment"}
-                </button>
-              ) : (
-                <div className="text-base font-normal text-red-500 mt-6">
-                  You can add only 4 files
-                </div>
-              )}
+              </div>
             </div>
-            {attachmentUrls &&
-              attachmentUrls.length > 0 &&
-              attachmentUrls.map((url, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-center gap-4 mt-6 border px-4 py-1 pl-1 w-min"
-                >
-                  <a key={index} href={url} className="w-min" target="_blank" rel="noopener noreferrer">
-                    <div className="flex items-start justify-start border border-gray-300 rounded p-2 text-base font-normal w-max">
-                      {`${index + 1}. Attachment`}
-                    </div>
-                  </a>
-                  <button
-                    onClick={() => handleRemoveAttachmentUrls(index)}
-                    className="text-red-400 hover:text-red-800"
-                  >
-                    X
-                  </button>
-                </div>
-              ))}
-          </div>
-        )}
 
-        <div className="flex flex-row justify-start gap-3 my-3">
-          <button
-            onClick={handleSubmit}
-            className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 font-normal font-mono text-base"
-          >
-            Submit
-          </button>
-          <Link
-            href="/templates-list"
-            className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 font-normal font-mono text-base"
-          >
-            Back
-          </Link>
+            {/* Subject field for Email templates */}
+            {templateType === "E" && (
+              <div className="mb-10">
+                <div className="flex items-center mb-6">
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-3">2</div>
+                  <h2 className="text-2xl font-bold text-gray-800">Email Subject</h2>
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="template-subject" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Subject Line <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="template-subject"
+                    id="template-subject"
+                    value={subject}
+                    onChange={(e) => handleInputChange('subject', e.target.value)}
+                    placeholder="Enter compelling subject line"
+                    className={`w-full px-4 py-3 border-2 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none ${
+                      errors.subject ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  />
+                  {errors.subject && (
+                    <p className="text-red-500 text-sm mt-2 flex items-center">
+                      <span className="mr-1">⚠</span>
+                      {errors.subject}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Header file upload for WhatsApp templates */}
+            {templateType === "W" && (
+              <div className="mb-10">
+                <div className="flex items-center mb-6">
+                  <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                    <FaImage />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-800">Header Media</h2>
+                </div>
+                
+                <div className="bg-gray-50 rounded-2xl p-6 border-2 border-dashed border-gray-300 hover:border-green-400 transition-all duration-200">
+                  <input
+                    type="file"
+                    name="header"
+                    className="hidden"
+                    id="header"
+                    onChange={handleHeaderFileChange}
+                    accept="image/jpeg,image/jpg,image/png"
+                  />
+                  
+                  {!headerFile && !headerUrl ? (
+                    <label htmlFor="header" className="cursor-pointer flex flex-col items-center">
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                        <FaUpload className="text-green-600 text-2xl" />
+                      </div>
+                      <p className="text-lg font-semibold text-gray-700 mb-2">Upload Header Image</p>
+                      <p className="text-sm text-gray-500 mb-4">JPG, JPEG, PNG formats supported</p>
+                      <div className="bg-green-600 text-white px-6 py-2 rounded-xl hover:bg-green-700 transition-colors">
+                        Choose File
+                      </div>
+                    </label>
+                  ) : (
+                    <div className="space-y-4">
+                      {headerFile && (
+                        <div className="flex items-center justify-between bg-white rounded-xl p-4 border border-gray-200">
+                          <div className="flex items-center">
+                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                              <FaCheck className="text-green-600" />
+                            </div>
+                            <div>
+                              <p className="font-semibold text-gray-800">{headerFile.name}</p>
+                              <p className="text-sm text-gray-500">New file selected</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={handleHeaderFileDelete}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-all"
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      )}
+                      
+                      {headerUrl && !headerFile && (
+                        <div className="flex items-center justify-between bg-white rounded-xl p-4 border border-gray-200">
+                          <div className="flex items-center">
+                            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                              <FaImage className="text-blue-600" />
+                            </div>
+                            <div>
+                              <p className="font-semibold text-gray-800">Current Header File</p>
+                              <a href={headerUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:text-blue-800">
+                                View current file
+                              </a>
+                            </div>
+                          </div>
+                          <label htmlFor="header" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
+                            Change File
+                          </label>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Message Section */}
+            <div className="mb-10">
+              <div className="flex items-center mb-6">
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                  {templateType === "E" ? "3" : "2"}
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800">Message Content</h2>
+              </div>
+              
+              <div className="space-y-4">
+                <label htmlFor="template-message" className="block text-sm font-semibold text-gray-700">
+                  Message <span className="text-red-500">*</span>
+                </label>
+                
+                <div className="relative">
+                  <textarea
+                    name="message"
+                    id="template-message"
+                    placeholder="Craft your message here..."
+                    rows={8}
+                    value={message}
+                    onChange={(e) => handleInputChange('message', e.target.value)}
+                    className={`w-full p-4 border-2 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none resize-none ${
+                      errors.message ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  />
+                  <div className="absolute bottom-3 right-3 text-sm text-gray-500 bg-white px-2 py-1 rounded-lg border">
+                    {message.length} characters
+                  </div>
+                </div>
+
+                {errors.message && (
+                  <p className="text-red-500 text-sm flex items-center">
+                    <span className="mr-1">⚠</span>
+                    {errors.message}
+                  </p>
+                )}
+
+                {/* Preview for Email templates */}
+                {templateType === "E" && message && (
+                  <div className="mt-6">
+                    <div className="flex items-center mb-4">
+                      <FaEye className="text-gray-600 mr-2" />
+                      <h3 className="text-lg font-semibold text-gray-800">Live Preview</h3>
+                    </div>
+                    <div className="border-2 border-gray-200 rounded-xl p-6 bg-gradient-to-br from-blue-50 to-indigo-50 min-h-[150px] max-h-96 overflow-y-auto">
+                      <div
+                        className="prose max-w-none"
+                        dangerouslySetInnerHTML={{
+                          __html: message || "<p class='text-gray-400'>Preview will appear here as you type...</p>",
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Attachment files (not for SMS) */}
+            {templateType !== "S" && (
+              <div className="mb-10">
+                <div className="flex items-center mb-6">
+                  <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                    <FaPaperclip />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-800">Attachments</h2>
+                  <span className="ml-3 text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                    Optional • Max 4 files
+                  </span>
+                </div>
+                
+                <div className="space-y-4">
+                  {/* Existing attachment URLs */}
+                  {attachmentUrls && attachmentUrls.length > 0 && (
+                    <div className="space-y-3">
+                      <h3 className="text-lg font-semibold text-gray-700">Current Attachments</h3>
+                      {attachmentUrls.map((url, index) => (
+                        <div key={index} className="flex items-center justify-between p-4 bg-blue-50 rounded-xl border border-blue-200">
+                          <div className="flex items-center">
+                            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                              <FaPaperclip className="text-blue-600" />
+                            </div>
+                            <span className="font-medium text-gray-800">Attachment {index + 1}</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <a
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800 font-medium"
+                            >
+                              <FaEye className="inline mr-1" />
+                              View
+                            </a>
+                            <button
+                              onClick={() => handleRemoveAttachmentUrls(index)}
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded transition-all"
+                            >
+                              <FaTimes />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* New attachment files */}
+                  {attachmentFiles.length > 0 && (
+                    <div className="space-y-3">
+                      <h3 className="text-lg font-semibold text-gray-700">
+                        {attachmentUrls && attachmentUrls.length > 0 ? "Additional Attachments" : "New Attachments"}
+                      </h3>
+                      {attachmentFiles.map((file, index) => (
+                        <div key={index} className="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-xl bg-gray-50 hover:bg-gray-100 transition-all duration-200">
+                          <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <FaPaperclip className="text-purple-600" />
+                          </div>
+                          
+                          <div className="flex-1">
+                            <input
+                              type="file"
+                              id={`attachment${index}`}
+                              onChange={(e) => handleAttachmentFilesChange(e, index)}
+                              className="hidden"
+                            />
+                            <label
+                              htmlFor={`attachment${index}`}
+                              className="cursor-pointer inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                            >
+                              <FaUpload className="mr-2" />
+                              {file ? "Change File" : `Choose File ${index + 1}`}
+                            </label>
+                            {file && (
+                              <p className="text-sm text-gray-600 mt-2 font-medium">{file.name}</p>
+                            )}
+                          </div>
+                          
+                          <button
+                            onClick={() => handleRemoveAttachmentFilesInput(index)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-all"
+                            title="Remove attachment"
+                          >
+                            <FaTimes size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {(attachmentFiles.length + (attachmentUrls?.length || 0)) < 4 && (
+                    <button
+                      onClick={handleAddAttachmentFilesInput}
+                      className="w-full p-4 border-2 border-dashed border-gray-300 rounded-xl hover:border-purple-400 hover:bg-purple-50 transition-all duration-200 group"
+                    >
+                      <div className="flex items-center justify-center">
+                        <FaPlus className="text-gray-400 group-hover:text-purple-600 mr-2" />
+                        <span className="text-gray-600 group-hover:text-purple-700 font-medium">
+                          {attachmentFiles.length === 0 && (!attachmentUrls || attachmentUrls.length === 0) 
+                            ? "Add Attachment" 
+                            : "Add Another Attachment"}
+                        </span>
+                      </div>
+                    </button>
+                  )}
+
+                  {(attachmentFiles.length + (attachmentUrls?.length || 0)) >= 4 && (
+                    <div className="text-center p-4 bg-amber-50 rounded-xl border border-amber-200">
+                      <p className="text-amber-700 font-medium">Maximum 4 attachments allowed</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Action buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t border-gray-200">
+              <button
+                onClick={handleSubmit}
+                disabled={isUploading}
+                className="flex-1 flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                <FaPaperPlane className="mr-2" />
+                {isUploading ? "Updating Template..." : "Update Template"}
+              </button>
+              
+              <Link
+                href="/templates-list"
+                className="flex items-center justify-center px-8 py-4 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-200 border-2 border-gray-200 hover:border-gray-300"
+              >
+                <FaArrowLeft className="mr-2" />
+                Back to Templates
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </div>
