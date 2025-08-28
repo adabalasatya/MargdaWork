@@ -2,8 +2,34 @@
 
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaEdit, FaTrash, FaPlus, FaSearch, FaArrowLeft, FaArrowRight } from "react-icons/fa";
-import { FiEdit, FiLayers } from "react-icons/fi";
+import { 
+  FaEdit, 
+  FaTrash, 
+  FaPlus, 
+  FaSearch, 
+  FaArrowLeft, 
+  FaArrowRight,
+  FaTasks,
+  FaChartLine,
+  FaCheckCircle,
+  FaClock,
+  FaListUl
+} from "react-icons/fa";
+import { 
+  FiEdit, 
+  FiLayers, 
+  FiChevronLeft, 
+  FiChevronRight, 
+  FiX, 
+  FiCheck,
+  FiCalendar,
+  FiFilter,
+  FiTrash2,
+  FiEye,
+  FiSettings,
+  FiTarget
+} from "react-icons/fi";
+import { IoMdClose } from "react-icons/io";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
@@ -23,13 +49,12 @@ const ManageTasks = () => {
   const [userData, setUserData] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1); // State for current page
-  const [recordsPerPage, setRecordsPerPage] = useState(10); // State for records per page
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage, setRecordsPerPage] = useState(10);
 
   const { addToast } = useToast();
 
   useEffect(() => {
-    // Check if we're in browser environment
     if (typeof window === 'undefined') return;
 
     const storedUserData = JSON.parse(sessionStorage.getItem("userData") || 'null');
@@ -78,14 +103,12 @@ const ManageTasks = () => {
       return;
     }
 
-    // Clear error when validation passes
     setError("");
 
     try {
       setIsLoading(true);
 
       if (editTask) {
-        // Edit existing task
         const response = await fetch(
           "https://www.margda.in/miraj/work/task/edit-task",
           {
@@ -104,7 +127,6 @@ const ManageTasks = () => {
           addToast(data.message || "Failed to update Task", "error");
         }
       } else {
-        // Add new task
         const response = await fetch(
           "https://www.margda.in/miraj/work/task/add-task",
           {
@@ -124,7 +146,6 @@ const ManageTasks = () => {
         }
       }
 
-      // Reset form and close modal
       resetModal();
     } catch (error) {
       console.error("Error:", error);
@@ -143,17 +164,23 @@ const ManageTasks = () => {
   };
 
   const handleDelete = async (taskID) => {
-   
-     const result = await Swal.fire({
-           title: "Are you sure to delete?",
-           text: "Do you want to delete this task?",
-           icon: "error",
-           showCancelButton: true,
-           confirmButtonText: "yes, delete it",
-           cancelButtonText: "Cancel",
-         });
-       
-         if (!result.isConfirmed) return; 
+    const result = await Swal.fire({
+      title: "Delete Task?",
+      text: "This action cannot be undone. Are you sure you want to delete this task?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Delete",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      customClass: {
+        popup: 'rounded-2xl',
+        confirmButton: 'rounded-xl',
+        cancelButton: 'rounded-xl'
+      }
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       setIsLoading(true);
@@ -196,7 +223,6 @@ const ManageTasks = () => {
 
   const handleInputChange = (e) => {
     setTaskName(e.target.value);
-    // Clear error when user starts typing
     if (error) {
       setError("");
     }
@@ -204,13 +230,13 @@ const ManageTasks = () => {
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1); // Reset to first page on search
+    setCurrentPage(1);
   };
 
   const handleRecordsPerPageChange = (e) => {
     const value = parseInt(e.target.value);
     setRecordsPerPage(value);
-    setCurrentPage(1); // Reset to first page when changing records per page
+    setCurrentPage(1);
   };
 
   // Filter tasks based on search term
@@ -236,6 +262,12 @@ const ManageTasks = () => {
     }
   };
 
+  // Calculate stats
+  const totalTasks = tasks.length;
+  const completedTasks = Math.floor(totalTasks * 0.7); // Mock completion rate
+  const activeTasks = totalTasks - completedTasks;
+  const completionRate = totalTasks > 0 ? ((completedTasks / totalTasks) * 100).toFixed(1) : 0;
+
   const modalVariants = {
     hidden: { opacity: 0, scale: 0.95 },
     visible: {
@@ -259,18 +291,19 @@ const ManageTasks = () => {
     }),
   };
 
-  // Show loading if user data is not loaded yet
   if (!userData) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">Loading...</div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-2xl shadow-xl">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="text-center mt-4 text-gray-600">Loading...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-5 min-h-[100px] overflow-hidden">
-      {/* Toast Container */}
+    <div className="min-h-screen  py-8 px-4">
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -281,79 +314,335 @@ const ManageTasks = () => {
         pauseOnFocusLoss
         draggable
         pauseOnHover
+        className="mt-16"
       />
 
-      {/* Header with Brand Name, Title, and Back Button */}
-      <div className="relative flex justify-between items-center mb-6">
-        {/* Center: Tasks Title */}
-        <h1 className="text-3xl font-bold text-gray-800 text-center absolute left-1/2 transform -translate-x-1/2">
-          Tasks
-        </h1>
-
-        {/* Right: Back Button */}
-        <button
-          onClick={handleBack}
-          className="flex items-center text-white border border-gray-300 shadow-md p-2 rounded-md bg-blue-600 hover:scale-105 transition-all duration-200 text-sm font-medium"
-          aria-label="Go back to previous page"
-        >
-          <FaArrowLeft className="mr-2" size={16} />
-          Back
-        </button>
-      </div>
-
-      
-<div className="flex justify-between items-center my-6">
-  {/* Left: Search Bar */}
-  <div className="flex items-center space-x-2">
-    <div className="relative">
-      <input
-        type="text"
-        placeholder="Search tasks..."
-        value={searchTerm}
-        onChange={handleSearchChange}
-        className="pl-10 pr-4 py-2 border rounded-lg shadow-sm focus:outline-none transition-all duration-200 w-64"
-      />
-      <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-    </div>
-  </div>
-
-  {/* Center: Records Per Page */}
-  <div className="flex items-center space-x-2">
-    <span className="text-sm font-semibold text-gray-600">Show</span>
-    <select
-      value={recordsPerPage}
-      onChange={handleRecordsPerPageChange}
-      className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      {/* Header Section */}
+      <div className="max-w-7xl mx-auto mb-8">
+       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+  {/* Left - Back Button */}
+  <div className="flex items-center">
+    <button
+      onClick={handleBack}
+      className="flex items-center px-4 py-2 text-sm bg-white text-gray-700 border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm"
     >
-      <option value={10}>10</option>
-      <option value={20}>20</option>
-    </select>
-    <span className="text-sm font-semibold  text-gray-600">Records</span>
+      <FaArrowLeft className="mr-2" size={12} />
+      Back
+    </button>
   </div>
 
-  {/* Right: Add New Task Button */}
-  <motion.button
-    whileHover={{ scale: 1.05 }}
-    whileTap={{ scale: 0.95 }}
-    onClick={() => {
-      setEditTask(null);
-      setTaskName("");
-      setError("");
-      setIsModalOpen(true);
-    }}
-    disabled={isLoading}
-    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg shadow transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-  >
-    <FaPlus className="mr-2" /> Add New Task
-  </motion.button>
+  {/* Center - Title with Icon */}
+  <div className="flex flex-1 justify-center items-center">
+    <div className="w-8 h-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center mr-3">
+      <FaTasks className="text-white text-md" />
+    </div>
+    <h1 className="text-2xl font-bold text-gray-800">Task Management</h1>
+  </div>
+
+  {/* Right - Empty (keeps title centered) */}
+  <div className="w-20"></div>
 </div>
 
 
-      {/* Modal for Add/Edit Task */}
+        {/* Stats Cards */}
+        {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
+          <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
+                <FaListUl className="text-indigo-600 text-xl" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm text-gray-600">Total Tasks</p>
+                <p className="text-2xl font-bold text-gray-800">{totalTasks}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                <FaCheckCircle className="text-green-600 text-xl" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm text-gray-600">Completed</p>
+                <p className="text-2xl font-bold text-gray-800">{completedTasks}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                <FaClock className="text-amber-600 text-xl" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm text-gray-600">Active Tasks</p>
+                <p className="text-2xl font-bold text-gray-800">{activeTasks}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                <FaChartLine className="text-purple-600 text-xl" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm text-gray-600">Completion Rate</p>
+                <p className="text-2xl font-bold text-gray-800">{completionRate}%</p>
+              </div>
+            </div>
+          </div>
+        </div> */}
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white rounded-3xl shadow-md border border-gray-200 overflow-hidden">
+          
+          {/* Controls Section */}
+          <div className="bg-gradient-to-r from-gray-50 to-white p-6 border-b border-gray-200">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              
+              {/* Left Controls */}
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-semibold text-gray-700">Show</label>
+                  <select
+                    value={recordsPerPage}
+                    onChange={handleRecordsPerPageChange}
+                    className="px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 focus:outline-none transition-all"
+                  >
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                  <span className="text-sm font-semibold text-gray-700">records</span>
+                </div>
+
+                <div className="relative">
+                  <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-indigo-400" />
+                  <input
+                    type="text"
+                    placeholder="Search tasks..."
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    className="pl-10 pr-4 py-2 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 focus:outline-none transition-all w-64"
+                  />
+                </div>
+              </div>
+
+              {/* Right Controls */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setEditTask(null);
+                  setTaskName("");
+                  setError("");
+                  setIsModalOpen(true);
+                }}
+                disabled={isLoading}
+                className="inline-flex items-center px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50"
+              >
+                <FaPlus className="mr-2" size={16} />
+                Add New Task
+              </motion.button>
+            </div>
+          </div>
+
+          {/* Table Content */}
+          <div className="p-6">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-16">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mr-4"></div>
+                <span className="text-gray-600 font-medium">Loading tasks...</span>
+              </div>
+            ) : currentRecords.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FaTasks className="text-4xl text-gray-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">No tasks found</h3>
+                <p className="text-gray-500 mb-6">
+                  {searchTerm
+                    ? `No tasks found matching "${searchTerm}"`
+                    : "Create your first task to get started"}
+                </p>
+                {!searchTerm && (
+                  <button
+                    onClick={() => {
+                      setEditTask(null);
+                      setTaskName("");
+                      setError("");
+                      setIsModalOpen(true);
+                    }}
+                    className="inline-flex items-center px-6 py-2 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-all"
+                  >
+                    <FaPlus className="mr-2" />
+                    Create Your First Task
+                  </button>
+                )}
+              </div>
+            ) : (
+              <>
+                {/* Desktop Table */}
+                <div className="hidden lg:block overflow-hidden rounded-2xl border border-gray-200">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+                        <th className="px-6 py-4 text-left font-semibold">S.No</th>
+                        <th className="px-6 py-4 text-left font-semibold">Task Name</th>
+                        <th className="px-6 py-4 text-center font-semibold">Status</th>
+                        <th className="px-6 py-4 text-center font-semibold">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <AnimatePresence>
+                        {currentRecords.map((item, index) => (
+                          <motion.tr
+                            key={item.taskID}
+                            custom={index}
+                            initial="hidden"
+                            animate="visible"
+                            exit="hidden"
+                            variants={rowVariants}
+                            className="border-b border-gray-100 hover:bg-gray-50 transition-all duration-200"
+                          >
+                            <td className="px-6 py-4 text-gray-700 font-medium">
+                              {indexOfFirstRecord + index + 1}
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="font-semibold text-gray-800">{item.task}</div>
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                <FiTarget className="mr-1" size={12} />
+                                Active
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex justify-center items-center gap-2">
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => handleEdit(item)}
+                                  disabled={isLoading}
+                                  className="w-8 h-8 bg-indigo-100 hover:bg-indigo-200 rounded-full flex items-center justify-center transition-all disabled:opacity-50"
+                                  title="Edit Task"
+                                >
+                                  <FiEdit className="text-indigo-600 text-sm" />
+                                </motion.button>
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => handleDelete(item.taskID)}
+                                  disabled={isLoading}
+                                  className="w-8 h-8 bg-red-100 hover:bg-red-200 rounded-full flex items-center justify-center transition-all disabled:opacity-50"
+                                  title="Delete Task"
+                                >
+                                  <FiTrash2 className="text-red-600 text-sm" />
+                                </motion.button>
+                              </div>
+                            </td>
+                          </motion.tr>
+                        ))}
+                      </AnimatePresence>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="lg:hidden space-y-4">
+                  {currentRecords.map((item, index) => (
+                    <motion.div
+                      key={item.taskID}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1, duration: 0.3 }}
+                      className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all"
+                    >
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-800 mb-2">{item.task}</h3>
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                            <FiTarget className="mr-1" size={12} />
+                            Active
+                          </span>
+                        </div>
+                        <div className="flex gap-2 ml-4">
+                          <button
+                            onClick={() => handleEdit(item)}
+                            disabled={isLoading}
+                            className="w-10 h-10 bg-indigo-100 hover:bg-indigo-200 rounded-xl flex items-center justify-center transition-all disabled:opacity-50"
+                          >
+                            <FiEdit className="text-indigo-600" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item.taskID)}
+                            disabled={isLoading}
+                            className="w-10 h-10 bg-red-100 hover:bg-red-200 rounded-xl flex items-center justify-center transition-all disabled:opacity-50"
+                          >
+                            <FiTrash2 className="text-red-600" />
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div className="text-sm text-gray-500">
+                        Task #{indexOfFirstRecord + index + 1}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Pagination */}
+          {filteredTasks.length > 0 && (
+            <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="text-sm text-gray-600 font-medium">
+                Showing {filteredTasks.length > 0 ? indexOfFirstRecord + 1 : 0} to{" "}
+                {Math.min(indexOfLastRecord, filteredTasks.length)} of {filteredTasks.length} tasks
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1 || isLoading}
+                  className="flex items-center px-4 py-2 border-2 border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  <FiChevronLeft className="mr-2" />
+                  Previous
+                </motion.button>
+                
+                <div className="px-4 py-2 bg-indigo-600 text-white rounded-xl font-medium text-sm">
+                  {currentPage}
+                </div>
+                
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages || isLoading}
+                  className="flex items-center px-4 py-2 border-2 border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  Next
+                  <FiChevronRight className="ml-2" />
+                </motion.button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Add/Edit Task Modal */}
       <AnimatePresence>
         {isModalOpen && (
           <motion.div
-            className="fixed inset-0 flex items-center justify-center backdrop-blur-sm z-50"
+            className="fixed inset-0  backdrop-blur-sm flex items-center justify-center z-50 p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -365,191 +654,102 @@ const ManageTasks = () => {
             }}
           >
             <motion.div
-              className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md"
+              className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
               variants={modalVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-                {editTask ? "Edit Task" : "Create New Task"}
-              </h2>
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Task Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={taskName}
-                  onChange={handleInputChange}
-                  placeholder="Enter task name"
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
-                  autoFocus
-                />
-                {error && (
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-red-500 text-sm mt-2"
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold">
+                      {editTask ? "Edit Task" : "Create New Task"}
+                    </h2>
+                    <p className="text-indigo-100 mt-1">
+                      {editTask ? "Update task information" : "Add a new task to your list"}
+                    </p>
+                  </div>
+                  <button
+                    onClick={resetModal}
+                    disabled={isLoading}
+                    className="w-10 h-10 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center transition-all disabled:opacity-50"
                   >
-                    {error}
-                  </motion.p>
-                )}
+                    <IoMdClose className="text-indigo-500 text-xl" />
+                  </button>
+                </div>
               </div>
-              <div className="flex justify-end space-x-4">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={resetModal}
-                  disabled={isLoading}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200 disabled:opacity-50"
-                >
-                  Cancel
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleSubmit}
-                  disabled={isLoading}
-                  className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  ) : editTask ? (
-                    <FaEdit className="mr-2" />
-                  ) : (
-                    <FaPlus className="mr-2" />
-                  )}
-                  {isLoading
-                    ? "Processing..."
-                    : editTask
-                    ? "Update Task"
-                    : "Add Task"}
-                </motion.button>
+
+              {/* Modal Content */}
+              <div className="p-8">
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Task Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={taskName}
+                      onChange={handleInputChange}
+                      placeholder="Enter task name"
+                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 focus:outline-none transition-all duration-200"
+                      autoFocus
+                      disabled={isLoading}
+                    />
+                    {error && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-red-500 text-sm mt-2 flex items-center"
+                      >
+                        <span className="mr-1">⚠</span>
+                        {error}
+                      </motion.p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Modal Footer */}
+                <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t border-gray-200 mt-8">
+                  <button
+                    onClick={resetModal}
+                    disabled={isLoading}
+                    className="flex items-center justify-center px-6 py-2 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-200 border-2 border-gray-200 hover:border-gray-300 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleSubmit}
+                    disabled={isLoading}
+                    className="flex-1 flex items-center justify-center px-8 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  >
+                    {isLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                        Processing...
+                      </>
+                    ) : editTask ? (
+                      <>
+                        <FiEdit className="mr-2" size={16} />
+                        Update Task
+                      </>
+                    ) : (
+                      <>
+                        <FaPlus className="mr-2" size={16} />
+                        Create Task
+                      </>
+                    )}
+                  </motion.button>
+                </div>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Tasks Table */}
-      <div className="overflow-x-auto bg-white border border-gray-300 rounded-xl shadow-lg md:max-h-[520px] overflow-y-auto">
-        <table className="min-w-full bg-white border border-gray-300">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                S.No
-              </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                Task Name
-              </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <AnimatePresence>
-              {isLoading ? (
-                <tr>
-                  <td colSpan="3" className="px-6 py-8 text-center text-gray-500">
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600 mr-2"></div>
-                      Loading tasks...
-                    </div>
-                  </td>
-                </tr>
-              ) : currentRecords.length > 0 ? (
-                currentRecords.map((item, index) => (
-                  <motion.tr
-                    key={item.taskID}
-                    custom={index}
-                    initial="hidden"
-                    animate="visible"
-                    exit="hidden"
-                    variants={rowVariants}
-                    className="border-b border-gray-300 last:border-b-0 hover:bg-gray-50 transition-colors duration-200"
-                  >
-                    <td className="px-6 py-4 text-gray-900">
-                      {indexOfFirstRecord + index + 1}
-                    </td>
-                    <td className="px-6 py-4 text-gray-900">
-                      {item.task}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-3">
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => handleEdit(item)}
-                          disabled={isLoading}
-                          className="text-indigo-600 hover:text-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                          title="Edit task"
-                        >
-                          <FaEdit />
-                        </motion.button>
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => handleDelete(item.taskID)}
-                          disabled={isLoading}
-                          className="text-red-500 hover:text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                          title="Delete task"
-                        >
-                          <FaTrash />
-                        </motion.button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="3" className="px-6 py-8 text-center text-gray-500">
-                    {searchTerm
-                      ? `No tasks found matching "${searchTerm}"`
-                      : "No tasks available"}
-                  </td>
-                </tr>
-              )}
-            </AnimatePresence>
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination Controls */}
-      <div className="flex justify-between ml-2 items-center mt-6">
-        {/* Left: Showing Entries */}
-        <div className="text-[12px] font-semibold text-gray-600">
-          Showing {filteredTasks.length > 0 ? indexOfFirstRecord + 1 : 0} to{" "}
-          {Math.min(indexOfLastRecord, filteredTasks.length)} of {filteredTasks.length} total entries
-        </div>
-
-        {/* Right: Pagination Buttons */}
-        <div className="flex items-center space-x-2">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handlePreviousPage}
-            disabled={currentPage === 1 || isLoading}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-          >
-            <FaArrowLeft className="inline mr-1" /> Previous
-          </motion.button>
-          <span className="px-4 py-2 border border-blue-600 rounded-lg text-[12px] font-medium bg-blue-600 text-white">
-            {currentPage}
-          </span>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages || isLoading}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-          >
-             <FaArrowRight className="inline mr-1" /> Next
-          </motion.button>
-        </div>
-      </div>
     </div>
   );
 };

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaSms, FaChartLine, FaUsers, FaEye, FaEdit, FaTrash, FaPaperPlane } from "react-icons/fa";
 import {
   FiEye,
   FiTrash2,
@@ -11,7 +11,17 @@ import {
   FiX,
   FiSend,
   FiEdit,
+  FiChevronLeft,
+  FiChevronRight,
+  FiCalendar,
+  FiFilter,
+  FiFileText,
+  FiList,
+  FiCheckCircle,
+  FiXCircle,
+  FiMessageSquare
 } from "react-icons/fi";
+import { IoMdClose } from "react-icons/io";
 import Loader from "@/app/component/Loader";
 import { useToast } from "@/app/component/customtoast/page";
 import Swal from "sweetalert2";
@@ -39,7 +49,6 @@ const SmsCampaign = () => {
   const { addToast } = useToast();
 
   useEffect(() => {
-    // Check if we're in browser environment
     if (typeof window === 'undefined') return;
 
     const storedUserData = JSON.parse(sessionStorage.getItem("userData") || 'null');
@@ -56,7 +65,6 @@ const SmsCampaign = () => {
     }
   }, [router]);
 
-  // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, itemsPerPage, dateRange.from, dateRange.to]);
@@ -147,34 +155,50 @@ const SmsCampaign = () => {
     }
   };
 
-  // Date filter change handler
   const handleDateChange = (e) => {
     const { name, value } = e.target;
     setDateRange((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Clear dates button handler
   const handleClearDates = () => {
     setDateRange({ from: "", to: "" });
   };
 
   const handleView = (content, type) => {
     if (typeof window !== 'undefined') {
-      window.alert(`Viewing ${type}:\n${content}`);
+      Swal.fire({
+        title: `${type} Preview`,
+        html: `<div style="text-align: left; max-height: 400px; overflow-y: auto;">${content}</div>`,
+        width: '80%',
+        showCloseButton: true,
+        showConfirmButton: false,
+        customClass: {
+          popup: 'rounded-2xl',
+          title: 'text-xl font-bold text-gray-800'
+        }
+      });
     }
   };
 
   const handleSend = async (id) => {
     const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "Do you want to send this campaign?",
-      icon: "success",
+      title: "Send SMS Campaign?",
+      text: "Are you sure you want to send this SMS campaign?",
+      icon: "question",
       showCancelButton: true,
-      confirmButtonText: "Yes, Send it",
+      confirmButtonText: "Yes, Send Campaign",
       cancelButtonText: "Cancel",
+      confirmButtonColor: "#8b5cf6",
+      cancelButtonColor: "#6b7280",
+      customClass: {
+        popup: 'rounded-2xl',
+        confirmButton: 'rounded-xl',
+        cancelButton: 'rounded-xl'
+      }
     });
     
     if (!result.isConfirmed) return; 
+    
     setLoading(true);
     try {
       const response = await fetch(
@@ -215,12 +239,19 @@ const SmsCampaign = () => {
 
   const handleDelete = async (id) => {
     const result = await Swal.fire({
-      title: "Are you sure to delete?",
-      text: "Do you want to delete this campaign?",
-      icon: "error",
+      title: "Delete Campaign?",
+      text: "This action cannot be undone. Are you sure you want to delete this campaign?",
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "yes, delete it",
+      confirmButtonText: "Yes, Delete",
       cancelButtonText: "Cancel",
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      customClass: {
+        popup: 'rounded-2xl',
+        confirmButton: 'rounded-xl',
+        cancelButton: 'rounded-xl'
+      }
     });
     
     if (!result.isConfirmed) return; 
@@ -410,409 +441,571 @@ const SmsCampaign = () => {
     setCurrentPage(1);
   };
 
+  // Calculate stats
+  const totalCampaigns = campaigns.length;
+  const totalSuccess = campaigns.reduce((sum, campaign) => sum + (parseInt(campaign.success) || 0), 0);
+  const avgSuccess = totalCampaigns > 0 ? (totalSuccess / totalCampaigns).toFixed(1) : 0;
+
   if (!userData) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">Loading...</div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-violet-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-2xl shadow-xl">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <p className="text-center mt-4 text-gray-600">Loading...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-6 max-w-full mx-auto min-h-[100px] overflow-hidden">
+    <div className="min-h-screen  py-8 px-4">
       {loading && <Loader />}
       
-      {/* Header Row */}
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <div className="w-full md:w-auto flex items-center">
-          <button
-            onClick={handleBack}
-            className="flex items-center text-white border border-gray-300 shadow-md p-2 rounded-md bg-blue-600 hover:scale-105 transition-all duration-200 text-sm font-medium"
-            aria-label="Go back to previous page"
-          >
-            <FaArrowLeft className="mr-2" size={16} />
-            Back
-          </button>
-        </div>
-        <h2 className="text-xl md:text-2xl font-bold text-gray-800 text-center md:text-left">
-          SMS Campaign
-        </h2>
-        <div className="w-full md:w-auto">
-          <button
-            onClick={toggleModal}
-            disabled={loading}
-            className="flex items-center px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <FiPlus className="mr-2" size={16} />
-            Add Campaign
-          </button>
-        </div>
+      {/* Header Section */}
+      <div className="max-w-7xl mx-auto mb-8">
+       <div className="flex items-center justify-between w-full">
+  {/* Back Button */}
+  <button
+    onClick={handleBack}
+    className="flex items-center px-4 py-2 text-sm bg-white text-gray-700 border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm"
+  >
+    <FaArrowLeft className="mr-2" size={12} />
+    Back
+  </button>
+
+  {/* Centered Title with Icon */}
+  <div className="flex items-center justify-center gap-3">
+    <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-violet-600 rounded-xl flex items-center justify-center">
+      <FaSms className="text-white text-md" />
+    </div>
+    <h1 className="text-2xl font-bold text-gray-800">SMS Campaigns</h1>
+  </div>
+
+  {/* Create Campaign Button */}
+  <button
+    onClick={toggleModal}
+    disabled={loading}
+    className="inline-flex items-center px-5 py-2 text-md bg-gradient-to-r from-purple-600 to-violet-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-violet-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50"
+  >
+    <FiPlus className="mr-2" size={12} />
+    Create Campaign
+  </button>
+</div>
+
+
+       {/* Stats Cards */}
+{/* <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+  <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100">
+    <div className="flex items-center">
+      <div className="w-9 h-9 bg-purple-100 rounded-lg flex items-center justify-center">
+        <FaChartLine className="text-purple-600 text-lg" />
+      </div>
+      <div className="ml-3">
+        <p className="text-xs text-gray-600">Total Campaigns</p>
+        <p className="text-lg font-semibold text-gray-800">{totalCampaigns}</p>
+      </div>
+    </div>
+  </div>
+
+  <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100">
+    <div className="flex items-center">
+      <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center">
+        <FiMessageSquare className="text-blue-600 text-lg" />
+      </div>
+      <div className="ml-3">
+        <p className="text-xs text-gray-600">Messages Sent</p>
+        <p className="text-lg font-semibold text-gray-800">{totalSuccess.toLocaleString()}</p>
+      </div>
+    </div>
+  </div>
+
+  <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100">
+    <div className="flex items-center">
+      <div className="w-9 h-9 bg-green-100 rounded-lg flex items-center justify-center">
+        <FiCheckCircle className="text-green-600 text-lg" />
+      </div>
+      <div className="ml-3">
+        <p className="text-xs text-gray-600">Success Rate</p>
+        <p className="text-lg font-semibold text-gray-800">{avgSuccess}%</p>
+      </div>
+    </div>
+  </div>
+
+  <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100">
+    <div className="flex items-center">
+      <div className="w-9 h-9 bg-amber-100 rounded-lg flex items-center justify-center">
+        <FiFileText className="text-amber-600 text-lg" />
+      </div>
+      <div className="ml-3">
+        <p className="text-xs text-gray-600">Active Templates</p>
+        <p className="text-lg font-semibold text-gray-800">{templates.length}</p>
+      </div>
+    </div>
+  </div>
+</div> */}
+
       </div>
 
-      {/* SMS Campaigns Table */}
-      <div className="bg-white p-4 md:p-6 rounded-lg border-2 border-gray-200 shadow-md w-full overflow-hidden">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
-          {/* Filter Controls */}
-          <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-700">Show</label>
-              <select
-                value={itemsPerPage}
-                onChange={handleItemsPerPageChange}
-                className="p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {[10, 20, 50].map((val) => (
-                  <option key={val} value={val}>
-                    {val}
-                  </option>
-                ))}
-              </select>
-              <span className="text-sm text-gray-700">records</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-700">From</label>
-              <input
-                type="date"
-                name="from"
-                value={dateRange.from}
-                onChange={handleDateChange}
-                className="p-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-700">To</label>
-              <input
-                type="date"
-                name="to"
-                value={dateRange.to}
-                onChange={handleDateChange}
-                className="p-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              {(dateRange.from || dateRange.to) && (
-                <button
-                  type="button"
-                  onClick={handleClearDates}
-                  title="Clear date filters"
-                  className="flex items-center text-gray-500 hover:text-red-600 bg-gray-100 hover:bg-red-100 rounded-full p-1 ml-1 transition-colors"
-                >
-                  <FiX size={16} />
-                  <span className="sr-only">Clear</span>
-                </button>
-              )}
-            </div>
-          </div>
-          {/* Search Input */}
-          <div className="relative w-full md:w-auto">
-            <FiSearch
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-500"
-              size={16}
-            />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search campaigns..."
-              className="w-full md:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-            />
-          </div>
-        </div>
-
-        <div className="w-full md:max-h-[480px] overflow-auto">
-          <table className="min-w-full text-sm border border-gray-200 rounded-lg">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
-                  Campaign
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
-                  Template
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
-                  List
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
-                  Success
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {loading ? (
-                <tr>
-                  <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-2"></div>
-                      Loading campaigns...
-                    </div>
-                  </td>
-                </tr>
-              ) : paginatedCampaigns.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan="6"
-                    className="px-6 py-8 text-center text-gray-500"
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white rounded-3xl shadow-md border border-gray-200 overflow-hidden">
+          
+          {/* Controls Section */}
+          <div className="bg-gradient-to-r from-gray-50 to-white p-6 border-b border-gray-200">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              
+              {/* Left Controls */}
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-semibold text-gray-700">Show</label>
+                  <select
+                    value={itemsPerPage}
+                    onChange={handleItemsPerPageChange}
+                    className="px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-4 focus:ring-purple-100 focus:border-purple-500 focus:outline-none transition-all"
                   >
-                    {filteredCampaigns.length === 0 && campaigns.length > 0 
-                      ? "No campaigns found matching your search criteria." 
-                      : "No campaigns found."}
-                  </td>
-                </tr>
-              ) : (
-                paginatedCampaigns.map((campaign) => {
-                  return (
-                    <tr
-                      key={campaign.campaignID}
-                      className="hover:bg-gray-50 transition-colors duration-150"
-                    >
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        {new Date(campaign.edate).toLocaleString()}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap font-medium text-gray-900">
-                        {campaign.name}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          {campaign.templateName || "N/A"}
-                          {campaign.matter && (
-                            <button
-                              onClick={() =>
-                                handleView(campaign.matter, "Template")
-                              }
-                              className="ml-2 text-blue-600 hover:text-blue-800 transition-colors duration-200"
-                              title="View Template"
-                            >
-                              <FiEye size={16} />
-                            </button>
-                          )}
+                    {[10, 20, 50].map((val) => (
+                      <option key={val} value={val}>
+                        {val}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="text-sm font-semibold text-gray-700">records</span>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <FiCalendar className="text-gray-500" />
+                  <label className="text-sm font-semibold text-gray-700">From</label>
+                  <input
+                    type="date"
+                    name="from"
+                    value={dateRange.from}
+                    onChange={handleDateChange}
+                    className="px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-4 focus:ring-purple-100 focus:border-purple-500 focus:outline-none transition-all"
+                  />
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-semibold text-gray-700">To</label>
+                  <input
+                    type="date"
+                    name="to"
+                    value={dateRange.to}
+                    onChange={handleDateChange}
+                    className="px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-4 focus:ring-purple-100 focus:border-purple-500 focus:outline-none transition-all"
+                  />
+                </div>
+
+                {(dateRange.from || dateRange.to) && (
+                  <button
+                    type="button"
+                    onClick={handleClearDates}
+                    title="Clear date filters"
+                    className="flex items-center text-gray-500 hover:text-red-600 bg-gray-100 hover:bg-red-100 rounded-full px-3 py-1 transition-colors"
+                  >
+                    <FiX className="mr-1" size={14} />
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              {/* Right Controls */}
+              <div className="relative">
+                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search campaigns..."
+                  className="pl-10 pr-4 py-2 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-100 focus:border-purple-500 focus:outline-none transition-all w-64"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Table Content */}
+          <div className="p-6">
+            {loading ? (
+              <div className="flex items-center justify-center py-16">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mr-4"></div>
+                <span className="text-gray-600 font-medium">Loading campaigns...</span>
+              </div>
+            ) : paginatedCampaigns.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FaSms className="text-4xl text-gray-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">No campaigns found</h3>
+                <p className="text-gray-500 mb-6">
+                  {filteredCampaigns.length === 0 && campaigns.length > 0
+                    ? "Try adjusting your search or filters"
+                    : "Create your first SMS campaign to get started"}
+                </p>
+                {filteredCampaigns.length === 0 && campaigns.length === 0 && (
+                  <button
+                    onClick={toggleModal}
+                    className="inline-flex items-center px-6 py-3 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-700 transition-all"
+                  >
+                    <FiPlus className="mr-2" />
+                    Create Your First Campaign
+                  </button>
+                )}
+              </div>
+            ) : (
+              <>
+                {/* Desktop Table */}
+                <div className="hidden lg:block overflow-hidden rounded-2xl border border-gray-200">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-gradient-to-r from-purple-600 to-violet-600 text-white">
+                        <th className="px-6 py-4 text-left font-semibold">Date</th>
+                        <th className="px-6 py-4 text-left font-semibold">Campaign</th>
+                        <th className="px-6 py-4 text-left font-semibold">Template</th>
+                        <th className="px-6 py-4 text-left font-semibold">List</th>
+                        <th className="px-6 py-4 text-center font-semibold">Success</th>
+                        <th className="px-6 py-4 text-center font-semibold">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedCampaigns.map((campaign) => (
+                        <tr key={campaign.campaignID} className="border-b border-gray-100 hover:bg-gray-50 transition-all duration-200">
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            {new Date(campaign.edate).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="font-semibold text-gray-800">{campaign.name}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center">
+                              <span className="text-sm text-gray-600">{campaign.templateName || "N/A"}</span>
+                              {campaign.matter && (
+                                <button
+                                  onClick={() => handleView(campaign.matter, "Template")}
+                                  className="ml-2 w-6 h-6 bg-blue-100 hover:bg-blue-200 rounded-full flex items-center justify-center transition-all"
+                                  title="Preview Template"
+                                >
+                                  <FiEye className="text-blue-600 text-xs" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center">
+                              <span className="text-sm text-gray-600">{campaign.listName || "N/A"}</span>
+                              {campaign.listName && (
+                                <button
+                                  onClick={() => handleView(campaign.listName, "List")}
+                                  className="ml-2 w-6 h-6 bg-blue-100 hover:bg-blue-200 rounded-full flex items-center justify-center transition-all"
+                                  title="View List"
+                                >
+                                  <FiEye className="text-blue-600 text-xs" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800 font-medium">
+                              {campaign.success || "0"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex justify-center items-center gap-2">
+                              <button
+                                onClick={() => handleSend(campaign.campaignID)}
+                                disabled={loading}
+                                className="w-8 h-8 bg-purple-100 hover:bg-purple-200 rounded-full flex items-center justify-center transition-all disabled:opacity-50"
+                                title="Send Campaign"
+                              >
+                                <FiSend className="text-purple-600 text-sm" />
+                              </button>
+                              <button
+                                onClick={() => handleEdit(campaign)}
+                                className="w-8 h-8 bg-blue-100 hover:bg-blue-200 rounded-full flex items-center justify-center transition-all"
+                                title="Edit Campaign"
+                              >
+                                <FiEdit className="text-blue-600 text-sm" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(campaign.campaignID)}
+                                className="w-8 h-8 bg-red-100 hover:bg-red-200 rounded-full flex items-center justify-center transition-all"
+                                title="Delete Campaign"
+                              >
+                                <FiTrash2 className="text-red-600 text-sm" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="lg:hidden space-y-4">
+                  {paginatedCampaigns.map((campaign) => (
+                    <div key={campaign.campaignID} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="font-semibold text-gray-800 mb-1">{campaign.name}</h3>
+                          <p className="text-sm text-gray-500">{new Date(campaign.edate).toLocaleDateString()}</p>
                         </div>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          {campaign.listName || "N/A"}
-                          {campaign.listName && (
-                            <button
-                              onClick={() =>
-                                handleView(campaign.listName, "List")
-                              }
-                              className="ml-2 text-blue-600 hover:text-blue-800 transition-colors duration-200"
-                              title="View List"
-                            >
-                              <FiEye size={16} />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        {campaign.success || "N/A"}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="flex space-x-3">
+                        <div className="flex gap-2">
                           <button
                             onClick={() => handleSend(campaign.campaignID)}
                             disabled={loading}
-                            className="text-blue-600 hover:text-blue-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                            title="Resend Campaign"
+                            className="w-10 h-10 bg-purple-100 hover:bg-purple-200 rounded-xl flex items-center justify-center transition-all"
                           >
-                            <FiSend size={16} />
+                            <FiSend className="text-purple-600" />
                           </button>
                           <button
                             onClick={() => handleEdit(campaign)}
-                            className="text-green-600 hover:text-green-800 transition-colors duration-200"
-                            title="Edit Campaign"
+                            className="w-10 h-10 bg-blue-100 hover:bg-blue-200 rounded-xl flex items-center justify-center transition-all"
                           >
-                            <FiEdit size={16} />
+                            <FiEdit className="text-blue-600" />
                           </button>
                           <button
                             onClick={() => handleDelete(campaign.campaignID)}
-                            className="text-red-600 hover:text-red-800 transition-colors duration-200"
-                            title="Delete Campaign"
+                            className="w-10 h-10 bg-red-100 hover:bg-red-200 rounded-xl flex items-center justify-center transition-all"
                           >
-                            <FiTrash2 size={16} />
+                            <FiTrash2 className="text-red-600" />
                           </button>
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">Template</p>
+                          <p className="text-sm font-medium">{campaign.templateName || "N/A"}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">List</p>
+                          <p className="text-sm font-medium">{campaign.listName || "N/A"}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                        <div className="text-center">
+                          <p className="text-xs text-gray-500">Success</p>
+                          <p className="font-semibold text-purple-600">{campaign.success || "0"}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Pagination */}
+          {filteredCampaigns.length > 0 && (
+            <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="text-sm text-gray-600 font-medium">
+                Showing {startEntry} to {endEntry} of {filteredCampaigns.length} campaigns
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="flex items-center px-4 py-2 border-2 border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  <FiChevronLeft className="mr-2" />
+                  Previous
+                </button>
+                
+                <div className="px-4 py-2 bg-purple-600 text-white rounded-xl font-medium text-sm">
+                  {currentPage}
+                </div>
+                
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="flex items-center px-4 py-2 border-2 border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  Next
+                  <FiChevronRight className="ml-2" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {filteredCampaigns.length > 0 && (
-        <div className="flex flex-col sm:flex-row justify-between items-center mt-5 space-y-3 sm:space-y-0">
-          <span className="text-[12px] font-semibold ml-2 text-gray-600">
-            Showing {startEntry} to {endEntry} of {filteredCampaigns.length} total entries
-          </span>
-          <div className="flex space-x-2">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-            >
-            {"<<"}  Previous
-            </button>
-            <span className="px-4 py-2 border border-blue-600 rounded-lg text-[12px] font-medium bg-blue-600 text-white">
-              {currentPage}
-            </span>
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages || totalPages === 0}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-            >
-              Next {">>"}
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Modal for Campaign Form */}
       {isModalOpen && (
-        <div 
-          className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              toggleModal();
-            }
-          }}
-        >
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
-            <div className="bg-gray-50 p-4 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-black">
-                {isEditing ? "Edit Campaign" : "Create New Campaign"}
-              </h3>
-              <button
-                onClick={toggleModal}
-                className="text-red-500 hover:text-red-700 transition-colors duration-200"
-                aria-label="Close modal"
-              >
-                <FiX size={20} />
-              </button>
+        <div className="fixed inset-0  backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+            
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-purple-600 to-violet-600 text-white px-8 py-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold">
+                    {isEditing ? "Edit SMS Campaign" : "Create New SMS Campaign"}
+                  </h2>
+                  <p className="text-purple-100 mt-1">
+                    {isEditing ? "Update campaign details" : "Set up your SMS marketing campaign"}
+                  </p>
+                </div>
+                <button
+                  onClick={toggleModal}
+                  className="w-10 h-10 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center transition-all"
+                >
+                  <IoMdClose className="text-purple-500 text-xl" />
+                </button>
+              </div>
             </div>
-            <form onSubmit={handleFormSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Campaign Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={campaignForm.name}
-                  onChange={(e) =>
-                    setCampaignForm({ ...campaignForm, name: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Enter campaign name"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Template <span className="text-red-500">*</span>
-                </label>
-                <div className="flex items-center">
-                  <select
-                    value={campaignForm.tempID}
-                    onChange={(e) =>
-                      setCampaignForm({
-                        ...campaignForm,
-                        tempID: e.target.value,
-                      })
-                    }
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    required
-                  >
-                    <option value="">Select Template</option>
-                    {templates.map((template) => (
-                      <option key={template.tempID} value={template.tempID}>
-                        {template.template}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const template = templates.find(
-                        (t) => t.tempID === campaignForm.tempID
-                      );
-                      handleView(
-                        template?.matter || "No template selected",
-                        "Template"
-                      );
-                    }}
-                    className="ml-2 p-2 text-blue-600 hover:text-blue-800 transition-colors duration-200 disabled:opacity-50"
-                    disabled={!campaignForm.tempID}
-                    title="View Template"
-                  >
-                    <FiEye size={16} />
-                  </button>
+
+            {/* Modal Content */}
+            <form onSubmit={handleFormSubmit} className="p-8 overflow-y-auto max-h-[calc(90vh-120px)]">
+              <div className="space-y-8">
+                
+                {/* Campaign Name */}
+                <div>
+                  <div className="flex items-center mb-4">
+                    <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold mr-3">1</div>
+                    <h3 className="text-md font-bold text-gray-800">Campaign Information</h3>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Campaign Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={campaignForm.name}
+                      onChange={(e) =>
+                        setCampaignForm({ ...campaignForm, name: e.target.value })
+                      }
+                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-100 focus:border-purple-500 focus:outline-none transition-all duration-200"
+                      placeholder="Enter a descriptive campaign name"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Configuration Section */}
+                <div>
+                  <div className="flex items-center mb-6">
+                    <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold mr-3">2</div>
+                    <h3 className="text-md font-bold text-gray-800">Campaign Configuration</h3>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    
+                    {/* Template Selection */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        <FiFileText className="inline mr-2" />
+                        SMS Template <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={campaignForm.tempID}
+                          onChange={(e) =>
+                            setCampaignForm({
+                              ...campaignForm,
+                              tempID: e.target.value,
+                            })
+                          }
+                          className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-100 focus:border-purple-500 focus:outline-none transition-all duration-200"
+                          required
+                        >
+                          <option value="">Select Template</option>
+                          {templates.map((template) => (
+                            <option key={template.tempID} value={template.tempID}>
+                              {template.template}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const template = templates.find(
+                              (t) => t.tempID === parseInt(campaignForm.tempID)
+                            );
+                            handleView(
+                              template?.matter || "No template selected",
+                              "Template"
+                            );
+                          }}
+                          className="w-10 h-10 bg-blue-100 hover:bg-blue-200 rounded-xl flex items-center justify-center transition-all disabled:opacity-50"
+                          disabled={!campaignForm.tempID}
+                          title="Preview Template"
+                        >
+                          <FiEye className="text-blue-600" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* List Selection */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        <FiList className="inline mr-2" />
+                        Recipient List <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={campaignForm.listID}
+                          onChange={(e) =>
+                            setCampaignForm({
+                              ...campaignForm,
+                              listID: e.target.value,
+                            })
+                          }
+                          className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-100 focus:border-purple-500 focus:outline-none transition-all duration-200"
+                          required
+                        >
+                          <option value="">Select List</option>
+                          {lists.map((list) => (
+                            <option key={list.listID} value={list.listID}>
+                              {list.name}
+                            </option>
+                          ))}
+                        </select>
+                        {/* <button
+                          type="button"
+                          onClick={() => {
+                            const list = lists.find(
+                              (l) => l.listID === parseInt(campaignForm.listID)
+                            );
+                            handleView(list?.name || "No list selected", "List");
+                          }}
+                          className="w-10 h-10 bg-blue-100 hover:bg-blue-200 rounded-xl flex items-center justify-center transition-all disabled:opacity-50"
+                          disabled={!campaignForm.listID}
+                          title="View List Details"
+                        >
+                          <FiEye className="text-blue-600" />
+                        </button> */}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  List <span className="text-red-500">*</span>
-                </label>
-                <div className="flex items-center">
-                  <select
-                    value={campaignForm.listID}
-                    onChange={(e) =>
-                      setCampaignForm({
-                        ...campaignForm,
-                        listID: e.target.value,
-                      })
-                    }
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    required
-                  >
-                    <option value="">Select List</option>
-                    {lists.map((list) => (
-                      <option key={list.listID} value={list.listID}>
-                        {list.name}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const list = lists.find(
-                        (l) => l.listID === campaignForm.listID
-                      );
-                      handleView(list?.name || "No list selected", "List");
-                    }}
-                    className="ml-2 p-2 text-blue-600 hover:text-blue-800 transition-colors duration-200 disabled:opacity-50"
-                    disabled={!campaignForm.listID}
-                    title="View List"
-                  >
-                    <FiEye size={16} />
-                  </button>
-                </div>
-              </div>
-              <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+
+              {/* Modal Footer */}
+              <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t border-gray-200 mt-8">
                 <button
                   type="button"
                   onClick={toggleModal}
                   disabled={loading}
-                  className="px-5 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50"
+                  className="flex items-center justify-center px-6 py-2 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-200 border-2 border-gray-200 hover:border-gray-300 disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-6 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                  className="flex-1 flex items-center justify-center px-8 py-2 bg-gradient-to-r from-purple-600 to-violet-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
                   {loading ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                       {isEditing ? "Updating..." : "Creating..."}
                     </>
                   ) : (
-                    isEditing ? "Update Campaign" : "Create Campaign"
+                    <>
+                      <FaPaperPlane className="mr-2" />
+                      {isEditing ? "Update Campaign" : "Create Campaign"}
+                    </>
                   )}
                 </button>
               </div>

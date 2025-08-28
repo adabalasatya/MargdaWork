@@ -12,7 +12,14 @@ import {
   FiRefreshCw,
   FiX,
   FiMaximize2,
+  FiCalendar,
+  FiFilter,
+  FiMessageSquare,
+  FiInbox,
+  FiEye
 } from "react-icons/fi";
+import { FaSms, FaChartLine, FaUsers, FaCheckCircle, FaClock } from "react-icons/fa";
+import { IoMdClose } from "react-icons/io";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
@@ -35,8 +42,6 @@ const SmsReport = () => {
   const [userID, setUserID] = useState("");
   const [selectedItem, setSelectedItem] = useState(null);
   const [showAddToTaskCon, setShowAddToTaskCon] = useState(false);
-  
-  // New states for message popup
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState("");
   
@@ -46,21 +51,17 @@ const SmsReport = () => {
   const stripHtmlTags = (html) => {
     if (!html) return "";
     
-    // Create a temporary div to parse HTML
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = html;
     
-    // Get text content and clean it
     let text = tempDiv.textContent || tempDiv.innerText || "";
-    
-    // Remove extra whitespaces and line breaks
     text = text.replace(/\s+/g, ' ').trim();
     
     return text;
   };
 
   // Function to limit message length for table display
-  const getLimitedMessage = (message, limit = 30) => {
+  const getLimitedMessage = (message, limit = 50) => {
     if (!message) return "N/A";
     
     const cleanMessage = stripHtmlTags(message);
@@ -78,39 +79,48 @@ const SmsReport = () => {
     setShowMessageModal(true);
   };
 
-  // Message Modal Component
+  // Enhanced Message Modal Component
   const MessageModal = () => {
     if (!showMessageModal) return null;
 
     return (
-      <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+      <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[85vh] overflow-hidden">
+          
           {/* Modal Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-              <FiMail className="mr-2" />
-              Full Message
-            </h3>
-            <button
-              onClick={() => setShowMessageModal(false)}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <FiX size={24} />
-            </button>
+          <div className="bg-gradient-to-r from-purple-600 to-violet-600 text-white px-8 py-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">SMS Message</h2>
+                <p className="text-purple-100 mt-1">Full message content</p>
+              </div>
+              <button
+                onClick={() => setShowMessageModal(false)}
+                className="w-10 h-10 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center transition-all"
+              >
+                <IoMdClose className="text-white text-xl" />
+              </button>
+            </div>
           </div>
           
-          {/* Modal Body */}
-          <div className="p-6 overflow-y-auto max-h-[60vh]">
-            <div className="text-gray-800 whitespace-pre-wrap leading-relaxed">
-              {selectedMessage}
+          {/* Modal Content */}
+          <div className="p-8 overflow-y-auto max-h-[calc(85vh-120px)]">
+            <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
+              <div className="flex items-center mb-4">
+                <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">M</div>
+                <h3 className="text-lg font-semibold text-gray-800">Message Content</h3>
+              </div>
+              <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                {selectedMessage}
+              </div>
             </div>
           </div>
           
           {/* Modal Footer */}
-          <div className="flex justify-end p-4 border-t border-gray-200">
+          <div className="bg-gray-50 px-8 py-4 border-t border-gray-200 flex justify-end">
             <button
               onClick={() => setShowMessageModal(false)}
-              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              className="px-6 py-2 bg-gray-600 text-white font-semibold rounded-xl hover:bg-gray-700 transition-colors"
             >
               Close
             </button>
@@ -141,13 +151,13 @@ const SmsReport = () => {
     }
   }, []);
 
-  // Reset to first page when filters change
   useEffect(() => {
     setCurrentTablePage(1);
   }, [searchQuery, smsPerPage, fromDate, toDate, selectedCampaignID]);
 
   const fetchData = async (userID) => {
     try {
+      setLoading(true);
       const response = await fetch(
         "https://www.margda.in/miraj/work/sms-campaign/get-report",
         {
@@ -165,6 +175,8 @@ const SmsReport = () => {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -190,40 +202,35 @@ const SmsReport = () => {
     }
   };
 
-  // Clear date filters function
   const clearDateFilters = () => {
     setFromDate("");
     setToDate("");
   };
 
-  // Handle search
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
     setCurrentTablePage(1);
   };
 
-  // Handle items per page change
   const handleItemsPerPageChange = (e) => {
     setSmsPerPage(Number(e.target.value));
     setCurrentTablePage(1);
   };
 
-  // Filter sms based on search and date range
-  const filteredSms = sms.filter((sms) => {
-    const cleanMessage = stripHtmlTags(sms.message);
+  const filteredSms = sms.filter((smsItem) => {
+    const cleanMessage = stripHtmlTags(smsItem.message);
     const matchesSearch =
-      sms.receiver.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      sms.sender.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      smsItem.receiver?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      smsItem.sender?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       cleanMessage.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesDate =
-      (!fromDate || sms.edate >= fromDate) && (!toDate || sms.edate <= toDate);
+      (!fromDate || smsItem.edate >= fromDate) && (!toDate || smsItem.edate <= toDate);
     const matchCampaignID = selectedCampaignID
-      ? sms.campaignID == selectedCampaignID
+      ? smsItem.campaignID == selectedCampaignID
       : true;
     return matchesSearch && matchesDate && matchCampaignID;
   });
 
-  // Pagination logic
   const indexOfLastSms = currentTablePage * smsPerPage;
   const indexOfFirstSms = indexOfLastSms - smsPerPage;
   const currentSms = filteredSms.slice(indexOfFirstSms, indexOfLastSms);
@@ -231,8 +238,14 @@ const SmsReport = () => {
 
   const paginate = (pageNumber) => setCurrentTablePage(pageNumber);
 
+  // Calculate stats
+  const totalSms = sms.length;
+  const totalCampaigns = campaigns.length;
+  const deliveredSms = sms.filter(s => s.status === 'delivered' || s.success).length;
+  const deliveryRate = totalSms > 0 ? ((deliveredSms / totalSms) * 100).toFixed(1) : 0;
+
   return (
-    <div className="flex-1 p-6 min-h-[100px] overflow-hidden">
+    <div className="min-h-screen  py-8 px-4">
       <ToastContainer
         position="top-right"
         autoClose={5000}
@@ -240,241 +253,356 @@ const SmsReport = () => {
         closeOnClick
         pauseOnHover
         draggable
+        className="mt-16"
       />
       {loading && <Loader />}
 
-      {/* Header */}
-      <div className="relative flex justify-between items-center p-4 mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 text-center absolute left-1/2 transform -translate-x-1/2 flex items-center">
-          <FiMail className="mr-2" /> SMS Report
-        </h1>
+      {/* Header Section */}
+      <div className="max-w-7xl mx-auto mb-8">
+        <div className="flex items-center justify-center gap-3 mb-8">
+  <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-purple-600 to-violet-600 rounded-2xl shadow-lg">
+    <FaSms className="text-white text-md" />
+  </div>
+  <h1 className="text-2xl font-bold text-gray-800">SMS Reports</h1>
+</div>
+
+
+      {/* Stats Cards */}
+{/* <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+  <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100">
+    <div className="flex items-center">
+      <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+        <FiMessageSquare className="text-purple-600 text-lg" />
+      </div>
+      <div className="ml-3">
+        <p className="text-xs text-gray-600">Total SMS</p>
+        <p className="text-lg font-semibold text-gray-800">{totalSms.toLocaleString()}</p>
+      </div>
+    </div>
+  </div>
+  
+  <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100">
+    <div className="flex items-center">
+      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+        <FaCheckCircle className="text-green-600 text-lg" />
+      </div>
+      <div className="ml-3">
+        <p className="text-xs text-gray-600">Delivered</p>
+        <p className="text-lg font-semibold text-gray-800">{deliveredSms.toLocaleString()}</p>
+      </div>
+    </div>
+  </div>
+  
+  <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100">
+    <div className="flex items-center">
+      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+        <FaChartLine className="text-blue-600 text-lg" />
+      </div>
+      <div className="ml-3">
+        <p className="text-xs text-gray-600">Delivery Rate</p>
+        <p className="text-lg font-semibold text-gray-800">{deliveryRate}%</p>
+      </div>
+    </div>
+  </div>
+  
+  <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100">
+    <div className="flex items-center">
+      <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+        <FaUsers className="text-amber-600 text-lg" />
+      </div>
+      <div className="ml-3">
+        <p className="text-xs text-gray-600">Campaigns</p>
+        <p className="text-lg font-semibold text-gray-800">{totalCampaigns}</p>
+      </div>
+    </div>
+  </div>
+</div> */}
+
       </div>
 
-      {/* Enhanced Table Controls */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
-        {/* Left side controls */}
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700">Show</label>
-            <select
-              value={smsPerPage}
-              onChange={handleItemsPerPageChange}
-              className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-            >
-              {[10, 20, 50].map((value) => (
-                <option key={value} value={value}>
-                  {value}
-                </option>
-              ))}
-            </select>
-            <span className="text-sm font-medium text-gray-700">records</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700">From</label>
-            <input
-              type="date"
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-              className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700">To</label>
-            <input
-              type="date"
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-              className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-            />
-          </div>
-
-          {(fromDate || toDate) && (
-            <button
-              onClick={clearDateFilters}
-              className="flex items-center text-gray-500 hover:text-red-600 bg-gray-100 hover:bg-red-100 rounded-full p-1 ml-1 transition-colors"
-              title="Clear date filters"
-            >
-              <FiX className="mr-1" size={16} />
-            </button>
-          )}
-        </div>
-
-        {/* Right side controls */}
-        <div className="flex items-center space-x-4">
-          <div className="relative">
-            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-600" />
-            <input
-              type="text"
-              placeholder="Search sms..."
-              value={searchQuery}
-              onChange={handleSearch}
-              className="border rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 text-sm w-64"
-            />
-          </div>
-
-          <select
-            className="px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 text-sm"
-            value={selectedCampaignID}
-            onChange={(e) => setSelectedCampaignID(e.target.value)}
-          >
-            <option value="">All Campaigns</option>
-            {campaigns.map((campaign) => (
-              <option key={campaign.campaignID} value={campaign.campaignID}>
-                {campaign.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Table Section */}
-      <div className="bg-white rounded-lg shadow overflow-hidden overflow-y-auto md:max-h-[520px]">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr className="text-left text-[12px] text-gray-500">
-                <th className="p-4 font-medium uppercase tracking-wider">
-                  Task
-                </th>
-                <th className="p-4 font-medium uppercase tracking-wider">
-                  Sender
-                </th>
-                <th className="p-4 font-medium uppercase tracking-wider">
-                  Receiver
-                </th>
-                <th className="p-4 font-medium uppercase tracking-wider min-w-[200px]">
-                  Message
-                </th>
-                <th className="p-4 font-medium uppercase tracking-wider">
-                  Time-Data
-                </th>
-                <th className="p-4 font-medium uppercase tracking-wider">
-                  Campaign
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {currentSms.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan="6"
-                    className="px-6 py-8 text-center text-gray-500"
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 overflow-hidden">
+          
+          {/* Controls Section */}
+          <div className="bg-gradient-to-r from-gray-50 to-white p-6 border-b border-gray-200">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              
+              {/* Left Controls */}
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-semibold text-gray-700">Show</label>
+                  <select
+                    value={smsPerPage}
+                    onChange={handleItemsPerPageChange}
+                    className="px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-4 focus:ring-purple-100 focus:border-purple-500 focus:outline-none transition-all"
                   >
-                    {filteredSms.length === 0 && sms.length > 0
-                      ? "No sms found matching your search criteria."
-                      : "No sms found."}
-                  </td>
-                </tr>
-              ) : (
-                currentSms.map((sms) => {
-                  const limitedMessage = getLimitedMessage(sms.message);
-                  const fullMessage = stripHtmlTags(sms.message);
-                  const hasMoreContent = fullMessage.length > 30;
+                    {[10, 20, 50].map((value) => (
+                      <option key={value} value={value}>
+                        {value}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="text-sm font-semibold text-gray-700">records</span>
+                </div>
 
-                  return (
-                    <tr
-                      key={sms.smsID}
-                      className="hover:bg-gray-50 transition-colors duration-150"
-                    >
-                      <td className="p-4 text-[12px]">
-                        {sms.dataID &&
-                          (sms.taskName ? (
-                            <div className="font-semibold">{sms.taskName}</div>
-                          ) : (
+                <div className="flex items-center gap-2">
+                  <FiCalendar className="text-gray-500" />
+                  <label className="text-sm font-semibold text-gray-700">From</label>
+                  <input
+                    type="date"
+                    value={fromDate}
+                    onChange={(e) => setFromDate(e.target.value)}
+                    className="px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-4 focus:ring-purple-100 focus:border-purple-500 focus:outline-none transition-all"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-semibold text-gray-700">To</label>
+                  <input
+                    type="date"
+                    value={toDate}
+                    onChange={(e) => setToDate(e.target.value)}
+                    className="px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-4 focus:ring-purple-100 focus:border-purple-500 focus:outline-none transition-all"
+                  />
+                </div>
+
+                {(fromDate || toDate) && (
+                  <button
+                    onClick={clearDateFilters}
+                    className="flex items-center text-gray-500 hover:text-red-600 bg-gray-100 hover:bg-red-100 rounded-full px-3 py-1 transition-colors"
+                    title="Clear date filters"
+                  >
+                    <FiX className="mr-1" size={14} />
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              {/* Right Controls */}
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400" />
+                  <input
+                    type="text"
+                    placeholder="Search SMS..."
+                    value={searchQuery}
+                    onChange={handleSearch}
+                    className="pl-10 pr-4 py-2 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-100 focus:border-purple-500 focus:outline-none transition-all w-64"
+                  />
+                </div>
+
+                <div className="relative">
+                  <FiFilter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <select
+                    className="pl-10 pr-8 py-2 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-100 focus:border-purple-500 focus:outline-none transition-all appearance-none bg-white cursor-pointer min-w-[180px]"
+                    value={selectedCampaignID}
+                    onChange={(e) => setSelectedCampaignID(e.target.value)}
+                  >
+                    <option value="">All Campaigns</option>
+                    {campaigns.map((campaign) => (
+                      <option key={campaign.campaignID} value={campaign.campaignID}>
+                        {campaign.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Table Content */}
+          <div className="p-6">
+            {loading ? (
+              <div className="flex items-center justify-center py-16">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mr-4"></div>
+                <span className="text-gray-600 font-medium">Loading SMS reports...</span>
+              </div>
+            ) : currentSms.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FiInbox className="text-4xl text-gray-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">No SMS found</h3>
+                <p className="text-gray-500">
+                  {filteredSms.length === 0 && sms.length > 0
+                    ? "Try adjusting your search or filters"
+                    : "No SMS reports available"}
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Desktop Table */}
+                <div className="hidden lg:block overflow-hidden rounded-2xl border border-gray-200">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-gradient-to-r from-violet-500 to-violet-700 text-white">
+                        <th className="px-4 py-4 text-left font-semibold text-sm">Task</th>
+                        <th className="px-4 py-4 text-left font-semibold text-sm">Sender</th>
+                        <th className="px-4 py-4 text-left font-semibold text-sm">Receiver</th>
+                        <th className="px-4 py-4 text-left font-semibold text-sm min-w-[250px]">Message</th>
+                        <th className="px-4 py-4 text-left font-semibold text-sm">Date</th>
+                        <th className="px-4 py-4 text-left font-semibold text-sm">Campaign</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {currentSms.map((smsItem) => {
+                        const limitedMessage = getLimitedMessage(smsItem.message);
+                        const fullMessage = stripHtmlTags(smsItem.message);
+                        const hasMoreContent = fullMessage.length > 50;
+
+                        return (
+                          <tr
+                            key={smsItem.smsID}
+                            className="border-b border-gray-100 hover:bg-gray-50 transition-all duration-200"
+                          >
+                            <td className="px-4 py-4 text-sm">
+                              {smsItem.dataID &&
+                                (smsItem.taskName ? (
+                                  <div className="font-semibold text-gray-800">{smsItem.taskName}</div>
+                                ) : (
+                                  <button
+                                    onClick={() => {
+                                      setShowAddToTaskCon(true);
+                                      setSelectedItem(smsItem);
+                                    }}
+                                    className="bg-purple-600 text-white px-3 py-1 rounded-lg text-xs hover:bg-purple-700 transition-colors"
+                                  >
+                                    Add to Task
+                                  </button>
+                                ))}
+                            </td>
+                            <td className="px-4 py-4 text-sm text-gray-700">{smsItem.sender}</td>
+                            <td className="px-4 py-4 text-sm text-gray-700">{smsItem.receiver}</td>
+                            <td className="px-4 py-4 text-sm">
+                              <div className="flex items-center gap-2">
+                                <span className="text-gray-700 break-words">
+                                  {limitedMessage}
+                                </span>
+                                {hasMoreContent && (
+                                  <button
+                                    onClick={() => handleReadMore(smsItem.message)}
+                                    className="inline-flex items-center text-purple-600 hover:text-purple-800 font-medium text-xs bg-purple-50 hover:bg-purple-100 px-2 py-1 rounded-full transition-all whitespace-nowrap"
+                                    title="Read full message"
+                                  >
+                                    <FiEye size={12} className="mr-1" />
+                                    Read More
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 text-sm text-gray-600">
+                              {smsItem.edate ? new Date(smsItem.edate).toLocaleDateString() : "N/A"}
+                            </td>
+                            <td className="px-4 py-4 text-sm text-gray-700">
+                              {smsItem.campaignName || "N/A"}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="lg:hidden space-y-4">
+                  {currentSms.map((smsItem) => {
+                    const limitedMessage = getLimitedMessage(smsItem.message, 80);
+                    const fullMessage = stripHtmlTags(smsItem.message);
+                    const hasMoreContent = fullMessage.length > 80;
+
+                    return (
+                      <div key={smsItem.smsID} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all">
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-800 mb-1">{smsItem.sender} → {smsItem.receiver}</h3>
+                            <p className="text-sm text-gray-600">{smsItem.edate ? new Date(smsItem.edate).toLocaleDateString() : "N/A"}</p>
+                          </div>
+                          {smsItem.dataID && !smsItem.taskName && (
                             <button
                               onClick={() => {
                                 setShowAddToTaskCon(true);
-                                setSelectedItem(sms);
+                                setSelectedItem(smsItem);
                               }}
-                              className="text-[12px] bg-blue-500 px-1 py-1 rounded text-white hover:bg-blue-700"
+                              className="bg-purple-600 text-white px-3 py-1 rounded-lg text-xs hover:bg-purple-700 transition-colors"
                             >
                               Add to Task
                             </button>
-                          ))}
-                      </td>
-                      <td className="p-4 text-[12px]">{sms.sender}</td>
-                      <td className="p-4 text-[12px]">{sms.receiver}</td>
-                      <td className="p-4 text-[12px] max-w-[200px]">
-                        <div className="flex items-center gap-2">
-                          <span className="break-words">
-                            {limitedMessage}
-                          </span>
-                          {hasMoreContent && (
-                            <button
-                              onClick={() => handleReadMore(sms.message)}
-                              className="text-blue-500 hover:text-blue-700 flex items-center text-[10px] whitespace-nowrap"
-                              title="Read full message"
-                            >
-                              <FiMaximize2 size={12} className="ml-1" />
-                              Read More
-                            </button>
                           )}
                         </div>
-                      </td>
-                      <td className="p-4 text-[12px]">
-                        {sms.edate ? new Date(sms.edate).toLocaleString() : "N/A"}
-                      </td>
-                      <td className="p-4 text-[12px]">
-                        {sms.campaignName || "N/A"}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                        
+                        <div className="mb-4">
+                          <div className="flex items-start gap-2">
+                            <span className="text-gray-700 break-words flex-1">
+                              {limitedMessage}
+                            </span>
+                            {hasMoreContent && (
+                              <button
+                                onClick={() => handleReadMore(smsItem.message)}
+                                className="inline-flex items-center text-purple-600 hover:text-purple-800 font-medium text-xs bg-purple-50 hover:bg-purple-100 px-2 py-1 rounded-full transition-all whitespace-nowrap"
+                                title="Read full message"
+                              >
+                                <FiEye size={12} className="mr-1" />
+                                Read More
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="flex justify-between items-center text-sm text-gray-500">
+                          <span>Campaign: {smsItem.campaignName || "N/A"}</span>
+                          {smsItem.taskName && (
+                            <span className="font-medium text-purple-600">Task: {smsItem.taskName}</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Pagination */}
+          {filteredSms.length > 0 && (
+            <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="text-sm text-gray-600 font-medium">
+                Showing {filteredSms.length === 0 ? 0 : indexOfFirstSms + 1} to{" "}
+                {Math.min(indexOfLastSms, filteredSms.length)} of{" "}
+                {filteredSms.length} SMS
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => paginate(currentTablePage > 1 ? currentTablePage - 1 : 1)}
+                  disabled={currentTablePage === 1}
+                  className="flex items-center px-4 py-2 border-2 border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  <FiChevronLeft className="mr-2" />
+                  Previous
+                </button>
+                
+                <div className="px-4 py-2 bg-purple-600 text-white rounded-xl font-medium text-sm">
+                  {currentTablePage}
+                </div>
+                
+                <button
+                  onClick={() =>
+                    paginate(
+                      currentTablePage < totalPages ? currentTablePage + 1 : totalPages
+                    )
+                  }
+                  disabled={currentTablePage === totalPages || totalPages === 0}
+                  className="flex items-center px-4 py-2 border-2 border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  Next
+                  <FiChevronRight className="ml-2" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Enhanced Pagination */}
-      {filteredSms.length > 0 && (
-        <div className="flex flex-col sm:flex-row justify-between items-center mt-6 space-y-3 sm:space-y-0">
-          <div className="text-[12px] ml-2 font-semibold text-gray-600">
-            Showing {filteredSms.length === 0 ? 0 : indexOfFirstSms + 1} to{" "}
-            {Math.min(indexOfLastSms, filteredSms.length)} of{" "}
-            {filteredSms.length} total entries
-          </div>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() =>
-                paginate(currentTablePage > 1 ? currentTablePage - 1 : 1)
-              }
-              disabled={currentTablePage === 1}
-              className={`px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium flex items-center transition-colors duration-200 ${
-                currentTablePage === 1
-                  ? "text-gray-400 cursor-not-allowed"
-                  : "text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              <FiChevronLeft className="mr-1" />
-              Previous
-            </button>
-            <span className="px-4 py-2 border border-blue-600 rounded-lg text-[12px] font-medium bg-blue-600 text-white">
-              {currentTablePage}
-            </span>
-            <button
-              onClick={() =>
-                paginate(
-                  currentTablePage < totalPages
-                    ? currentTablePage + 1
-                    : totalPages
-                )
-              }
-              disabled={currentTablePage === totalPages || totalPages === 0}
-              className={`px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium flex items-center transition-colors duration-200 ${
-                currentTablePage === totalPages || totalPages === 0
-                  ? "text-gray-400 cursor-not-allowed"
-                  : "text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              Next
-              <FiChevronRight className="ml-1" />
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Message Modal */}
       <MessageModal />
@@ -484,7 +612,7 @@ const SmsReport = () => {
           setClose={setShowAddToTaskCon}
           userID={userID}
           item={selectedItem}
-          fetchData={fetchData}
+          fetchData={() => fetchData(userID)}
         />
       )}
     </div>

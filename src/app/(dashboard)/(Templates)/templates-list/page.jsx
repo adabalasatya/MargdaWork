@@ -203,25 +203,24 @@ const TemplatesList = () => {
   return (
     <div className="min-h-screen py-4 px-2">
       {/* Header Section */}
-      <div className="max-w-6xl mx-auto mb-4">
+      <div className="max-w-6xl mx-auto mb-2">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div>
-            <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
-                <FaFileAlt className="text-white text-xl" />
+            <div className="flex items-center mb-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
+                <FaFileAlt className="text-white text-md" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-800">Templates</h1>
-                <p className="text-gray-600">Manage your campaign templates</p>
+                <h1 className="text-xl font-bold text-gray-800">Templates</h1>
               </div>
             </div>
           </div>
           
           <Link
             href="/add-template"
-            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            className="inline-flex items-center  text-sm px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
           >
-            <FaPlus className="mr-2" />
+            <FaPlus className="mr-2 text-sm" />
             Create Template
           </Link>
         </div>
@@ -242,7 +241,7 @@ const TemplatesList = () => {
                   <select
                     value={recordsPerPage}
                     onChange={(e) => setRecordsPerPage(Number(e.target.value))}
-                    className="px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none transition-all"
+                    className="px-3 py-1 border-2 border-gray-200 rounded-lg focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none transition-all"
                   >
                     <option value={10}>10</option>
                     <option value={20}>20</option>
@@ -262,14 +261,14 @@ const TemplatesList = () => {
                     placeholder="Search templates..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none transition-all w-64"
+                    className="pl-10 pr-4 py-2 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none transition-all w-64"
                   />
                 </div>
 
                 <div className="relative">
                   <FaFilter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                   <select
-                    className="pl-10 pr-8 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none transition-all appearance-none bg-white cursor-pointer"
+                    className="pl-10 pr-8 py-2 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none transition-all appearance-none bg-white cursor-pointer"
                     value={templateFilter}
                     onChange={handleTemplateFilterChange}
                     disabled={allTemplates.length == 0}
@@ -286,7 +285,7 @@ const TemplatesList = () => {
           </div>
 
           {/* Templates Content */}
-          <div className="p-6">
+          <div className="p-4">
             {loading ? (
               <LoadingSkeleton />
             ) : currentRecords.length === 0 ? (
@@ -316,7 +315,7 @@ const TemplatesList = () => {
                 <div className="hidden lg:block overflow-hidden rounded-2xl border border-gray-200">
                   <table className="w-full">
                     <thead>
-                      <tr className="bg-gradient-to-r from-gray-800 to-gray-700 text-white">
+                      <tr className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
                         <th className="px-6 py-4 text-left font-semibold">Type</th>
                         <th className="px-6 py-4 text-left font-semibold">Template Name</th>
                         <th className="px-6 py-4 text-center font-semibold">Shared</th>
@@ -496,20 +495,19 @@ const TemplatesList = () => {
       {/* Template View Modal */}
       {viewTemplate && viewedTemplateData && (
         <div className="fixed inset-0 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-          <div className="w-full max-w-4xl max-h-[90vh] bg-white rounded-3xl shadow-2xl overflow-hidden">
+          <div className="w-full max-w-2xl max-h-[90vh] bg-white rounded-3xl shadow-2xl overflow-hidden">
             
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-gray-800 to-gray-700 text-white px-8 py-6">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-4 py-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold">Template Details</h2>
-                  <p className="text-gray-300 mt-1">View template configuration and content</p>
+                  <h2 className="text-lg font-bold">Template Details</h2>
                 </div>
                 <button
                   onClick={() => setViewTemplate(false)}
-                  className="w-10 h-10 bg-gray-300 hover:bg-gray-500 rounded-full flex items-center justify-center transition-all"
+                  className="w-10 h-10 bg-blue-300 hover:bg-blue-500 rounded-full flex items-center justify-center transition-all"
                 >
-                  <IoMdClose className="text-white text-xl" />
+                  <IoMdClose className="text-blue text-xl" />
                 </button>
               </div>
             </div>
@@ -524,15 +522,15 @@ const TemplatesList = () => {
                     <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">1</div>
                     Basic Information
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Template Type</label>
-                      <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                      <div className="p-2 bg-gray-50 rounded-xl border border-gray-200">
                         {(() => {
                           const typeInfo = getTemplateTypeDisplay(viewedTemplateData.temptype);
                           const TypeIcon = typeInfo.icon;
                           return (
-                            <div className={`inline-flex items-center px-3 py-2 rounded-full text-sm font-medium ${typeInfo.color}`}>
+                            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${typeInfo.color}`}>
                               <TypeIcon className={`mr-2 ${typeInfo.iconColor}`} />
                               {typeInfo.label}
                             </div>
@@ -542,7 +540,7 @@ const TemplatesList = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Template Name</label>
-                      <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                      <div className="p-2 bg-gray-50 rounded-xl border border-gray-200">
                         <span className="font-medium text-gray-800">{viewedTemplateData.template}</span>
                       </div>
                     </div>
@@ -556,7 +554,7 @@ const TemplatesList = () => {
                       <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">2</div>
                       {viewedTemplateData.subject ? "Subject" : "Template ID"}
                     </h3>
-                    <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                    <div className="p-2 bg-gray-50 rounded-xl border border-gray-200">
                       <span className="font-medium text-gray-800">{viewedTemplateData.subject || viewedTemplateData.auth}</span>
                     </div>
                   </div>
@@ -587,7 +585,7 @@ const TemplatesList = () => {
 
                 {/* Message Content */}
                 <div>
-                  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                  <h3 className="text-lg font-bold text-gray-800 mb-2 flex items-center">
                     <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
                       <FaFileAlt className="text-xs" />
                     </div>
@@ -598,7 +596,7 @@ const TemplatesList = () => {
                       readOnly
                       value={viewedTemplateData.matter}
                       className="w-full bg-transparent border-none resize-none focus:outline-none text-gray-800 leading-relaxed"
-                      rows="8"
+                      rows="5"
                     />
                   </div>
                 </div>
@@ -610,7 +608,7 @@ const TemplatesList = () => {
                       <div className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
                         <FaEye className="text-xs" />
                       </div>
-                      HTML Preview
+                    HTML Preview 
                     </h3>
                     <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-gray-200">
                       <div

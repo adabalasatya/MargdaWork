@@ -401,17 +401,17 @@ const WhatsappReport = () => {
               </div>
               <button
                 onClick={clearDates}
-                className="px-3 py-1 bg-blue-500 text-white rounded-lg text-sm hover:bg-[#075e54]"
+                className="px-3 py-1 bg-green-500 text-white rounded-lg text-sm hover:bg-[#075e54]"
               >
                 Clear
               </button>
             </div>
-            <h2 className="text-xl font-semibold text-blue-600 flex items-center justify-center gap-2">
+            <h2 className="text-xl font-semibold text-green-600 flex items-center justify-center gap-2">
               <FaWhatsapp /> WhatsApp Chat
             </h2>
             <div className="flex gap-2">
               <select
-                className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-600"
+                className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-green-600"
                 value={selectedCampaignID}
                 onChange={(e) => setSelectedCampaignID(e.target.value)}
               >
@@ -437,7 +437,7 @@ const WhatsappReport = () => {
           >
             <div className="p-4 border-b border-gray-200">
               <div className="relative">
-                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-500" />
                 <input
                   type="text"
                   placeholder="Search chats..."
@@ -509,7 +509,7 @@ const WhatsappReport = () => {
                               e.stopPropagation();
                               handleAddToListClick(conv);
                             }}
-                            className="text-xs text-blue-500 hover:text-blue-600 bg-[#E6F0FA] px-2 py-1 rounded-full mt-1"
+                            className="text-xs text-green-500 hover:text-green-600 bg-[#E6F0FA] px-2 py-1 rounded-full mt-1"
                           >
                             + Add to Task
                           </button>

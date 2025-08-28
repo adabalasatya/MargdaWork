@@ -368,16 +368,12 @@ const EditTemplate = () => {
       )}
       
       {/* Header Section */}
-      <div className="max-w-7xl mx-auto mb-4">
-        <div className="text-center mb-4">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">Edit Template</h1>
-        </div>
-
+      <div className="max-w-6xl mx-auto mb-2">
         {/* Template Type Indicator */}
-        <div className="flex justify-center mb-6">
-          <div className="inline-flex items-center bg-white px-6 py-3 rounded-full shadow-md border-2 border-gray-100">
+        <div className="flex justify-center mb-2">
+          <div className="inline-flex items-center bg-white px-4 py-2 rounded-full shadow-md border-2 border-gray-100">
             <TypeIcon className={`${typeInfo.color} text-xl mr-3`} />
-            <span className="font-semibold text-gray-800">{typeInfo.label}</span>
+            <span className="font-semibold text-gray-800">Edit {typeInfo.label}</span>
           </div>
         </div>
       </div>
@@ -385,16 +381,16 @@ const EditTemplate = () => {
       {/* Main Form Container */}
       <div className="max-w-6xl mx-auto">
         <div className="bg-white rounded-3xl shadow-md border border-gray-200 overflow-hidden">
-          <div className="p-8 md:p-12">
+          <div className="p-4 md:p-8">
             
             {/* Basic Information Section */}
-            <div className="mb-10">
+            <div className="mb-4">
               <div className="flex items-center mb-6">
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-3">1</div>
-                <h2 className="text-2xl font-bold text-gray-800">Basic Information</h2>
+                <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-3">1</div>
+                <h2 className="text-xl font-bold text-gray-800">Basic Information</h2>
               </div>
               
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label htmlFor="template-type" className="block text-sm font-semibold text-gray-700 mb-2">
                     Template Type
@@ -405,14 +401,14 @@ const EditTemplate = () => {
                       name="template-type"
                       id="template-type"
                       value={templateType}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-600 cursor-not-allowed transition-all duration-200"
+                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-600 cursor-not-allowed transition-all duration-200"
                     >
                       <option value="">Select Template Type</option>
                       <option value="W">WhatsApp</option>
                       <option value="E">Email</option>
                       <option value="S">SMS</option>
                     </select>
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <div className="absolute inset-y-0 right-0 mr-2 flex items-center pr-3 pointer-events-none">
                       <TypeIcon className={typeInfo.color} />
                     </div>
                   </div>
@@ -429,7 +425,7 @@ const EditTemplate = () => {
                     value={templateName}
                     onChange={(e) => handleInputChange('templateName', e.target.value)}
                     placeholder="Enter a descriptive template name"
-                    className={`w-full px-4 py-3 border-2 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none ${
+                    className={`w-full px-4 py-2 border-2 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none ${
                       errors.templateName ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
                     }`}
                   />
@@ -445,10 +441,10 @@ const EditTemplate = () => {
 
             {/* Subject field for Email templates */}
             {templateType === "E" && (
-              <div className="mb-10">
+              <div className="mb-4">
                 <div className="flex items-center mb-6">
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-3">2</div>
-                  <h2 className="text-2xl font-bold text-gray-800">Email Subject</h2>
+                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-3">2</div>
+                  <h2 className="text-xl font-bold text-gray-800">Email Subject</h2>
                 </div>
                 
                 <div className="space-y-2">
@@ -462,7 +458,7 @@ const EditTemplate = () => {
                     value={subject}
                     onChange={(e) => handleInputChange('subject', e.target.value)}
                     placeholder="Enter compelling subject line"
-                    className={`w-full px-4 py-3 border-2 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none ${
+                    className={`w-full px-4 py-2 border-2 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none ${
                       errors.subject ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
                     }`}
                   />
@@ -478,12 +474,12 @@ const EditTemplate = () => {
 
             {/* Header file upload for WhatsApp templates */}
             {templateType === "W" && (
-              <div className="mb-10">
+              <div className="mb-4">
                 <div className="flex items-center mb-6">
-                  <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                  <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
                     <FaImage />
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-800">Header Media</h2>
+                  <h2 className="text-xl font-bold text-gray-800">Header Media</h2>
                 </div>
                 
                 <div className="bg-gray-50 rounded-2xl p-6 border-2 border-dashed border-gray-300 hover:border-green-400 transition-all duration-200">
@@ -554,12 +550,12 @@ const EditTemplate = () => {
             )}
 
             {/* Message Section */}
-            <div className="mb-10">
+            <div className="mb-4">
               <div className="flex items-center mb-6">
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
                   {templateType === "E" ? "3" : "2"}
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800">Message Content</h2>
+                <h2 className="text-xl font-bold text-gray-800">Message Content</h2>
               </div>
               
               <div className="space-y-4">
@@ -593,12 +589,12 @@ const EditTemplate = () => {
 
                 {/* Preview for Email templates */}
                 {templateType === "E" && message && (
-                  <div className="mt-6">
+                  <div className="mt-2">
                     <div className="flex items-center mb-4">
                       <FaEye className="text-gray-600 mr-2" />
                       <h3 className="text-lg font-semibold text-gray-800">Live Preview</h3>
                     </div>
-                    <div className="border-2 border-gray-200 rounded-xl p-6 bg-gradient-to-br from-blue-50 to-indigo-50 min-h-[150px] max-h-96 overflow-y-auto">
+                    <div className="border-2 border-gray-200 rounded-xl p-6 bg-gradient-to-br from-blue-50 to-indigo-50 min-h-[150px] max-h-64 overflow-y-auto">
                       <div
                         className="prose max-w-none"
                         dangerouslySetInnerHTML={{
@@ -613,12 +609,12 @@ const EditTemplate = () => {
 
             {/* Attachment files (not for SMS) */}
             {templateType !== "S" && (
-              <div className="mb-10">
+              <div className="mb-4">
                 <div className="flex items-center mb-6">
-                  <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                  <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
                     <FaPaperclip />
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-800">Attachments</h2>
+                  <h2 className="text-xl font-bold text-gray-800">Attachments</h2>
                   <span className="ml-3 text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
                     Optional • Max 4 files
                   </span>
@@ -728,11 +724,11 @@ const EditTemplate = () => {
             )}
 
             {/* Action buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-gray-200">
               <button
                 onClick={handleSubmit}
                 disabled={isUploading}
-                className="flex-1 flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                className="flex-1 flex items-center justify-center px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
                 <FaPaperPlane className="mr-2" />
                 {isUploading ? "Updating Template..." : "Update Template"}
@@ -740,7 +736,7 @@ const EditTemplate = () => {
               
               <Link
                 href="/templates-list"
-                className="flex items-center justify-center px-8 py-4 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-200 border-2 border-gray-200 hover:border-gray-300"
+                className="flex items-center justify-center px-4 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-200 border-2 border-gray-200 hover:border-gray-300"
               >
                 <FaArrowLeft className="mr-2" />
                 Back to Templates

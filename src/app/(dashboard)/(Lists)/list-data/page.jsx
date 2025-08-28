@@ -759,7 +759,7 @@ const ListData = () => {
         </div>
       </div> */}
 
-      <div className="px-6 py-3">
+      <div className="px-6 py-3 rounded-3xl shadow-md border border-gray-200 ">
         <div className="flex items-center justify-between space-x-4 mb-4 bg-white border border-gray-200 rounded-xl px-4 py-2 shadow-sm">
           <div className="flex items-center">
             <label className="flex items-center text-sm text-gray-700 cursor-pointer">
@@ -806,41 +806,41 @@ const ListData = () => {
           <div className="md:max-h-[420px] overflow-auto ">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50 sticky top-0 z-10">
-                <tr>
-                  <th className="px-2 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
+                <tr className="bg-gradient-to-r from-blue-600 to-blue-600 text-white">
+                  <th className="px-2 py-3 text-left text-[12px]  uppercase tracking-wider">
                     Select
                   </th>
-                  <th className="px-2 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 py-3 text-left text-[12px] uppercase tracking-wider">
                     S/No
                   </th>
-                  <th className="px-3 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-[12px]  uppercase tracking-wider">
                     Name
                   </th>
-                  <th className="px-3 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-[12px] uppercase tracking-wider">
                     Email
                   </th>
-                  <th className="px-3 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-[12px] uppercase tracking-wider">
                     Mobile
                   </th>
-                  <th className="px-3 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-[12px]  uppercase tracking-wider">
                     Whatsapp
                   </th>
-                  <th className="px-3 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-[12px]  uppercase tracking-wider">
                     <div className="flex items-center">Status</div>
                   </th>
-                  <th className="px-3 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-[12px]  uppercase tracking-wider">
                     Unsubscribe
                   </th>
-                  <th className="px-3 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-[12px] uppercase tracking-wider">
                     Total Sent
                   </th>
-                  <th className="px-3 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-[12px]  uppercase tracking-wider">
                     Never Opened
                   </th>
-                  <th className="px-3 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-[12px]  uppercase tracking-wider">
                     Failed
                   </th>
-                  <th className="px-3 py-3 text-left text-[12px] text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-[12px]  uppercase tracking-wider">
                     Action
                   </th>
                 </tr>

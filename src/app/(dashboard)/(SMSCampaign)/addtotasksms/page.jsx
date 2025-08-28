@@ -2,18 +2,24 @@
 
 import React, { useEffect, useState } from "react";
 import { useToast } from "@/app/component/customtoast/page";
+import { FaTasks, FaPlus, FaTimes, FaCheckCircle, FaListUl, FaSpinner, FaSms } from "react-icons/fa";
+import { FiX, FiCheck, FiList, FiPlus as FiPlusIcon } from "react-icons/fi";
+import { IoMdClose } from "react-icons/io";
 
 const AddToTask = ({ setClose, item, userID, fetchData }) => {
   const [tasks, setTasks] = useState([]);
   const [selectedTask, setSelectedTask] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const { addToast } = useToast();
 
   useEffect(() => {
     fetchTasks(userID);
-  }, [userID]); // Added userID as dependency for better practice
+  }, [userID]);
 
   const fetchTasks = async (userID) => {
     try {
+      setLoading(true);
       const response = await fetch(
         "https://www.margda.in/miraj/work/task/get-tasks",
         {
@@ -26,7 +32,7 @@ const AddToTask = ({ setClose, item, userID, fetchData }) => {
       );
       const data = await response.json();
       if (response.ok) {
-        setTasks(data.Tasks || []); // Ensure tasks is an array even if empty
+        setTasks(data.Tasks || []);
       } else {
         setTasks([]);
         addToast(data.message || "Failed to fetch tasks", "error");
@@ -34,6 +40,9 @@ const AddToTask = ({ setClose, item, userID, fetchData }) => {
     } catch (error) {
       console.error("Error fetching tasks:", error);
       addToast("Failed to fetch tasks", "error");
+      setTasks([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -46,8 +55,9 @@ const AddToTask = ({ setClose, item, userID, fetchData }) => {
     }
 
     try {
+      setSubmitting(true);
       const response = await fetch(
-        "https://www.margda.in/miraj/work/email-campaign/add-to-task",
+        "https://www.margda.in/miraj/work/sms-campaign/add-to-task",
         {
           method: "POST",
           headers: {
@@ -69,54 +79,174 @@ const AddToTask = ({ setClose, item, userID, fetchData }) => {
       }
     } catch (error) {
       addToast(error.message || "Unknown Error, try again later", "error");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      setClose(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-400 bg-opacity-50 flex justify-center items-center z-50 backdrop-blur-sm">
-      <div className="flex flex-col bg-white px-16 py-9 w-1/2 max-w-md rounded-lg shadow-lg">
-        <h2 className="text-xl font-semibold mb-4">Add to Task</h2>
+    <div 
+      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      onClick={handleBackdropClick}
+    >
+      <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden transform transition-all duration-300 scale-100">
         
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <select
-            name="task"
-            id="task"
-            className="border px-3 py-2 rounded bg-gray-100 mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={selectedTask}
-            onChange={(e) => setSelectedTask(e.target.value)}
-            required
-          >
-            <option value="">Select Task</option>
-            {tasks.map((task) => (
-              <option key={task.taskID} value={task.taskID}>
-                {task.task}
-              </option>
-            ))}
-          </select>
-
-          {tasks.length === 0 && (
-            <div className="text-gray-500 text-center mb-4">
-              No Tasks Available
+        {/* Modal Header */}
+        <div className="bg-gradient-to-r from-purple-600 to-violet-600 text-white px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-3">
+                <FaTasks className="text-violet-500 text-lg" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold">Add SMS to Task</h2>
+                <p className="text-purple-100 text-sm mt-1">Assign this SMS to a task</p>
+              </div>
             </div>
-          )}
-
-          <div className="flex gap-3 justify-end">
             <button
-              type="button"
-              className="bg-gray-500 hover:bg-gray-700 px-4 py-2 text-white rounded transition-colors duration-200"
               onClick={() => setClose(false)}
+              className="w-8 h-8 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center transition-all duration-200"
+              disabled={submitting}
             >
-              Close
-            </button>
-            <button
-              type="submit"
-              disabled={!selectedTask || tasks.length === 0}
-              className="bg-blue-500 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed px-4 py-2 text-white rounded transition-colors duration-200"
-            >
-              Update
+              <IoMdClose className="text-violet-500 text-lg" />
             </button>
           </div>
-        </form>
+        </div>
+
+        {/* Modal Content */}
+        <div className="p-8">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
+              <p className="text-gray-600 font-medium">Loading tasks...</p>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              
+              {/* Task Selection Section */}
+              <div>
+                <div className="flex items-center mb-4">
+                  <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
+                    <FiList className="text-xs" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-800">Select Task</h3>
+                </div>
+
+                {tasks.length === 0 ? (
+                  <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
+                    <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <FaListUl className="text-2xl text-gray-400" />
+                    </div>
+                    <h4 className="text-lg font-semibold text-gray-600 mb-2">No Tasks Available</h4>
+                    <p className="text-gray-500 text-sm">Create a task first to assign SMS to it.</p>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <FiList className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <select
+                      name="task"
+                      id="task"
+                      className="w-full pl-12 pr-4 py-2 border-2 border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-4 focus:ring-purple-100 focus:border-purple-500 transition-all duration-200 text-gray-700 font-medium"
+                      value={selectedTask}
+                      onChange={(e) => setSelectedTask(e.target.value)}
+                      required
+                      disabled={submitting}
+                    >
+                      <option value="" disabled className="text-gray-400">
+                        Choose a task to assign this SMS
+                      </option>
+                      {tasks.map((task) => (
+                        <option key={task.taskID} value={task.taskID} className="text-gray-700">
+                          {task.task}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Task Info */}
+                {selectedTask && (
+                  <div className="mt-4 p-4 bg-purple-50 rounded-xl border border-purple-200">
+                    <div className="flex items-center">
+                      <FaCheckCircle className="text-purple-600 mr-2" />
+                      <span className="text-purple-800 font-medium text-sm">
+                        Task selected: {tasks.find(t => t.taskID === parseInt(selectedTask))?.task}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* SMS Information */}
+              {item && (
+                <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                    <div className="w-4 h-4 bg-purple-600 rounded-full mr-2 flex items-center justify-center">
+                      <FaSms className="text-white text-xs" />
+                    </div>
+                    SMS to be assigned
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    {item.sender && (
+                      <p className="text-gray-600">
+                        <span className="font-medium">From:</span> {item.sender}
+                      </p>
+                    )}
+                    {item.receiver && (
+                      <p className="text-gray-600">
+                        <span className="font-medium">To:</span> {item.receiver}
+                      </p>
+                    )}
+                    {item.message && (
+                      <p className="text-gray-600">
+                        <span className="font-medium">Message:</span> {item.message.length > 50 ? `${item.message.substring(0, 50)}...` : item.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </form>
+          )}
+        </div>
+
+        {/* Modal Footer */}
+        {!loading && (
+          <div className="bg-gray-50 px-8 py-6 border-t border-gray-200 flex flex-col sm:flex-row gap-3 sm:justify-end">
+            <button
+              type="button"
+              onClick={() => setClose(false)}
+              disabled={submitting}
+              className="flex items-center justify-center px-6 py-2 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-200 border-2 border-gray-200 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <FiX className="mr-2" size={16} />
+              Cancel
+            </button>
+            
+            <button
+              onClick={handleSubmit}
+              disabled={!selectedTask || tasks.length === 0 || submitting}
+              className="flex items-center justify-center px-8 py-2 bg-gradient-to-r from-purple-600 to-violet-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            >
+              {submitting ? (
+                <>
+                  <FaSpinner className="animate-spin mr-2" size={16} />
+                  Adding to Task...
+                </>
+              ) : (
+                <>
+                  <FiPlusIcon className="mr-2" size={16} />
+                  Add to Task
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

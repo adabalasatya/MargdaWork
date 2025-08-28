@@ -2,8 +2,36 @@
 
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaEdit, FaTrash, FaPlus, FaSearch, FaArrowLeft, FaObjectGroup, FaMinus, FaArrowRight, FaArrowLeft as FaArrowLeftPagination } from "react-icons/fa";
-import { FiEdit, FiLayers } from "react-icons/fi";
+import { 
+  FaEdit, 
+  FaTrash, 
+  FaPlus, 
+  FaSearch, 
+  FaArrowLeft, 
+  FaObjectGroup, 
+  FaMinus, 
+  FaArrowRight, 
+  FaArrowLeft as FaArrowLeftPagination,
+  FaLayerGroup,
+  FaUsers,
+  FaChartLine,
+  FaListUl,
+  FaCheckCircle
+} from "react-icons/fa";
+import { 
+  FiEdit, 
+  FiLayers, 
+  FiChevronLeft, 
+  FiChevronRight, 
+  FiX, 
+  FiCheck,
+  FiCalendar,
+  FiFilter,
+  FiTrash2,
+  FiEye,
+  FiSettings
+} from "react-icons/fi";
+import { IoMdClose } from "react-icons/io";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
@@ -28,12 +56,12 @@ const ManageLists = () => {
   const [isMergeModalOpen, setIsMergeModalOpen] = useState(false);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const [newListName, setNewListName] = useState("");
-  const [operationType, setOperationType] = useState(""); // "merge", "remove"
+  const [operationType, setOperationType] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(10);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    // Only run on client side
     if (typeof window === "undefined") return;
 
     const userData = JSON.parse(sessionStorage.getItem("userData"));
@@ -46,7 +74,6 @@ const ManageLists = () => {
   }, [router]);
 
   useEffect(() => {
-    // Update selectAll state based on selectedLists
     if (lists.length > 0 && selectedLists.length === lists.length) {
       setSelectAll(true);
     } else {
@@ -54,11 +81,16 @@ const ManageLists = () => {
     }
   }, [selectedLists, lists]);
 
+  // Filter lists based on search
+  const filteredLists = lists.filter(list => 
+    list.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   // Pagination calculations
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentRecords = lists.slice(indexOfFirstRecord, indexOfLastRecord);
-  const totalPages = Math.ceil(lists.length / recordsPerPage);
+  const currentRecords = filteredLists.slice(indexOfFirstRecord, indexOfLastRecord);
+  const totalPages = Math.ceil(filteredLists.length / recordsPerPage);
 
   const fetchLists = async (userID) => {
     try {
@@ -85,14 +117,13 @@ const ManageLists = () => {
   };
 
   const handleSubmit = async () => {
-    if (!listName) {
+    if (!listName.trim()) {
       setError("List name is required");
       return;
     }
 
     try {
       if (editList) {
-        // Edit existing list
         const response = await fetch(
           "https://www.margda.in/miraj/work/lists/edit-list",
           {
@@ -111,7 +142,6 @@ const ManageLists = () => {
           addToast(data.message || "Failed to update list", "error");
         }
       } else {
-        // Add new list
         const response = await fetch(
           "https://www.margda.in/miraj/work/lists/add-list",
           {
@@ -131,7 +161,6 @@ const ManageLists = () => {
         }
       }
 
-      // Reset form and close modal
       setListName("");
       setError("");
       setEditList(null);
@@ -143,16 +172,24 @@ const ManageLists = () => {
   };
 
   const handleDelete = async (id) => {
-     const result = await Swal.fire({
-           title: "Are you sure to delete?",
-           text: "Do you want to delete this list?",
-           icon: "error",
-           showCancelButton: true,
-           confirmButtonText: "yes, delete it",
-           cancelButtonText: "Cancel",
-         });
-       
-         if (!result.isConfirmed) return; 
+    const result = await Swal.fire({
+      title: "Delete List?",
+      text: "This action cannot be undone. Are you sure you want to delete this list?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Delete",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      customClass: {
+        popup: 'rounded-2xl',
+        confirmButton: 'rounded-xl',
+        cancelButton: 'rounded-xl'
+      }
+    });
+
+    if (!result.isConfirmed) return;
+
     try {
       const response = await fetch(
         "https://www.margda.in/miraj/work/lists/delete-list",
@@ -203,7 +240,7 @@ const ManageLists = () => {
     if (selectAll) {
       setSelectedLists([]);
     } else {
-      setSelectedLists([...lists]);
+      setSelectedLists([...filteredLists]);
     }
     setSelectAll(!selectAll);
   };
@@ -228,7 +265,6 @@ const ManageLists = () => {
     setIsRemoveModalOpen(true);
   };
 
-  // Merge selected lists
   const performMerge = async () => {
     try {
       if (selectedLists.length < 2) {
@@ -270,7 +306,6 @@ const ManageLists = () => {
     }
   };
 
-  // Remove duplicates between two lists
   const performRemoveDuplicates = async () => {
     try {
       if (selectedLists.length !== 2) {
@@ -312,7 +347,7 @@ const ManageLists = () => {
   const handleRecordsPerPageChange = (e) => {
     const value = parseInt(e.target.value);
     setRecordsPerPage(value);
-    setCurrentPage(1); // Reset to first page when changing records per page
+    setCurrentPage(1);
   };
 
   const handlePreviousPage = () => {
@@ -326,6 +361,12 @@ const ManageLists = () => {
       setCurrentPage(currentPage + 1);
     }
   };
+
+  // Calculate stats
+  const totalLists = lists.length;
+  const totalSubscribers = lists.reduce((sum, list) => sum + (parseInt(list.ars) || 0), 0);
+  const totalUnsubscribed = lists.reduce((sum, list) => sum + (parseInt(list.unsubscribed) || 0), 0);
+  const totalBounced = lists.reduce((sum, list) => sum + (parseInt(list.bounced) || 0), 0);
 
   const modalVariants = {
     hidden: { opacity: 0, scale: 0.95 },
@@ -341,32 +382,8 @@ const ManageLists = () => {
     },
   };
 
-  const operationModalVariants = {
-    hidden: { opacity: 0, scale: 0.95 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: { duration: 0.2, ease: "easeOut" },
-    },
-    exit: {
-      opacity: 0,
-      scale: 0.95,
-      transition: { duration: 0.2, ease: "easeIn" },
-    },
-  };
-
-  const rowVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: (i) => ({
-      opacity: 1,
-      x: 0,
-      transition: { delay: i * 0.1, duration: 0.3 },
-    }),
-  };
-
   return (
-    <div className="p-4 min-h-[100px] overflow-hidden">
-      {/* Toast Container */}
+    <div className="min-h-screen py-8 px-4">
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -377,92 +394,421 @@ const ManageLists = () => {
         pauseOnFocusLoss
         draggable
         pauseOnHover
+        className="mt-16"
       />
 
-      {/* Header with Brand Name, Title, and Back Button */}
-      <div className="relative flex justify-between items-center mb-6">
-        {/* Center: Subscriber Lists Title */}
-        <h1 className="text-3xl font-bold text-gray-800 text-center absolute left-1/2 transform -translate-x-1/2">
-          Lists
-        </h1>
+      {/* Header Section */}
+      <div className="max-w-7xl mx-auto mb-8">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+  {/* Left Side - Back Button */}
+  <div className="flex items-center">
+    <button
+      onClick={handleBack}
+      className="flex items-center px-4 py-2 text-sm bg-white text-gray-700 border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm"
+    >
+      <FaArrowLeft className="mr-2" size={12} />
+      Back
+    </button>
+  </div>
 
-        {/* Right: Back Button */}
-        <button
-          onClick={handleBack}
-          className="flex items-center text-white border border-gray-300 shadow-md p-2 rounded-md bg-blue-600 hover:scale-105 transition-all duration-200 text-sm font-medium"
-          aria-label="Go back to previous page"
-        >
-          <FaArrowLeft className="mr-2" size={16} />
-          Back
-        </button>
+  {/* Center - Title with Icon */}
+  <div className="flex items-center justify-center flex-1">
+    <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center mr-3">
+      <FaLayerGroup className="text-white text-md" />
+    </div>
+    <h1 className="text-2xl font-bold text-gray-800">Subscriber Lists</h1>
+  </div>
+
+  {/* Right Side (Optional – empty for now) */}
+  <div className="w-16"></div>
+</div>
+
+
+        {/* Stats Cards */}
+{/* <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+  <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100">
+    <div className="flex items-center">
+      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+        <FaListUl className="text-blue-600 text-lg" />
+      </div>
+      <div className="ml-3">
+        <p className="text-xs text-gray-600">Total Lists</p>
+        <p className="text-lg font-bold text-gray-800">{totalLists}</p>
+      </div>
+    </div>
+  </div>
+
+  <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100">
+    <div className="flex items-center">
+      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+        <FaUsers className="text-green-600 text-lg" />
+      </div>
+      <div className="ml-3">
+        <p className="text-xs text-gray-600">Total Subscribers</p>
+        <p className="text-lg font-bold text-gray-800">{totalSubscribers.toLocaleString()}</p>
+      </div>
+    </div>
+  </div>
+
+  <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100">
+    <div className="flex items-center">
+      <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+        <FiX className="text-amber-600 text-lg" />
+      </div>
+      <div className="ml-3">
+        <p className="text-xs text-gray-600">Unsubscribed</p>
+        <p className="text-lg font-bold text-gray-800">{totalUnsubscribed.toLocaleString()}</p>
+      </div>
+    </div>
+  </div>
+
+  <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100">
+    <div className="flex items-center">
+      <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+        <FiTrash2 className="text-red-600 text-lg" />
+      </div>
+      <div className="ml-3">
+        <p className="text-xs text-gray-600">Bounced</p>
+        <p className="text-lg font-bold text-gray-800">{totalBounced.toLocaleString()}</p>
+      </div>
+    </div>
+  </div>
+</div> */}
+
       </div>
 
-      <div className="flex justify-between items-center my-6">
-        <div className="flex items-center space-x-4">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search lists..."
-              className="pl-10 pr-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
-            />
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white rounded-3xl shadow-md border border-gray-200 overflow-hidden">
+          
+          {/* Controls Section */}
+          <div className="bg-gradient-to-r from-gray-50 to-white p-6 border-b border-gray-200">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              
+              {/* Left Controls */}
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-semibold text-gray-700">Show</label>
+                  <select
+                    value={recordsPerPage}
+                    onChange={handleRecordsPerPageChange}
+                    className="px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none transition-all"
+                  >
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                  </select>
+                  <span className="text-sm font-semibold text-gray-700">records</span>
+                </div>
+
+                <div className="relative">
+                  <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400" />
+                  <input
+                    type="text"
+                    placeholder="Search lists..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-4 py-2 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none transition-all w-64"
+                  />
+                </div>
+              </div>
+
+              {/* Right Controls */}
+              <div className="flex flex-wrap items-center gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setEditList(null);
+                    setListName("");
+                    setIsModalOpen(true);
+                  }}
+                  className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                >
+                  <FaPlus className="mr-2" size={16} />
+                  Add New List
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleMerge}
+                  className={`inline-flex items-center px-4 py-2 font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${
+                    selectedLists.length < 2
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700"
+                  }`}
+                  disabled={selectedLists.length < 2}
+                >
+                  <FaObjectGroup className="mr-2" size={16} />
+                  Merge ({selectedLists.length})
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleRemove}
+                  className={`inline-flex items-center px-4 py-2 font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${
+                    selectedLists.length < 2
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700"
+                  }`}
+                  disabled={selectedLists.length < 2}
+                >
+                  <FaMinus className="mr-2" size={16} />
+                  Remove Duplicates
+                </motion.button>
+              </div>
+            </div>
           </div>
-        </div>
 
-         {/* Center: Records per page dropdown */}
-        <div className="flex items-center space-x-2">
-          <span className="text-sm  font-semibold text-gray-600">Show</span>
-          <select
-            value={recordsPerPage}
-            onChange={handleRecordsPerPageChange}
-            className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="10">10</option>
-            <option value="20">20</option>
-          </select>
-          <span className="text-sm font-semibold text-gray-600">Records</span>
-        </div>
+          {/* Table Content */}
+          <div className="p-6">
+            {currentRecords.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FaListUl className="text-4xl text-gray-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">No lists found</h3>
+                <p className="text-gray-500 mb-6">
+                  {filteredLists.length === 0 && lists.length > 0
+                    ? "Try adjusting your search query"
+                    : "Create your first subscriber list to get started"}
+                </p>
+                {filteredLists.length === 0 && lists.length === 0 && (
+                  <button
+                    onClick={() => {
+                      setEditList(null);
+                      setListName("");
+                      setIsModalOpen(true);
+                    }}
+                    className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all"
+                  >
+                    <FaPlus className="mr-2" />
+                    Create Your First List
+                  </button>
+                )}
+              </div>
+            ) : (
+              <>
+                {/* Desktop Table */}
+                <div className="hidden lg:block overflow-hidden rounded-2xl border border-gray-200">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-gradient-to-r from-blue-500 to-blue-700 text-white">
+                        <th className="px-6 py-4 text-left font-semibold">
+                          <input
+                            type="checkbox"
+                            checked={selectAll}
+                            onChange={toggleSelectAll}
+                            className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                        </th>
+                        <th className="px-6 py-4 text-left font-semibold">List Name</th>
+                        <th className="px-6 py-4 text-center font-semibold">GDPR</th>
+                        <th className="px-6 py-4 text-center font-semibold">Segments</th>
+                        <th className="px-6 py-4 text-center font-semibold">Active Subscribers</th>
+                        <th className="px-6 py-4 text-center font-semibold">Unsubscribed</th>
+                        <th className="px-6 py-4 text-center font-semibold">Bounced</th>
+                        <th className="px-6 py-4 text-center font-semibold">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <AnimatePresence>
+                        {currentRecords.map((item, index) => (
+                          <motion.tr
+                            key={item.listID}
+                            custom={index}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ delay: index * 0.05, duration: 0.3 }}
+                            className="border-b border-gray-100 hover:bg-gray-50 transition-all duration-200"
+                          >
+                            <td className="px-6 py-4">
+                              <input
+                                type="checkbox"
+                                checked={selectedLists.some(
+                                  (selected) => selected.listID === item.listID
+                                )}
+                                onChange={() => toggleListSelection(item)}
+                                className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                              />
+                            </td>
+                            <td className="px-6 py-4">
+                              <Link
+                                href={`/list-data?item=${encodeURIComponent(
+                                  JSON.stringify(item)
+                                )}`}
+                                className="font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+                              >
+                                {item.name}
+                              </Link>
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                {item.gdpr || "N/A"}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                {item.segs || "0"}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {item.ars || "0"}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                                {item.unsubscribed || "0"}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                {item.bounced || "0"}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex justify-center items-center gap-2">
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => handleEdit(item)}
+                                  className="w-8 h-8 bg-blue-100 hover:bg-blue-200 rounded-full flex items-center justify-center transition-all"
+                                  title="Edit List"
+                                >
+                                  <FiEdit className="text-blue-600 text-sm" />
+                                </motion.button>
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => handleDelete(item.listID)}
+                                  className="w-8 h-8 bg-red-100 hover:bg-red-200 rounded-full flex items-center justify-center transition-all"
+                                  title="Delete List"
+                                >
+                                  <FiTrash2 className="text-red-600 text-sm" />
+                                </motion.button>
+                              </div>
+                            </td>
+                          </motion.tr>
+                        ))}
+                      </AnimatePresence>
+                    </tbody>
+                  </table>
+                </div>
 
-        {/* Right side buttons */}
-        <div className="flex items-center space-x-4">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => {
-              setEditList(null);
-              setListName("");
-              setIsModalOpen(true);
-            }}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg shadow transition-colors duration-200"
-          >
-            <FaPlus className="mr-2" /> Add New List
-          </motion.button>
+                {/* Mobile Cards */}
+                <div className="lg:hidden space-y-4">
+                  {currentRecords.map((item, index) => (
+                    <motion.div
+                      key={item.listID}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1, duration: 0.3 }}
+                      className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all"
+                    >
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedLists.some(
+                              (selected) => selected.listID === item.listID
+                            )}
+                            onChange={() => toggleListSelection(item)}
+                            className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-3"
+                          />
+                          <div>
+                            <Link
+                              href={`/list-data?item=${encodeURIComponent(
+                                JSON.stringify(item)
+                              )}`}
+                              className="font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+                            >
+                              {item.name}
+                            </Link>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEdit(item)}
+                            className="w-10 h-10 bg-blue-100 hover:bg-blue-200 rounded-xl flex items-center justify-center transition-all"
+                          >
+                            <FiEdit className="text-blue-600" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item.listID)}
+                            className="w-10 h-10 bg-red-100 hover:bg-red-200 rounded-xl flex items-center justify-center transition-all"
+                          >
+                            <FiTrash2 className="text-red-600" />
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">Active Subscribers</p>
+                          <p className="font-semibold text-blue-600">{item.ars || "0"}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">Segments</p>
+                          <p className="font-semibold text-purple-600">{item.segs || "0"}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">Unsubscribed</p>
+                          <p className="font-semibold text-amber-600">{item.unsubscribed || "0"}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">Bounced</p>
+                          <p className="font-semibold text-red-600">{item.bounced || "0"}</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleMerge}
-            className={`flex items-center px-4 py-2 rounded-lg shadow transition-colors duration-200 ${
-              selectedLists.length < 2
-                ? "bg-green-600 text-white"
-                : "bg-green-600 text-white"
-            }`}
-          >
-            <FaObjectGroup className="mr-2" /> Merge
-          </motion.button>
-
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleRemove}
-            className={`flex items-center px-4 py-2 rounded-lg shadow transition-colors duration-200 ${
-              selectedLists.length < 2
-                ? "bg-red-500 text-white"
-                : "bg-red-500 text-white"
-            }`}
-          >
-            <FaMinus className="mr-2" /> Remove Duplicates
-          </motion.button>
+          {/* Pagination */}
+          {filteredLists.length > 0 && (
+            <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="text-sm text-gray-600 font-medium">
+                Showing {indexOfFirstRecord + 1} to{" "}
+                {Math.min(indexOfLastRecord, filteredLists.length)} of{" "}
+                {filteredLists.length} lists
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1}
+                  className="flex items-center px-4 py-2 border-2 border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  <FiChevronLeft className="mr-2" />
+                  Previous
+                </motion.button>
+                
+                <div className="px-4 py-2 bg-blue-600 text-white rounded-xl font-medium text-sm">
+                  {currentPage}
+                </div>
+                
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className="flex items-center px-4 py-2 border-2 border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  Next
+                  <FiChevronRight className="ml-2" />
+                </motion.button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -470,70 +816,106 @@ const ManageLists = () => {
       <AnimatePresence>
         {isModalOpen && (
           <motion.div
-            className="fixed inset-0 flex items-center justify-center  backdrop-blur-sm z-50"
+            className="fixed inset-0  backdrop-blur-sm flex items-center justify-center z-50 p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
             <motion.div
-              className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md"
+              className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
               variants={modalVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
             >
-              <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-                {editList ? "Edit List" : "Create New List"}
-              </h2>
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  List Name
-                </label>
-                <input
-                  type="text"
-                  value={listName}
-                  onChange={(e) => setListName(e.target.value)}
-                  placeholder="Enter list name"
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
-                />
-                {error && (
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-red-500 text-sm mt-2"
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold">
+                      {editList ? "Edit List" : "Create New List"}
+                    </h2>
+                    <p className="text-blue-100 mt-1">
+                      {editList ? "Update list information" : "Add a new subscriber list"}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setIsModalOpen(false);
+                      setError("");
+                      setEditList(null);
+                      setListName("");
+                    }}
+                    className="w-10 h-10 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center transition-all"
                   >
-                    {error}
-                  </motion.p>
-                )}
+                    <IoMdClose className="text-blue-500 text-xl" />
+                  </button>
+                </div>
               </div>
-              <div className="flex justify-end space-x-4">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => {
-                    setIsModalOpen(false);
-                    setError("");
-                    setEditList(null);
-                    setListName("");
-                  }}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200"
-                >
-                  Cancel
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleSubmit}
-                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200"
-                >
-                  {editList ? (
-                    <FaEdit className="mr-2" />
-                  ) : (
-                    <FaPlus className="mr-2" />
-                  )}
-                  {editList ? "Update List" : "Add List"}
-                </motion.button>
+
+              {/* Modal Content */}
+              <div className="p-8">
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      List Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={listName}
+                      onChange={(e) => {
+                        setListName(e.target.value);
+                        setError("");
+                      }}
+                      placeholder="Enter list name"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none transition-all duration-200"
+                    />
+                    {error && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-red-500 text-sm mt-2 flex items-center"
+                      >
+                        <span className="mr-1">⚠</span>
+                        {error}
+                      </motion.p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Modal Footer */}
+                <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t border-gray-200 mt-8">
+                  <button
+                    onClick={() => {
+                      setIsModalOpen(false);
+                      setError("");
+                      setEditList(null);
+                      setListName("");
+                    }}
+                    className="flex items-center justify-center px-6 py-2 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-200 border-2 border-gray-200 hover:border-gray-300"
+                  >
+                    Cancel
+                  </button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleSubmit}
+                    className="flex-1 flex items-center justify-center px-8 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  >
+                    {editList ? (
+                      <>
+                        <FiEdit className="mr-2" size={16} />
+                        Update List
+                      </>
+                    ) : (
+                      <>
+                        <FaPlus className="mr-2" size={16} />
+                        Create List
+                      </>
+                    )}
+                  </motion.button>
+                </div>
               </div>
             </motion.div>
           </motion.div>
@@ -544,55 +926,74 @@ const ManageLists = () => {
       <AnimatePresence>
         {isMergeModalOpen && (
           <motion.div
-            className="fixed inset-0 flex items-center justify-center  backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
             <motion.div
-              className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md"
-              variants={operationModalVariants}
+              className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
+              variants={modalVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
             >
-              <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-                Merge Lists
-              </h2>
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  New List Name
-                </label>
-                <input
-                  type="text"
-                  value={newListName}
-                  onChange={(e) => setNewListName(e.target.value)}
-                  placeholder="Enter new list name"
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
-                />
-                <p className="text-sm text-gray-500 mt-2">
-                  Selected lists: {selectedLists.length}
-                </p>
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-8 py-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold">Merge Lists</h2>
+                    <p className="text-green-100 mt-1">Combine selected lists into one</p>
+                  </div>
+                  <button
+                    onClick={() => setIsMergeModalOpen(false)}
+                    className="w-10 h-10 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center transition-all"
+                  >
+                    <IoMdClose className="text-white text-xl" />
+                  </button>
+                </div>
               </div>
-              <div className="flex justify-end space-x-4">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setIsMergeModalOpen(false)}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200"
-                >
-                  Cancel
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={performMerge}
-                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
-                >
-                  <FaObjectGroup className="mr-2" />
-                  Merge Lists
-                </motion.button>
+
+              {/* Modal Content */}
+              <div className="p-8">
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      New List Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={newListName}
+                      onChange={(e) => setNewListName(e.target.value)}
+                      placeholder="Enter new list name"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-green-100 focus:border-green-500 focus:outline-none transition-all duration-200"
+                    />
+                    <p className="text-sm text-gray-500 mt-2 flex items-center">
+                      <FaCheckCircle className="text-green-500 mr-2" />
+                      Selected lists: {selectedLists.length}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Modal Footer */}
+                <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t border-gray-200 mt-8">
+                  <button
+                    onClick={() => setIsMergeModalOpen(false)}
+                    className="flex items-center justify-center px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-200 border-2 border-gray-200 hover:border-gray-300"
+                  >
+                    Cancel
+                  </button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={performMerge}
+                    className="flex-1 flex items-center justify-center px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  >
+                    <FaObjectGroup className="mr-2" size={16} />
+                    Merge Lists
+                  </motion.button>
+                </div>
               </div>
             </motion.div>
           </motion.div>
@@ -603,220 +1004,71 @@ const ManageLists = () => {
       <AnimatePresence>
         {isRemoveModalOpen && (
           <motion.div
-            className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
             <motion.div
-              className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md"
-              variants={operationModalVariants}
+              className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
+              variants={modalVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
             >
-              <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-                Remove Duplicates
-              </h2>
-              <div className="mb-6">
-                <p className="text-sm text-gray-700 mb-4">
-                  This will compare the two selected lists and remove duplicate
-                  entries from the second list.
-                </p>
-                <p className="text-sm text-gray-500">
-                  Selected lists: {selectedLists.length}
-                </p>
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-amber-600 to-orange-600 text-white px-8 py-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold">Remove Duplicates</h2>
+                    <p className="text-amber-100 mt-1">Clean up duplicate entries between lists</p>
+                  </div>
+                  <button
+                    onClick={() => setIsRemoveModalOpen(false)}
+                    className="w-10 h-10 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center transition-all"
+                  >
+                    <IoMdClose className="text-white text-xl" />
+                  </button>
+                </div>
               </div>
-              <div className="flex justify-end space-x-4">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setIsRemoveModalOpen(false)}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200"
-                >
-                  Cancel
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={performRemoveDuplicates}
-                  className="flex items-center px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors duration-200"
-                >
-                  <FaMinus className="mr-2" />
-                  Remove Duplicates
-                </motion.button>
+
+              {/* Modal Content */}
+              <div className="p-8">
+                <div className="space-y-6">
+                  <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
+                    <p className="text-sm text-amber-800 mb-2">
+                      <strong>Important:</strong> This will compare the two selected lists and remove duplicate entries from the second list.
+                    </p>
+                    <p className="text-sm text-amber-700">
+                      Selected lists: <strong>{selectedLists.length}</strong> (exactly 2 required)
+                    </p>
+                  </div>
+                </div>
+
+                {/* Modal Footer */}
+                <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t border-gray-200 mt-8">
+                  <button
+                    onClick={() => setIsRemoveModalOpen(false)}
+                    className="flex items-center justify-center px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-200 border-2 border-gray-200 hover:border-gray-300"
+                  >
+                    Cancel
+                  </button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={performRemoveDuplicates}
+                    className="flex-1 flex items-center justify-center px-8 py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-semibold rounded-xl hover:from-amber-700 hover:to-orange-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  >
+                    <FaMinus className="mr-2" size={16} />
+                    Remove Duplicates
+                  </motion.button>
+                </div>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Table */}
-      <div className="overflow-x-auto bg-white border border-gray-300 rounded-xl shadow-lg md:max-h-[520px] overflow-y-auto">
-        <table className="min-w-full bg-white border border-gray-300">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                <input
-                  type="checkbox"
-                  checked={selectAll}
-                  onChange={toggleSelectAll}
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                />
-              </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                List
-              </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                GDPR
-              </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                Segs
-              </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                ARs
-              </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                Unsubscribed
-              </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                Bounced
-              </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <AnimatePresence>
-              {currentRecords.length > 0 ? (
-                currentRecords.map((item, index) => (
-                  <motion.tr
-                    key={item.listID}
-                    custom={index}
-                    initial="hidden"
-                    animate="visible"
-                    exit="hidden"
-                    variants={rowVariants}
-                    className="border-b border-gray-300 last:border-b-0 hover:bg-gray-50 transition-colors duration-200"
-                  >
-                    <td className="px-6 py-4">
-                      <input
-                        type="checkbox"
-                        checked={selectedLists.some(
-                          (selected) => selected.listID === item.listID
-                        )}
-                        onChange={() => toggleListSelection(item)}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                      />
-                    </td>
-                    <td className="px-6 py-4">
-                      <Link
-                        href={`/list-data?item=${encodeURIComponent(
-                          JSON.stringify(item)
-                        )}`}
-                        className="text-indigo-600 hover:text-indigo-800 font-medium"
-                      >
-                        {item.name}
-                      </Link>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {item.gdpr || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {item.segs || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {item.ars || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {item.unsubscribed || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {item.bounced || "N/A"}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex space-x-3">
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => handleEdit(item)}
-                          className="text-indigo-600 hover:text-indigo-800"
-                          title="Edit List"
-                        >
-                          <FaEdit />
-                        </motion.button>
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => handleDelete(item.listID)}
-                          className="text-red-500 hover:text-red-600"
-                          title="Delete List"
-                        >
-                          <FaTrash />
-                        </motion.button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan="8"
-                    className="px-6 py-4 text-center text-gray-500"
-                  >
-                    No Lists Available
-                  </td>
-                </tr>
-              )}
-            </AnimatePresence>
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination Controls */}
-      <div className="flex justify-between items-center mt-6">
-        {/* Left: Showing entries */}
-        <div className="text-sm font-semibold ml-2 text-gray-600">
-          Showing {indexOfFirstRecord + 1} to{" "}
-          {Math.min(indexOfLastRecord, lists.length)} of {lists.length} toatl entries
-        </div>
-
-
-        {/* Right: Pagination buttons */}
-        <div className="flex items-center space-x-2">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handlePreviousPage}
-            disabled={currentPage === 1}
-            className={`px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 ${
-              currentPage === 1
-                ? "bg-gray-50 text-gray-500 cursor-not-allowed"
-                : "bg-blue-600 text-white hover:bg-blue-700"
-            }`}
-          >
-            <FaArrowLeftPagination className="inline mr-1" /> Previous
-          </motion.button>
-          <span className="px-4 py-2 border border-blue-600 rounded-lg text-[12px] font-medium bg-blue-600 text-white">
-            {currentPage}
-          </span>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-            className={`px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 ${
-              currentPage === totalPages
-                ? "bg-gray-50 text-gray-500 cursor-not-allowed"
-                : "bg-blue-600 text-white hover:bg-blue-700"
-            }`}
-          >
-            Next <FaArrowRight className="inline ml-1" />
-          </motion.button>
-        </div>
-      </div>
     </div>
   );
 };
