@@ -15,6 +15,9 @@ import FilterComponent from "./FilterComponent";
 import LeadTypeForm from "./ActionComponent/LeadTypeModal";
 import moment from "moment";
 import Papa from "papaparse";
+import Swal from "sweetalert2";
+import ReportCon from "../(DataComponents)/ReportCon/page";
+import DataFromGPlaceApi from "../(DataComponents)/DataFromGPlaceApiCon/page";
 
 const sampleDataTypes = [
   { value: "P", label: "Individual" },
@@ -42,6 +45,7 @@ const Dashboard = () => {
   const [showSmsSend, setShowSmsSend] = useState(false);
   const [showCallSend, setShowCallSend] = useState(false);
   const [showReportCon, setShowReportCon] = useState(false);
+  const [showGoogleDataCon, setShowGoogleDataCon] = useState(false);
   const [file, setFile] = useState(null);
   const [csvData, setCsvData] = useState([]);
   const [headers, setHeaders] = useState([]);
@@ -284,6 +288,17 @@ const Dashboard = () => {
       addToast("No records selected for deletion", "error");
       return;
     }
+
+    const result = await Swal.fire({
+      title: "Are you sure to delete?",
+      text: "Do you want to delete this selected all contact?",
+      icon: "error",
+      showCancelButton: true,
+      confirmButtonText: "yes, delete it",
+      cancelButtonText: "Cancel",
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       const response = await fetch(
@@ -549,7 +564,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen font-sans">
+    <div className="min-h-[100px] font-sans">
       <SearchSection
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -587,8 +602,8 @@ const Dashboard = () => {
           const data =
             expectedHeaders.join(",") +
             "\n" +
-            "P,John Doe,+911234567890,+911234567890,[john@example.com](mailto:john@example.com),Male,IN,Maharashtra,Mumbai,400001,javascript;python,it,developer,tech,btech,iit,frontend,5,lead1,active,2025-01-15T10:00:00Z\n" +
-            "B,Jane Smith,+919876543210,+919876543210,[jane@example.com](mailto:jane@example.com),Female,IN,Karnataka,Bangalore,560001,java,hr,manager,finance,mba,iim,backend,8,lead2,inactive,2025-02-20T12:00:00Z";
+            "P,John Doe,+911234567890,+911234567890,john@example.com,Male,IN,Maharashtra,Mumbai,400001,javascript;python,it,developer,tech,btech,iit,frontend,5,lead1,active,2025-01-15T10:00:00Z\n" +
+            "B,Jane Smith,+919876543210,+919876543210,jane@example.com,Female,IN,Karnataka,Bangalore,560001,java,hr,manager,finance,mba,iim,backend,8,lead2,inactive,2025-02-20T12:00:00Z";
           const blob = new Blob([data], { type: "text/csv" });
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
@@ -607,6 +622,7 @@ const Dashboard = () => {
         setShowEmailSend={setShowEmailSend}
         setShowSmsSend={setShowSmsSend}
         setShowReportCon={setShowReportCon}
+        setShowGoogleDataCon={setShowGoogleDataCon}
       />
 
       <FilterTaskSection
@@ -686,13 +702,10 @@ const Dashboard = () => {
         setShowCallSend={setShowCallSend}
         showSmsSend={showSmsSend}
         setShowSmsSend={setShowSmsSend}
-        showReportCon={showReportCon}
-        setShowReportCon={setShowReportCon}
         selectedRows={selectedRows}
         setSelectedRows={setSelectedRows}
         userID={userID}
         fetchData={fetchData}
-        userData={dataDetails}
       />
 
       {/* Add Data Modal */}
@@ -713,6 +726,13 @@ const Dashboard = () => {
           userData={dataDetails}
           userID={userID}
         />
+      )}
+
+      {showReportCon && (
+        <ReportCon setShow={setShowReportCon} userData={dataDetails} />
+      )}
+      {showGoogleDataCon && (
+        <DataFromGPlaceApi setShow={setShowGoogleDataCon} userID={userID} />
       )}
     </div>
   );

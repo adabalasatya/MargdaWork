@@ -3,7 +3,6 @@ import SendEmailCon from "@/app/(dashboard)/(DataComponents)/SendEmailCon/page";
 import WhatsAppCon from "@/app/(dashboard)/(DataComponents)/SendWhatsappCon/page";
 import CallCon from "@/app/(dashboard)/(DataComponents)/SendCallCon/page";
 import SendSmsCon from "@/app/(dashboard)/(DataComponents)/SendSmsCon/page";
-import ReportCon from "@/app/(dashboard)/(DataComponents)/ReportCon/page";
 
 const CommunicationModals = ({
   showEmailSend,
@@ -14,13 +13,10 @@ const CommunicationModals = ({
   setShowCallSend,
   showSmsSend,
   setShowSmsSend,
-  showReportCon,
-  setShowReportCon,
   selectedRows,
   setSelectedRows,
   userID,
   fetchData,
-  userData,
 }) => {
   return (
     <>
@@ -62,11 +58,6 @@ const CommunicationModals = ({
           selectedLeads={selectedRows}
           userID={userID}
         />
-      )}
-
-      {/* Report Modal */}
-      {showReportCon && (
-        <ReportCon setShow={setShowReportCon} userData={userData} />
       )}
     </>
   );

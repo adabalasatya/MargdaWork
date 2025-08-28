@@ -5,6 +5,7 @@ import {
   FaEnvelope,
   FaUserCheck,
   FaRegHandPointRight,
+  FaDatabase,
 } from "react-icons/fa";
 
 const CRMSection = ({
@@ -15,6 +16,7 @@ const CRMSection = ({
   setShowEmailSend,
   setShowSmsSend,
   setShowReportCon,
+  setShowGoogleDataCon,
 }) => {
   return (
     <div className="bg-white z-20 border-2 border-gray-200 w-fit  m-2 shadow-md rounded-xl px-6 py-2 mt-3">
@@ -91,6 +93,12 @@ const CRMSection = ({
           className="flex items-center px-4 py-2 text-sm bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
         >
           <FaRegHandPointRight className="mr-2 text-sm" /> Work Report
+        </button>
+        <button
+          onClick={() => setShowGoogleDataCon(true)}
+          className="flex items-center px-4 py-2 text-sm bg-gradient-to-r from-gray-500 to-gray-800 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
+        >
+          <FaDatabase className="mr-2 text-sm" /> Google Data
         </button>
       </div>
     </div>
