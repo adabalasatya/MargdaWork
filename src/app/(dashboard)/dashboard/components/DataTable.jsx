@@ -378,7 +378,7 @@ const DataTable = ({
                           className="absolute z-50 w-48 bg-white border border-gray-200 rounded-lg shadow-lg max-h-45 overflow-y-auto"
                           style={{
                             top: "-200%",
-                            left: "40%"
+                            left: "45%"
                           }}
                         >
                           <button
