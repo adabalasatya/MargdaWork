@@ -9,7 +9,6 @@ import {
   FaCalendarAlt,
   FaArrowLeft,
   FaArrowRight,
-  FaCamera,
 } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -69,7 +68,6 @@ const MyProfile = () => {
   const [errors, setErrors] = useState({});
   const [userData, setUserData] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     // Check if we're in browser environment
@@ -124,79 +122,12 @@ const MyProfile = () => {
   const handleProfilePicChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-      // Validate file type
-      if (!selectedFile.type.startsWith('image/')) {
-        addToast("Please select an image file", "error", { toastId: Date.now() + Math.random() });
-        return;
-      }
-      
-      // Validate file size (max 5MB)
-      if (selectedFile.size > 5 * 1024 * 1024) {
-        addToast("Image size should be less than 5MB", "error", { toastId: Date.now() + Math.random() });
-        return;
-      }
-      
       setFile(selectedFile);
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormValues({ ...formValues, pic_url: reader.result });
       };
       reader.readAsDataURL(selectedFile);
-    }
-  };
-
-  const uploadProfilePicture = async () => {
-    if (!file) return;
-    
-    setIsUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("image", file);
-      formData.append("userID", userData.userID);
-
-      const response = await fetch(
-        "https://www.margda.in/miraj/work/profile/upload-profile-pic",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${userData.accessToken}`,
-          },
-          body: formData,
-        }
-      );
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to upload profile picture");
-      }
-
-      addToast("Profile picture uploaded successfully!", "success", {
-        toastId: Date.now() + Math.random(),
-      });
-      
-      // Update the user data in session storage
-      const updatedUserData = {
-        ...userData,
-        pic: data.pic_url || formValues.pic_url,
-      };
-      
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem("userData", JSON.stringify(updatedUserData));
-      }
-      
-      setUserData(updatedUserData);
-    } catch (error) {
-      console.error("Error uploading profile picture:", error);
-      addToast(
-        error.message || "Failed to upload profile picture",
-        "error",
-        {
-          toastId: Date.now() + Math.random(),
-        }
-      );
-    } finally {
-      setIsUploading(false);
     }
   };
 
@@ -278,12 +209,14 @@ const MyProfile = () => {
     }
 
     try {
-      // Upload profile picture first if a new one was selected
+      const formData = new FormData();
+
       if (file) {
-        await uploadProfilePicture();
+        formData.append("image", file);
+      } else if (formValues.pic_url) {
+        formData.append("pic_url", formValues.pic_url);
       }
 
-      const formData = new FormData();
       formData.append("userID", userData.userID);
       formData.append("name", formValues.name);
       formData.append("gender", formValues.gender);
@@ -365,6 +298,47 @@ const MyProfile = () => {
 
   return (
     <div className="min-h-screen flex flex-col py-12 px-4 sm:px-6 lg:px-8">
+      {/* Header */}
+      {/* <div className="flex flex-col items-center justify-center mb-8">
+        <div className="flex items-center justify-center mb-4">
+          <FaUser className="text-custom-purple text-3xl mr-3" />
+          <h1 className="text-3xl font-bold text-gray-800">
+            Complete Your Profile
+          </h1>
+        </div>
+        <p className="text-red-500 text-sm text-center max-w-md">
+          Please update your real photo and info. The account may be disabled if
+          any discrepancy is found.
+        </p>
+      </div> */}
+
+      {/* Progress Bar */}
+      {/* <div className="w-full max-w-md mx-auto mb-8">
+        <div className="flex items-center justify-between">
+          {[1, 2].map((stepNumber) => (
+            <React.Fragment key={stepNumber}>
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center 
+                ${
+                  step >= stepNumber
+                    ? "bg-custom-purple text-white"
+                    : "bg-gray-200 text-gray-600"
+                }`}
+              >
+                {stepNumber}
+              </div>
+              {stepNumber < 2 && (
+                <div
+                  className={`flex-1 h-1 mx-2 ${
+                    step > stepNumber ? "bg-custom-purple" : "bg-gray-200"
+                  }`}
+                />
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+      </div> */}
+
       {/* Form Card */}
       <div className="flex items-center justify-center w-full">
         <motion.div
@@ -398,7 +372,7 @@ const MyProfile = () => {
                   >
                     Profile Picture
                   </label>
-                  <div className="relative group">
+                  <div className="relative">
                     <CustomImage
                       src={
                         formValues.pic_url ||
@@ -407,24 +381,14 @@ const MyProfile = () => {
                       alt="Profile"
                       width={96}
                       height={96}
-                      className="h-24 w-24 rounded-full border-2 border-gradient-to-r from-blue-500 to-blue-600 shadow-md mb-4 object-cover group-hover:opacity-80 transition-opacity"
+                      className="h-24 w-24 rounded-full border-2 border-g-gradient-to-r from-blue-500 to-blue-600 shadow-md mb-4 object-cover"
                     />
                     <label
                       htmlFor="profilePic"
-                      className="absolute bottom-0 right-0 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-purple-700 transition opacity-0 group-hover:opacity-100"
+                      className="absolute bottom-0 right-0 g-gradient-to-r from-blue-500 to-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-purple-700 transition"
                     >
-                      <FaCamera className="text-sm" />
+                      <FaUser className="text-sm" />
                     </label>
-                    {file && (
-                      <button
-                        type="button"
-                        onClick={uploadProfilePicture}
-                        disabled={isUploading}
-                        className="mt-2 px-3 py-1 bg-blue-500 text-white text-xs rounded-md hover:bg-blue-600 disabled:opacity-50"
-                      >
-                        {isUploading ? "Uploading..." : "Save Image"}
-                      </button>
-                    )}
                   </div>
                   <input
                     type="file"
@@ -433,9 +397,6 @@ const MyProfile = () => {
                     id="profilePic"
                     className="hidden"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Click on the camera icon to upload a profile picture
-                  </p>
                   {errors.pic_url && (
                     <p className="text-red-500 text-xs text-center mt-1">
                       {errors.pic_url}
