@@ -11,6 +11,7 @@ import {
   FiEdit,
   FiRefreshCw,
   FiX,
+  FiMaximize2,
 } from "react-icons/fi";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -30,11 +31,94 @@ const SmsReport = () => {
   const [campaigns, setCampaigns] = useState([]);
   const [sms, setSms] = useState([]);
   const [selectedCampaignID, setSelectedCampaignID] = useState("");
-  const [smsPerPage, setSmsPerPage] = useState(10); // Changed to state
+  const [smsPerPage, setSmsPerPage] = useState(10);
   const [userID, setUserID] = useState("");
   const [selectedItem, setSelectedItem] = useState(null);
   const [showAddToTaskCon, setShowAddToTaskCon] = useState(false);
+  
+  // New states for message popup
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState("");
+  
   const { addToast } = useToast();
+
+  // Function to strip HTML tags and clean message
+  const stripHtmlTags = (html) => {
+    if (!html) return "";
+    
+    // Create a temporary div to parse HTML
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = html;
+    
+    // Get text content and clean it
+    let text = tempDiv.textContent || tempDiv.innerText || "";
+    
+    // Remove extra whitespaces and line breaks
+    text = text.replace(/\s+/g, ' ').trim();
+    
+    return text;
+  };
+
+  // Function to limit message length for table display
+  const getLimitedMessage = (message, limit = 30) => {
+    if (!message) return "N/A";
+    
+    const cleanMessage = stripHtmlTags(message);
+    
+    if (cleanMessage.length <= limit) {
+      return cleanMessage;
+    }
+    
+    return cleanMessage.substring(0, limit) + "...";
+  };
+
+  // Function to handle read more click
+  const handleReadMore = (message) => {
+    setSelectedMessage(stripHtmlTags(message));
+    setShowMessageModal(true);
+  };
+
+  // Message Modal Component
+  const MessageModal = () => {
+    if (!showMessageModal) return null;
+
+    return (
+      <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+          {/* Modal Header */}
+          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+              <FiMail className="mr-2" />
+              Full Message
+            </h3>
+            <button
+              onClick={() => setShowMessageModal(false)}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <FiX size={24} />
+            </button>
+          </div>
+          
+          {/* Modal Body */}
+          <div className="p-6 overflow-y-auto max-h-[60vh]">
+            <div className="text-gray-800 whitespace-pre-wrap leading-relaxed">
+              {selectedMessage}
+            </div>
+          </div>
+          
+          {/* Modal Footer */}
+          <div className="flex justify-end p-4 border-t border-gray-200">
+            <button
+              onClick={() => setShowMessageModal(false)}
+              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   // Safe sessionStorage access
   const getUserData = () => {
@@ -115,7 +199,7 @@ const SmsReport = () => {
   // Handle search
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
-    setCurrentTablePage(1); // Reset to first page on search
+    setCurrentTablePage(1);
   };
 
   // Handle items per page change
@@ -126,10 +210,11 @@ const SmsReport = () => {
 
   // Filter sms based on search and date range
   const filteredSms = sms.filter((sms) => {
+    const cleanMessage = stripHtmlTags(sms.message);
     const matchesSearch =
       sms.receiver.toLowerCase().includes(searchQuery.toLowerCase()) ||
       sms.sender.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      sms.message.toLowerCase().includes(searchQuery.toLowerCase());
+      cleanMessage.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesDate =
       (!fromDate || sms.edate >= fromDate) && (!toDate || sms.edate <= toDate);
     const matchCampaignID = selectedCampaignID
@@ -160,7 +245,6 @@ const SmsReport = () => {
 
       {/* Header */}
       <div className="relative flex justify-between items-center p-4 mb-8">
-        {/* Center: SMS Report Title */}
         <h1 className="text-3xl font-bold text-gray-800 text-center absolute left-1/2 transform -translate-x-1/2 flex items-center">
           <FiMail className="mr-2" /> SMS Report
         </h1>
@@ -206,7 +290,6 @@ const SmsReport = () => {
             />
           </div>
 
-          {/* Clear Button - Only show when dates are selected */}
           {(fromDate || toDate) && (
             <button
               onClick={clearDateFilters}
@@ -261,8 +344,7 @@ const SmsReport = () => {
                 <th className="p-4 font-medium uppercase tracking-wider">
                   Receiver
                 </th>
-
-                <th className="p-4 font-medium uppercase tracking-wider">
+                <th className="p-4 font-medium uppercase tracking-wider min-w-[200px]">
                   Message
                 </th>
                 <th className="p-4 font-medium uppercase tracking-wider">
@@ -277,7 +359,7 @@ const SmsReport = () => {
               {currentSms.length === 0 ? (
                 <tr>
                   <td
-                    colSpan="8"
+                    colSpan="6"
                     className="px-6 py-8 text-center text-gray-500"
                   >
                     {filteredSms.length === 0 && sms.length > 0
@@ -286,39 +368,60 @@ const SmsReport = () => {
                   </td>
                 </tr>
               ) : (
-                currentSms.map((sms) => (
-                  <tr
-                    key={sms.smsID}
-                    className="hover:bg-gray-50 transition-colors duration-150"
-                  >
-                    <td className="p-4 text-[12px]">
-                      {sms.dataID &&
-                        (sms.taskName ? (
-                          <div className="font-semibold">{sms.taskName}</div>
-                        ) : (
-                          <button
-                            onClick={() => {
-                              setShowAddToTaskCon(true);
-                              setSelectedItem(sms);
-                            }}
-                            className="text-[12px] bg-blue-500 px-1 py-1 rounded text-white hover:bg-blue-700"
-                          >
-                            Add to Task
-                          </button>
-                        ))}
-                    </td>
-                    <td className="p-4 text-[12px]">{sms.sender}</td>
-                    <td className="p-4 text-[12px]">{sms.receiver}</td>
+                currentSms.map((sms) => {
+                  const limitedMessage = getLimitedMessage(sms.message);
+                  const fullMessage = stripHtmlTags(sms.message);
+                  const hasMoreContent = fullMessage.length > 30;
 
-                    <td className="p-4 text-[12px]">{sms.message || "N/A"}</td>
-                    <td className="p-4 text-[12px]">
-                      {sms.edate ? new Date(sms.edate).toLocaleString() : "N/A"}
-                    </td>
-                    <td className="p-4 text-[12px]">
-                      {sms.campaignName || "N/A"}
-                    </td>
-                  </tr>
-                ))
+                  return (
+                    <tr
+                      key={sms.smsID}
+                      className="hover:bg-gray-50 transition-colors duration-150"
+                    >
+                      <td className="p-4 text-[12px]">
+                        {sms.dataID &&
+                          (sms.taskName ? (
+                            <div className="font-semibold">{sms.taskName}</div>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setShowAddToTaskCon(true);
+                                setSelectedItem(sms);
+                              }}
+                              className="text-[12px] bg-blue-500 px-1 py-1 rounded text-white hover:bg-blue-700"
+                            >
+                              Add to Task
+                            </button>
+                          ))}
+                      </td>
+                      <td className="p-4 text-[12px]">{sms.sender}</td>
+                      <td className="p-4 text-[12px]">{sms.receiver}</td>
+                      <td className="p-4 text-[12px] max-w-[200px]">
+                        <div className="flex items-center gap-2">
+                          <span className="break-words">
+                            {limitedMessage}
+                          </span>
+                          {hasMoreContent && (
+                            <button
+                              onClick={() => handleReadMore(sms.message)}
+                              className="text-blue-500 hover:text-blue-700 flex items-center text-[10px] whitespace-nowrap"
+                              title="Read full message"
+                            >
+                              <FiMaximize2 size={12} className="ml-1" />
+                              Read More
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-4 text-[12px]">
+                        {sms.edate ? new Date(sms.edate).toLocaleString() : "N/A"}
+                      </td>
+                      <td className="p-4 text-[12px]">
+                        {sms.campaignName || "N/A"}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -339,7 +442,7 @@ const SmsReport = () => {
                 paginate(currentTablePage > 1 ? currentTablePage - 1 : 1)
               }
               disabled={currentTablePage === 1}
-              className={`px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium flex items-center transition-colors duration-200${
+              className={`px-4 py-2 border border-gray-300 rounded-lg text-[12px] font-medium flex items-center transition-colors duration-200 ${
                 currentTablePage === 1
                   ? "text-gray-400 cursor-not-allowed"
                   : "text-gray-700 hover:bg-gray-50"
@@ -372,6 +475,10 @@ const SmsReport = () => {
           </div>
         </div>
       )}
+
+      {/* Message Modal */}
+      <MessageModal />
+
       {showAddToTaskCon && (
         <AddToTask
           setClose={setShowAddToTaskCon}
