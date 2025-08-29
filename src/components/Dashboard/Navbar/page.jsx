@@ -221,10 +221,10 @@ const Navbar = () => {
         <div className="flex justify-start w-full space-x-6 whitespace-nowrap">
           <Link
             href="/dashboard"
-            className="group flex items-center px-6 py-2 text-[12px] font-semibold text-slate-700 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/50 rounded-xl shadow-lg hover:shadow-xl hover:from-blue-500 hover:to-indigo-600 hover:text-white transform hover:scale-105 hover:-translate-y-1 transition-all duration-300 ease-out relative overflow-hidden"
+            className="group flex items-center px-6 py-2 text-[14px] font-semibold text-slate-700 bg-gradient-to-r from-white to-white/50 border-2 border-gray-300 rounded-xl shadow-lg hover:shadow-xl hover:from-blue-500 hover:to-indigo-600 hover:text-white transform hover:scale-105 hover:-translate-y-1 transition-all duration-300 ease-out relative overflow-hidden"
           >
             <div className="p-2 bg-white/70 rounded-lg mr-3 group-hover:bg-white/20 transition-all duration-300">
-              <Database className="w-3 h-3" />
+              <Database className="w-4 h-4" />
             </div>
             <span className="tracking-wide font-medium">Contact List</span>
             

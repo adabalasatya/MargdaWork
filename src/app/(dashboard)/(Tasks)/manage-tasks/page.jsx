@@ -333,7 +333,7 @@ const ManageTasks = () => {
 
   {/* Center - Title with Icon */}
   <div className="flex flex-1 justify-center items-center">
-    <div className="w-8 h-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center mr-3">
+    <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-600 rounded-xl flex items-center justify-center mr-3">
       <FaTasks className="text-white text-md" />
     </div>
     <h1 className="text-2xl font-bold text-gray-800">Task Management</h1>
@@ -421,7 +421,7 @@ const ManageTasks = () => {
                 </div>
 
                 <div className="relative">
-                  <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-indigo-400" />
+                  <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-500" />
                   <input
                     type="text"
                     placeholder="Search tasks..."
@@ -443,7 +443,7 @@ const ManageTasks = () => {
                   setIsModalOpen(true);
                 }}
                 disabled={isLoading}
-                className="inline-flex items-center px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50"
+                className="inline-flex items-center px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50"
               >
                 <FaPlus className="mr-2" size={16} />
                 Add New Task
@@ -490,7 +490,7 @@ const ManageTasks = () => {
                 <div className="hidden lg:block overflow-hidden rounded-2xl border border-gray-200">
                   <table className="w-full">
                     <thead>
-                      <tr className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+                      <tr className="bg-gradient-to-r from-blue-600 to-blue-600 text-white">
                         <th className="px-6 py-4 text-left font-semibold">S.No</th>
                         <th className="px-6 py-4 text-left font-semibold">Task Name</th>
                         <th className="px-6 py-4 text-center font-semibold">Status</th>
@@ -618,7 +618,7 @@ const ManageTasks = () => {
                   Previous
                 </motion.button>
                 
-                <div className="px-4 py-2 bg-indigo-600 text-white rounded-xl font-medium text-sm">
+                <div className="px-4 py-2 bg-blue-600 text-white rounded-xl font-medium text-sm">
                   {currentPage}
                 </div>
                 
