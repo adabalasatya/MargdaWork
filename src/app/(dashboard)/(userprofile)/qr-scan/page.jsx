@@ -62,6 +62,20 @@ const QrScanPage = () => {
     }
   }, [router]);
 
+  useEffect(() => {
+  if (!userID) return;
+
+  // fetch on mount
+  fetchProfiles(userID);
+
+  // check every 3s
+  const interval = setInterval(() => {
+    fetchProfiles(userID);
+  }, 3000);
+
+  return () => clearInterval(interval);
+}, [userID]);
+
   const getInstance = async () => {
     setLoading(true);
     try {
@@ -120,7 +134,7 @@ const QrScanPage = () => {
   return (
     <>
       {loading && <Loader />}
-      <div className="h-screen overflow-hidden p-4 sm:p-6 lg:p-8">
+      <div className="h-screen overflow-hidden p-2 sm:p-2 lg:p-4">
         <div className="max-w-5xl mx-auto h-full">
           {/* Header */}
           <div className="text-center mb-4">
