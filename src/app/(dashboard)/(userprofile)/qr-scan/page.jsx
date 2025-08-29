@@ -62,47 +62,6 @@ const QrScanPage = () => {
     }
   }, [router]);
 
-  // Function to check connection status
-  const checkConnectionStatus = useCallback(async () => {
-    if (!userID || checkingStatus) return;
-    
-    setCheckingStatus(true);
-    try {
-      const response = await fetch(
-        "https://www.margda.in/miraj/whatsapp/scan/get-profile",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ userID }),
-        }
-      );
-      const data = await response.json();
-      if (response.ok) {
-        setProfile(data.Profile);
-        // If we have a QR code but the profile is now active, we can clear the QR code
-        if (qrCodeSrc && data.Profile && data.Profile.active) {
-          setQrCodeSrc(null);
-        }
-      }
-    } catch (error) {
-      console.error("Error checking connection status:", error);
-    } finally {
-      setCheckingStatus(false);
-    }
-  }, [userID, qrCodeSrc, checkingStatus]);
-
-  // Set up interval for checking connection status
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      checkConnectionStatus();
-    }, 1000); // Check every 1 seconds
-
-    // Clean up interval on component unmount
-    return () => clearInterval(intervalId);
-  }, [checkConnectionStatus]);
-
   const getInstance = async () => {
     setLoading(true);
     try {
