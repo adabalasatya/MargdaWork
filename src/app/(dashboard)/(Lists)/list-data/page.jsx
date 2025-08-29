@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Papa from "papaparse";
 import { Users, Settings } from "lucide-react";
-import { FaArrowLeft, FaEdit, FaSearch, FaTrash, FaDownload, FaPlus } from "react-icons/fa";
+import { FaArrowLeft, FaEdit, FaSearch, FaTrash, FaDownload, FaPlus, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -104,6 +104,7 @@ const ListData = () => {
         }
       );
       const data = await response.json();
+      console.log(data)
       if (response.ok) {
         const subscriberData = data.Data;
         if (subscriberData.length > 0) {
@@ -125,55 +126,104 @@ const ListData = () => {
   };
 
   const updateCharts = (subscribers) => {
-    const statusCounts = subscribers.reduce(
-      (acc, sub) => {
-        const status = sub.status || "Unknown";
-        acc[status] = (acc[status] || 0) + 1;
-        return acc;
-      },
-      { All: subscribers.length }
-    );
-    const all = subscribers.length;
-    const subscribed = subscribers.filter((item) => item.status).length;
-    const unsubscribed = subscribers.filter((item) => !item.status).length;
-    const newPieData = [
-      { name: "Active", value: statusCounts["Active"] || 0, color: "#10b981" },
-      { name: "Unconfirmed", value: statusCounts["Unconfirmed"] || 0, color: "#9ca3af" },
-      { name: "Unsubscribed", value: statusCounts["Unsubscribed"] || 0, color: "#ef4444" },
-      { name: "Bounced", value: statusCounts["Bounced"] || 0, color: "#4b5563" },
-      { name: "Marked as spam", value: statusCounts["Marked as spam"] || 0, color: "#374151" },
-      { name: "Unknown", value: statusCounts["Unknown"] || 0, color: "#6b7280" },
-    ].filter((item) => item.value > 0);
+  const statusCounts = subscribers.reduce(
+    (acc, sub) => {
+      // Count by actual status field if available, otherwise use subscribe field
+      const status = sub.status || (sub.subscribe ? "Active" : "Unsubscribed");
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    },
+    { All: subscribers.length }
+  );
+  
+  const all = subscribers.length;
+  const subscribed = subscribers.filter((item) => item.subscribe).length;
+  const unsubscribed = subscribers.filter((item) => !item.subscribe).length;
+  
+  const newPieData = [
+    { name: "Active", value: statusCounts["Active"] || subscribed || 0, color: "#10b981" },
+    { name: "Unconfirmed", value: statusCounts["Unconfirmed"] || 0, color: "#9ca3af" },
+    { name: "Unsubscribed", value: statusCounts["Unsubscribed"] || unsubscribed || 0, color: "#ef4444" },
+    { name: "Bounced", value: statusCounts["Bounced"] || 0, color: "#4b5563" },
+    { name: "Marked as spam", value: statusCounts["Marked as spam"] || 0, color: "#374151" },
+  ].filter((item) => item.value > 0);
 
-    const newFilters = [
-      { name: "All", count: all || 0, color: "bg-blue-500" },
-      { name: "Active", count: subscribed || 0, color: "bg-green-500" },
-      { name: "Unsubscribed", count: unsubscribed || 0, color: "bg-red-500" },
-    ];
+  const newFilters = [
+    { name: "All", count: all || 0, color: "bg-blue-500" },
+    { name: "Active", count: subscribed || 0, color: "bg-green-500" },
+    { name: "Unsubscribed", count: unsubscribed || 0, color: "bg-red-500" },
+  ];
 
-    setPieData(newPieData.length > 0 ? newPieData : pieData);
-    setFilters(newFilters);
-  };
+  setPieData(newPieData.length > 0 ? newPieData : pieData);
+  setFilters(newFilters);
+};
 
   const handleBack = () => {
     router.back();
   };
 
-  const handleUnsubscribe = async (id) => {
+  const handleSubscribe = async () => {
+
+    if (selectedRows.length === 0) {
+    addToast("Please select at least one subscriber", "error");
+    return;
+  }
+
+  const dataIDs = selectedRows.map(row => row.dataID);
+
     try {
       const response = await fetch(
-        "https://www.margda.in/miraj/subscribers/unsubscribe",
+        "https://www.margda.in/miraj/work/list-data/subscribe",
         {
-          method: "POST",
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ subsID: id }),
+          body: JSON.stringify({ 
+            dataIDs: dataIDs,
+            subscribe: true
+           }),
         }
       );
       const data = await response.json();
       if (response.ok) {
         await fetchSubscribers(listData.listID);
+        setSelectedRows([]);
+        addToast(data.message, "success");
+      }
+    } catch (error) {
+      console.log(error);
+      addToast(error.message || "Unknown Error, try again later", "error");
+    }
+  };
+
+  const handleBulkUnsubscribe = async () => {
+
+    if (selectedRows.length === 0) {
+    addToast("Please select at least one subscriber", "error");
+    return;
+  }
+
+  const dataIDs = selectedRows.map(row => row.dataID);
+
+    try {
+      const response = await fetch(
+        "https://www.margda.in/miraj/work/list-data/subscribe",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ 
+            dataIDs: dataIDs,
+            subscribe: false
+           }),
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        await fetchSubscribers(listData.listID);
+        setSelectedRows([]);
         addToast(data.message, "success");
       }
     } catch (error) {
@@ -268,17 +318,44 @@ const ListData = () => {
     }
   };
 
-  const handleVerify = () => {
-    addToast("Verify functionality not implemented yet.", "info");
-  };
+  const handleVerifyEmail = async () => {
+  if (selectedRows.length === 0) {
+    addToast("Please select at least one subscriber to verify", "error");
+    return;
+  }
 
-  const handleSubscribe = () => {
-    addToast("Subscribe functionality not implemented yet.", "info");
-  };
-
-  const handleBulkUnsubscribe = () => {
-    addToast("Bulk Unsubscribe functionality not implemented yet.", "info");
-  };
+  const dataIDs = selectedRows.map(row => row.dataID);
+  
+  setLoading(true);
+  try {
+    const response = await fetch(
+      "https://www.margda.in/miraj/work/list-data/verify-email",
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ dataIDs }),
+      }
+    );
+    
+    const data = await response.json();
+    
+    if (response.ok) {
+      // Optionally refresh the data after verification
+      await fetchSubscribers(listData.listID);
+      setSelectedRows([]);
+      addToast(data.message || "Email verification initiated successfully", "success");
+    } else {
+      addToast(data.message || "Failed to initiate email verification", "error");
+    }
+  } catch (error) {
+    console.error("Error verifying emails:", error);
+    addToast("Error verifying emails: " + error.message, "error");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const downloadSample = () => {
     const data =
@@ -299,9 +376,9 @@ const ListData = () => {
       activeFilter === "All"
         ? true
         : activeFilter === "Active"
-        ? subscriber.status
+        ? subscriber.subscribe
         : activeFilter === "Unsubscribed"
-        ? !subscriber.status
+        ? !subscriber.subscribe
         : true;
     const matchesSearch =
       searchTerm === "" ||
@@ -666,7 +743,7 @@ const ListData = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <button
-                onClick={handleVerify}
+                onClick={handleVerifyEmail}
                 className="flex items-center px-4 py-2 text-[12px] bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-md hover:scale-105 transition-transform duration-200"
               >
                 Verify
@@ -828,9 +905,9 @@ const ListData = () => {
                   <th className="px-3 py-3 text-left text-[12px]  uppercase tracking-wider">
                     <div className="flex items-center">Status</div>
                   </th>
-                  <th className="px-3 py-3 text-left text-[12px]  uppercase tracking-wider">
+                  {/* <th className="px-3 py-3 text-left text-[12px]  uppercase tracking-wider">
                     Unsubscribe
-                  </th>
+                  </th> */}
                   <th className="px-3 py-3 text-left text-[12px] uppercase tracking-wider">
                     Total Sent
                   </th>
@@ -882,7 +959,11 @@ const ListData = () => {
                           {subscriber.name || "N/A"}
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {subscriber.email || "N/A"}
+                          {subscriber.email 
+                          ? subscriber.email.length > 34
+                          ? subscriber.email.substring(0, 34) + "..."
+                          : subscriber.email
+                          : "N/A"}
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                           {subscriber.mobile || "N/A"}
@@ -891,16 +972,21 @@ const ListData = () => {
                           {subscriber.whatsapp || "N/A"}
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {subscriber.last_activity || "N/A"}
+                          {subscriber.verified === true ? (
+                            <FaCheckCircle className="text-green-500 w-5 h-5 inline" />
+                          ) : subscriber.verified === false ? (
+                            <FaTimesCircle className="text-red-500 w-5 h-5 inline" />
+                          ) : (
+                            "N/A"
+                          )}
                         </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <button
-                            onClick={() => handleUnsubscribe(subscriber.subsID)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            <Users className="w-5 h-4" />
-                          </button>
-                        </td>
+                        {/* <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {subscriber.subscribe ? (
+                            <span className="text-green-600">Subscribed</span>
+                            ) : (
+                            <span className="text-red-600">Unsubscribed</span>
+                          )}
+                        </td> */}
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                           {subscriber.totalSent || 0}
                         </td>
