@@ -295,10 +295,10 @@ const DataTable = ({
   return (
     <div className="bg-white rounded-xl border-2 border-gray-200 shadow-md p-4 m-2 mt-3">
       {/* SOLUTION 1: Using relative positioning with better overflow handling */}
-      <div className="overflow-auto max-h-[450px] relative">
+      <div className="overflow-auto max-h-[450px] rounded-md relative">
         <table className="w-full text-sm text-left border-spacing-x-4">
-          <thead className="sticky top-0 bg-white z-20">
-            <tr className="text-gray-700">
+          <thead className="sticky top-0 bg-gradient-to-r from-blue-500 to-blue-600 z-20">
+            <tr className="text-white">
               <th className="px-4 py-3 border border-gray-200">
                 <div className="flex items-center space-x-2">
                   <input
@@ -308,57 +308,57 @@ const DataTable = ({
                       currentRecords.length > 0
                     }
                     onChange={(e) => toggleSelectAll(e.target.checked)}
-                    className="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
+                    className="form-checkbox h-5 w-5  rounded focus:ring-blue-500"
                   />
-                  <span className="text-sm font-semibold text-gray-700">
+                  <span className="text-sm font-semibold ">
                     Selected ({selectedRows.length})
                   </span>
                 </div>
               </th>
               <th className="px-4 py-3 border border-gray-200">
                 <div className="flex items-center space-x-2">
-                  <FaUserCog className="text-blue-600 w-5 h-5" />
-                  <span className="text-sm font-semibold text-gray-700">
+                  <FaUserCog className="w-5 h-5" />
+                  <span className="text-sm font-semibold ">
                     Action
                   </span>
                 </div>
               </th>
               <th className="px-4 py-3 border border-gray-200">
                 <div className="flex items-center space-x-2">
-                  <FaUser className="text-purple-600 w-5 h-5" />
-                  <span className="text-sm font-semibold text-gray-700">
+                  <FaUser className="w-5 h-5" />
+                  <span className="text-sm font-semibold">
                     Contact
                   </span>
                 </div>
               </th>
               <th className="px-4 py-3 border border-gray-200">
                 <div className="flex items-center space-x-2">
-                  <FaUsers className="text-green-600 w-5 h-5" />
-                  <span className="text-sm font-semibold text-gray-700">
+                  <FaUsers className=" w-5 h-5" />
+                  <span className="text-sm font-semibold">
                     Location
                   </span>
                 </div>
               </th>
               <th className="px-4 py-3 border border-gray-200">
                 <div className="flex items-center space-x-2">
-                  <FaFile className="text-blue-600 w-5 h-5" />
-                  <span className="text-sm font-semibold text-gray-700">
+                  <FaFile className="w-5 h-5" />
+                  <span className="text-sm font-semibold">
                     Details
                   </span>
                 </div>
               </th>
               <th className="px-4 py-3 border border-gray-200">
                 <div className="flex items-center space-x-2">
-                  <FaCheck className="text-green-600 w-5 h-5" />
-                  <span className="text-sm font-semibold text-gray-700">
+                  <FaCheck className="w-5 h-5" />
+                  <span className="text-sm font-semibold">
                     Status
                   </span>
                 </div>
               </th>
               <th className="px-4 py-3 border border-gray-200">
                 <div className="flex items-center space-x-2">
-                  <FaFile className="text-blue-600 w-5 h-5" />
-                  <span className="text-sm font-semibold text-gray-700">
+                  <FaFile className="w-5 h-5" />
+                  <span className="text-sm">
                     Logs
                   </span>
                 </div>
