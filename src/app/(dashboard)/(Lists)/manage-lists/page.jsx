@@ -535,7 +535,7 @@ const ManageLists = () => {
                   onClick={handleMerge}
                   className={`inline-flex items-center px-4 py-2 font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${
                     selectedLists.length < 2
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white "
                       : "bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700"
                   }`}
                   disabled={selectedLists.length < 2}
@@ -550,7 +550,7 @@ const ManageLists = () => {
                   onClick={handleRemove}
                   className={`inline-flex items-center px-4 py-2 font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${
                     selectedLists.length < 2
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      ? "bg-gradient-to-r from-amber-600 to-orange-600 text-white"
                       : "bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700"
                   }`}
                   disabled={selectedLists.length < 2}
@@ -926,7 +926,7 @@ const ManageLists = () => {
       <AnimatePresence>
         {isMergeModalOpen && (
           <motion.div
-            className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -1004,7 +1004,7 @@ const ManageLists = () => {
       <AnimatePresence>
         {isRemoveModalOpen && (
           <motion.div
-            className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
