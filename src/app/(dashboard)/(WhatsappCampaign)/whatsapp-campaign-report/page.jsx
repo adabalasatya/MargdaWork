@@ -375,7 +375,7 @@ const WhatsappReport = () => {
       {loading && <Loader />}
 
       {/* Main Content Container */}
-      <div className="w-full fixed max-w-6xl ml-12 mx-auto p-4 mt-2 h-[calc(90vh-20px)] flex flex-col gap-4">
+      <div className="w-full fixed md:max-w-5xl lg:max-w-6xl ml-12 mx-auto p-4 mt-2 h-[calc(90vh-20px)] flex flex-col gap-4">
         
         {/* Header - Now inside main container */}
         <div className="w-full p-4 rounded-md bg-white shadow-sm border-2 border-gray-200">
@@ -509,7 +509,7 @@ const WhatsappReport = () => {
                               e.stopPropagation();
                               handleAddToListClick(conv);
                             }}
-                            className="text-xs text-green-500 hover:text-green-600 bg-[#E6F0FA] px-2 py-1 rounded-full mt-1"
+                            className="text-xs text-green-500 hover:text-blue-600 bg-[#E6F0FA] px-2 py-1 rounded-full mt-1"
                           >
                             + Add to Task
                           </button>
@@ -541,7 +541,7 @@ const WhatsappReport = () => {
           >
             {selectedChat ? (
               <>
-                <div className="bg-blue-500 p-4 flex items-center justify-between text-white sticky top-0 z-10">
+                <div className="bg-green-500 p-4 flex items-center justify-between text-white sticky top-0 z-10">
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setSelectedChat(null)}

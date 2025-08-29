@@ -92,7 +92,7 @@ const Sidebar = ({ toggleSidebar }) => {
           icon: <FaArrowAltCircleRight />,
         },
         {
-          title: "Campaign Reports",
+          title: "Email  Reports",
           link: "/campaign-report",
           icon: <FaArrowAltCircleRight />,
         },
@@ -116,7 +116,7 @@ const Sidebar = ({ toggleSidebar }) => {
           icon: <FaArrowAltCircleRight />,
         },
         {
-          title: "Campaign Reports",
+          title: "WhatsApp Reports",
           link: "/whatsapp-campaign-report",
           icon: <FaArrowAltCircleRight />,
         },
@@ -138,7 +138,7 @@ const Sidebar = ({ toggleSidebar }) => {
         // { title: "SMS Lists", link: "/work/sms-lists", icon: <FaArrowAltCircleRight /> },
         // { title: "SMS Templates", link: "/work/Sms-templates", icon: <FaArrowAltCircleRight /> },
         {
-          title: "Campaign Reports",
+          title: "SMS Reports",
           link: "/sms-campaign-report",
           icon: <FaArrowAltCircleRight />,
         },
@@ -349,7 +349,7 @@ const Sidebar = ({ toggleSidebar }) => {
                 className={`
                   flex items-center px-4 py-2 text-[12px] font-medium
                   transition-all duration-200 ease-in-out
-                  border-l-4 border-transparent
+                  border border-transparent
                   ${isActive
                     ? `bg-gradient-to-r ${menu.color} text-white border-white shadow-md`
                     : `text-gray-700 hover:text-white ${hoverClasses} hover:border-white hover:shadow-md`
@@ -434,7 +434,7 @@ const Sidebar = ({ toggleSidebar }) => {
               <button
                 className={`
                   group relative overflow-hidden
-                  bg-gradient-to-r from-slate-600 to-slate-700
+                  bg-gradient-to-r from-blue-600 to-blue-700
                   hover:from-blue-600 hover:to-blue-700
                   text-white p-2 rounded-xl shadow-lg hover:shadow-xl
                   transform hover:scale-105 active:scale-95
