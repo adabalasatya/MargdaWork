@@ -265,10 +265,9 @@ const TemplatesList = () => {
                   />
                 </div>
 
-                <div className="relative">
-                  <FaFilter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <div className="flex">
                   <select
-                    className="pl-10 pr-8 py-2 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none transition-all appearance-none bg-white cursor-pointer"
+                    className="pl-6 pr-8 py-2 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none transition-all bg-white cursor-pointer"
                     value={templateFilter}
                     onChange={handleTemplateFilterChange}
                     disabled={allTemplates.length == 0}

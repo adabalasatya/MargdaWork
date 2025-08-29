@@ -285,7 +285,7 @@ const WhatsAppCon = ({ selectedLeads, setClose, userID, setSelectedLeads }) => {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 className="w-full bg-transparent border-none outline-none resize-none text-gray-800"
-                rows={6}
+                rows={4}
                 placeholder="Your WhatsApp message will appear here when you select a template..."
                 disabled={!selectedTemplate}
               />
@@ -303,7 +303,7 @@ const WhatsAppCon = ({ selectedLeads, setClose, userID, setSelectedLeads }) => {
                 id="remarks"
                 value={remarks}
                 onChange={(e) => setRemarks(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg  resize-none"
+                className="w-full px-3 py-0 border border-gray-300 rounded-lg  resize-none"
                 rows={3}
                 placeholder="Enter campaign remarks"
               />

@@ -443,10 +443,9 @@ const EmailReport = () => {
                   />
                 </div>
 
-                <div className="relative">
-                  <FiFilter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <div className="flex">
                   <select
-                    className="pl-10 pr-8 py-2 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none transition-all appearance-none bg-white cursor-pointer min-w-[180px]"
+                    className="pl-6 pr-10 py-2 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none transition-all bg-white cursor-pointer min-w-[180px]"
                     value={selectedCampaignID}
                     onChange={(e) => setSelectedCampaignID(e.target.value)}
                   >

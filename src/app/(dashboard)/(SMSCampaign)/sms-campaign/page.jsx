@@ -609,8 +609,8 @@ const SmsCampaign = () => {
               </div>
 
               {/* Right Controls */}
-              <div className="relative">
-                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400" />
+              <div className="flex">
+                <FiSearch className="relative left-8 top-5 transform -translate-y-1/3 text-purple-400" />
                 <input
                   type="text"
                   value={searchQuery}

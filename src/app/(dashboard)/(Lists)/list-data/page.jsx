@@ -670,7 +670,7 @@ const ListData = () => {
         <div className="relative flex items-center justify-between mb-4">
           <button
             onClick={handleBack}
-            className="flex items-center ml-2 text-white border border-gray-300 shadow-md p-1 rounded-md bg-blue-600 hover:scale-105 transition-all duration-200 text-sm"
+            className="flex items-center px-4 py-2 text-[12px] bg-white text-gray-700 border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm"
             aria-label="Go back to previous page"
           >
             <FaArrowLeft className="mr-2" size={12} />
@@ -679,9 +679,9 @@ const ListData = () => {
           <h1 className="text-2xl font-bold text-gray-900 text-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             Subscriber Lists
           </h1>
-          <div className="flex mr-2 items-center space-x-2">
+          <div className="relative mb-2 items-center space-x-2">
             <span className="text-lg font-medium text-gray-600">List:</span>
-            <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-semibold rounded-lg shadow">
+            <span className="px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-[10px] font-semibold rounded-lg shadow">
               {listData ? listData.name : "Loading..."}
             </span>
           </div>

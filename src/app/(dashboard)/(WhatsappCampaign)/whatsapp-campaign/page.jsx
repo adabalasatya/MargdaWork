@@ -613,8 +613,8 @@ const WhatsAppCampaign = () => {
               </div>
 
               {/* Right Controls */}
-              <div className="relative">
-                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-400" />
+              <div className="flex">
+                <FiSearch className="relative left-6 top-5 transform -translate-y-1/3 text-green-400" />
                 <input
                   type="text"
                   value={searchQuery}

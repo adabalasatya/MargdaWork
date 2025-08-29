@@ -138,7 +138,7 @@ const UserProfile = () => {
       </button>
 
       {isProfileMenuOpen && (
-        <div className="absolute right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 transform transition-all duration-300 ease-in-out cursor-pointer w-48">
+        <div className="absolute right-0  bg-white border border-gray-200 rounded-lg shadow-lg z-50 transform transition-all duration-300 ease-in-out cursor-pointer w-48">
           <div className="p-2 space-y-1">
             {userData && (
               <div className="px-1 py-3">

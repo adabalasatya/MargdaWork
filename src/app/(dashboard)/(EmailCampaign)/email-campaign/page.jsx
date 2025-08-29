@@ -491,7 +491,7 @@ const EmailCampaign = () => {
       {loading && <Loader />}
       
       {/* Header Section */}
-     <div className="max-w-7xl mx-auto mb-8">
+     <div className="max-w-7xl mx-auto mb-4">
   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
     <div className="flex items-center gap-4">
       <button
@@ -869,8 +869,8 @@ const EmailCampaign = () => {
               </div>
 
               {/* Right Controls */}
-              <div className="relative">
-                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400" />
+              <div className="flex">
+                <FiSearch className="relative left-6 top-5 transform -translate-y-1/3 text-blue-400" />
                 <input
                   type="text"
                   value={searchQuery}
