@@ -248,15 +248,17 @@ const DataTable = ({
     if (!buttonElement) return { top: 0, left: 0 };
     
     const buttonRect = buttonElement.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     const viewportHeight = window.innerHeight;
     const dropdownHeight = 200; // Approximate dropdown height
     
-    let top = buttonRect.bottom + window.scrollY;
-    let left = buttonRect.left + window.scrollX;
+    let top = buttonRect.bottom + scrollTop;
+    let left = buttonRect.left + scrollLeft;
     
     // Check if dropdown would go below viewport
     if (buttonRect.bottom + dropdownHeight > viewportHeight) {
-      top = buttonRect.top + window.scrollY - dropdownHeight;
+      top = buttonRect.top + scrollTop - dropdownHeight;
     }
     
     // Ensure dropdown doesn't go off screen horizontally
@@ -268,33 +270,59 @@ const DataTable = ({
     return { top, left };
   };
 
+  // Updated toggle function to ensure proper open/close behavior
   const toggleDropdown = (dataID, buttonElement) => {
+    // If clicking the same button when dropdown is already open, close it
     if (openDropdownId === dataID) {
       setOpenDropdownId(null);
     } else {
+      // If no dropdown is open or clicking a different button, open this one
       const position = calculateDropdownPosition(buttonElement);
       setDropdownPosition(position);
       setOpenDropdownId(dataID);
     }
   };
 
-  // Close dropdown when clicking outside
+  // Enhanced useEffect for handling outside clicks AND scroll
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (openDropdownId && dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        // Check if the click was on the button that opened this dropdown
+        const openButton = buttonRef.current;
+        if (openButton && !openButton.contains(event.target)) {
+          setOpenDropdownId(null);
+        }
+      }
+    };
+
+    const handleScroll = () => {
+      if (openDropdownId) {
         setOpenDropdownId(null);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+    const handleResize = () => {
+      if (openDropdownId) {
+        setOpenDropdownId(null);
+      }
     };
+
+    if (openDropdownId) {
+      document.addEventListener('mousedown', handleClickOutside);
+      window.addEventListener('scroll', handleScroll, true);
+      window.addEventListener('resize', handleResize);
+      
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        window.removeEventListener('scroll', handleScroll, true);
+        window.removeEventListener('resize', handleResize);
+      };
+    }
   }, [openDropdownId]);
 
   return (
     <div className="bg-white rounded-xl border-2 border-gray-200 shadow-md p-4 m-2 mt-3">
-      {/* SOLUTION 1: Using relative positioning with better overflow handling */}
+      {/* Table container with relative positioning */}
       <div className="overflow-auto max-h-[450px] rounded-md relative">
         <table className="w-full text-sm text-left border-spacing-x-4">
           <thead className="sticky top-0 bg-gradient-to-r from-blue-500 to-blue-600 z-20">
@@ -391,14 +419,22 @@ const DataTable = ({
                             buttonRef.current = el;
                           }
                         }}
-                        title="Actions"
-                        className="p-2 bg-gray-500 text-white rounded-full shadow-md hover:scale-105 transition-transform duration-200"
+                        title={openDropdownId === item.dataID ? "Close Menu" : "Open Actions"}
+                        className={`p-2 text-white rounded-full shadow-md hover:scale-105 transition-all duration-200 ${
+                          openDropdownId === item.dataID 
+                            ? 'bg-blue-600 ring-2 ring-blue-300' 
+                            : 'bg-gray-500 hover:bg-gray-600'
+                        }`}
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleDropdown(item.dataID, e.currentTarget);
                         }}
                       >
-                        <FaEllipsisH className="w-5 h-5" />
+                        <FaEllipsisH 
+                          className={`w-5 h-5 transition-transform duration-200 ${
+                            openDropdownId === item.dataID ? 'rotate-90' : ''
+                          }`} 
+                        />
                       </button>
                     </div>
                   </td>
@@ -543,16 +579,17 @@ const DataTable = ({
         </table>
       </div>
 
-      {/* Action Dropdown,table container */}
+      {/* Fixed Action Dropdown - Now uses absolute positioning */}
       {openDropdownId && (
         <div 
-          className="fixed z-[9999] w-48 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto"
+          ref={dropdownRef}
+          className="absolute z-[9999] w-48 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto"
           style={{
             top: `${dropdownPosition.top}px`,
             left: `${dropdownPosition.left}px`,
           }}
         >
-          <button
+          {/* <button
             className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
@@ -561,7 +598,7 @@ const DataTable = ({
             }}
           >
             <FaEye className="mr-2 text-blue-500" /> View
-          </button>
+          </button> */}
           <button
             className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
             onClick={(e) => {
