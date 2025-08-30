@@ -62,20 +62,6 @@ const QrScanPage = () => {
     }
   }, [router]);
 
-  useEffect(() => {
-  if (!userID) return;
-
-  // fetch on mount
-  fetchProfiles(userID);
-
-  // check every 3s
-  const interval = setInterval(() => {
-    fetchProfiles(userID);
-  }, 3000);
-
-  return () => clearInterval(interval);
-}, [userID]);
-
   const getInstance = async () => {
     setLoading(true);
     try {
@@ -131,9 +117,9 @@ const QrScanPage = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        "https://www.margda.in/miraj/whatsapp/scan/remove-account",
+        "https://www.margda.in/miraj/whatsapp/scan/delete-profile",
         {
-          method: "POST",
+          method: "DELETE",
           headers: {
             "Content-Type": "application/json",
           },

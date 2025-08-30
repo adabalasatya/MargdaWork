@@ -1,8 +1,7 @@
 'use client';
-
 import React, { useEffect, useState, useMemo } from "react";
 import { Eye, EyeOff, ArrowLeft, Edit, MailIcon, Trash2, Plus, Server, Shield, Settings } from "lucide-react";
-import { FaEnvelope, FaServer, FaAws, FaMicrosoft, FaGoogle, FaCog, FaTrash, FaEdit, FaEye, FaPlus, FaSearch, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaEnvelope, FaServer, FaAws, FaMicrosoft, FaGoogle, FaCog, FaTrash, FaEdit, FaEye, FaPlus, FaSearch, FaChevronLeft, FaChevronRight, FaTimes } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -44,7 +43,6 @@ const SOURCE_PROVIDERS = {
 
 const EmailCredentials = () => {
   const router = useRouter();
-
   const initialFormData = {
     name: "",
     from_name: "",
@@ -71,6 +69,8 @@ const EmailCredentials = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [userID, setUserID] = useState("");
+  // New state for form visibility
+  const [showForm, setShowForm] = useState(false);
 
   const getUserData = () => {
     if (typeof window !== 'undefined') {
@@ -117,7 +117,6 @@ const EmailCredentials = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
     setFormData((prev) => {
       const newFormData = { ...prev, [name]: value };
       if (name === "source") {
@@ -132,7 +131,6 @@ const EmailCredentials = () => {
       }
       return newFormData;
     });
-
     if (validationErrors[name]) {
       setValidationErrors((prev) => ({ ...prev, [name]: undefined }));
     }
@@ -148,6 +146,7 @@ const EmailCredentials = () => {
       errors.from_email = "Valid from email is required";
     if (!formData.reply_email || !emailRegex.test(formData.reply_email))
       errors.reply_email = "Valid reply email is required";
+
     if (formData.source === "A") {
       if (!formData.aws_id.trim()) errors.aws_id = "AWS ID is required";
       if (!formData.aws_secret.trim()) errors.aws_secret = "AWS Secret is required";
@@ -168,8 +167,8 @@ const EmailCredentials = () => {
       toast.warn("Please review the form for errors.", { toastId: "form_error" });
       return;
     }
-    setLoading(true);
 
+    setLoading(true);
     const payload = {
       userID,
       name: formData.name,
@@ -204,6 +203,8 @@ const EmailCredentials = () => {
         fetchData(userID);
         setFormData(initialFormData);
         setValidationErrors({});
+        // Close form after successful save
+        setShowForm(false);
       } else {
         toast.error(data.message || "Failed to add provider.");
       }
@@ -220,8 +221,8 @@ const EmailCredentials = () => {
       toast.warn("Please review the form for errors.", { toastId: "form_error" });
       return;
     }
-    setLoading(true);
 
+    setLoading(true);
     const payload = {
       credID: editCredentialId,
       name: formData.name,
@@ -254,6 +255,8 @@ const EmailCredentials = () => {
         setValidationErrors({});
         setEditMode(false);
         setEditCredentialId(null);
+        // Close form after successful update
+        setShowForm(false);
       } else {
         toast.error(data.message || "Failed to update provider.");
       }
@@ -266,6 +269,12 @@ const EmailCredentials = () => {
   };
 
   const handleEdit = (item) => {
+    // Show toast message when editing
+    toast.info(`Editing provider: ${item.name}`, { 
+      toastId: "edit_provider",
+      autoClose: 2000 
+    });
+
     setFormData({
       name: item.name || "",
       from_name: item.from_name || "",
@@ -283,6 +292,8 @@ const EmailCredentials = () => {
     setEditCredentialId(item.credID);
     setEditMode(true);
     setValidationErrors({});
+    // Show form when editing
+    setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -330,6 +341,26 @@ const EmailCredentials = () => {
     }
   };
 
+ // Toggle form visibility
+const handleToggleForm = () => {
+  if (showForm) {
+    // Closing the form → reset everything
+    setShowForm(false);
+    setEditMode(false);
+    setEditCredentialId(null);
+    setFormData(initialFormData);
+    setValidationErrors({});
+  } else {
+    // Opening the form → reset everything too
+    setShowForm(true);
+    setEditMode(false);
+    setEditCredentialId(null);
+    setFormData(initialFormData);
+    setValidationErrors({});
+  }
+};
+
+
   const renderInput = (name, label, placeholder, type = "text", icon = null) => (
     <div>
       <label htmlFor={name} className="block text-sm font-semibold text-gray-700 mb-2">
@@ -343,7 +374,7 @@ const EmailCredentials = () => {
         value={formData[name]}
         onChange={handleInputChange}
         placeholder={placeholder}
-        className={`w-full px-4 py-3 border-2 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none ${
+        className={`w-full px-4 py-2 border-2  text-sm rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none ${
           validationErrors[name] ? "border-red-300 bg-red-50" : "border-gray-200 hover:border-gray-300"
         }`}
       />
@@ -376,7 +407,7 @@ const EmailCredentials = () => {
   };
 
   return (
-    <div className="min-h-screen  py-6 px-4">
+    <div className="min-h-screen py-6 px-4">
       <ToastContainer 
         position="top-right" 
         autoClose={4000} 
@@ -387,247 +418,278 @@ const EmailCredentials = () => {
       {/* Header Section */}
       <div className="max-w-7xl mx-auto mb-4">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-  {/* Left: Back button */}
-  <div className="flex items-center">
-    <button
-      onClick={() => router.back()}
-      className="flex items-center px-4 py-2 bg-white text-gray-700 border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm"
-    >
-      <ArrowLeft className="mr-2" size={16} />
-      Back
-    </button>
-  </div>
-
-  {/* Center: Title */}
-  <div className="flex items-center justify-center flex-1">
-    <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
-      <FaEnvelope className="text-white text-md" />
-    </div>
-    <h1 className="text-2xl font-bold text-gray-800">Email Service Providers</h1>
-  </div>
-
-  {/* (Optional) Right side placeholder for symmetry */}
-  <div className="w-16"></div>
-</div>
+          {/* Left: Back button */}
+          <div className="flex items-center">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center px-4 py-2 bg-white text-sm text-gray-700 border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm"
+            >
+              <ArrowLeft className="mr-2" size={13} />
+              Back
+            </button>
+          </div>
+          
+          {/* Center: Title */}
+          <div className="flex items-center justify-center flex-1">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
+              <FaEnvelope className="text-white text-md" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-800">Email Service Providers</h1>
+          </div>
+          
+          {/* Right: Add New Email Provider Button */}
+          <div className="flex items-center">
+            <button
+              onClick={handleToggleForm}
+              className={`flex items-center px-6 py-2 tex-[12px] font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${
+                showForm 
+                  ? "bg-red-500 hover:bg-red-600 text-white" 
+                  : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
+              }`}
+            >
+              {showForm ? (
+                <>
+                  <FaTimes className="mr-2" size={16} />
+                  Close Form
+                </>
+              ) : (
+                <>
+                  <FaPlus className="mr-2" size={16} />
+                  Add New Email Provider
+                </>
+              )}
+            </button>
+          </div>
+        </div>
 
         {/* Stats Cards */}
-{/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-  <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100">
-    <div className="flex items-center">
-      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-        <FaServer className="text-blue-600 text-lg" />
-      </div>
-      <div className="ml-3">
-        <p className="text-xs text-gray-600">Total Providers</p>
-        <p className="text-lg font-bold text-gray-800">{credentials.length}</p>
-      </div>
-    </div>
-  </div>
-
-  <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100">
-    <div className="flex items-center">
-      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-        <Shield className="text-green-600 text-lg" />
-      </div>
-      <div className="ml-3">
-        <p className="text-xs text-gray-600">Active Configs</p>
-        <p className="text-lg font-bold text-gray-800">{credentials.length}</p>
-      </div>
-    </div>
-  </div>
-
-  <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100">
-    <div className="flex items-center">
-      <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-        <Settings className="text-purple-600 text-lg" />
-      </div>
-      <div className="ml-3">
-        <p className="text-xs text-gray-600">Ready to Use</p>
-        <p className="text-lg font-bold text-gray-800">{credentials.length}</p>
-      </div>
-    </div>
-  </div>
-</div> */}
-
+        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100">
+            <div className="flex items-center">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <FaServer className="text-blue-600 text-lg" />
+              </div>
+              <div className="ml-3">
+                <p className="text-xs text-gray-600">Total Providers</p>
+                <p className="text-lg font-bold text-gray-800">{credentials.length}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100">
+            <div className="flex items-center">
+              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <Shield className="text-green-600 text-lg" />
+              </div>
+              <div className="ml-3">
+                <p className="text-xs text-gray-600">Active Configs</p>
+                <p className="text-lg font-bold text-gray-800">{credentials.length}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100">
+            <div className="flex items-center">
+              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                <Settings className="text-purple-600 text-lg" />
+              </div>
+              <div className="ml-3">
+                <p className="text-xs text-gray-600">Ready to Use</p>
+                <p className="text-lg font-bold text-gray-800">{credentials.length}</p>
+              </div>
+            </div>
+          </div>
+        </div> */}
       </div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto space-y-8">
         
-        {/* Form Card */}
-        <div className="bg-white rounded-3xl shadow-md border border-gray-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-3">
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-blue-500 bg-opacity-20 rounded-full flex items-center justify-center mr-3">
-                {editMode ? <FaEdit /> : <FaPlus />}
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold">
-                  {editMode ? "Edit Email Provider" : "Add New Email Provider"}
-                </h2>
-                <p className="text-blue-100 mt-1">
-                  {editMode ? "Update your email provider configuration" : "Configure a new email service provider"}
-                </p>
+        {/* Animated Form Card */}
+        <div className={`transition-all duration-500 ease-in-out transform ${
+          showForm 
+            ? 'opacity-100 translate-y-0 max-h-none' 
+            : 'opacity-0 -translate-y-10 max-h-0 overflow-hidden'
+        }`}>
+          <div className="bg-white rounded-3xl shadow-md border border-gray-200 overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 bg-blue-500 bg-opacity-20 rounded-full flex items-center justify-center mr-3">
+                    {editMode ? <FaEdit /> : <FaPlus />}
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold">
+                      {editMode ? "Edit Email Provider" : "Add New Email Provider"}
+                    </h2>
+                    <p className="text-blue-100 mt-1">
+                      {editMode ? "Update your email provider configuration" : "Configure a new email service provider"}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleToggleForm}
+                  className="w-8 h-8 bg-blue-400 bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition-all"
+                >
+                  <FaTimes className="text-white text-sm" />
+                </button>
               </div>
             </div>
-          </div>
-
-          <div className="p-6">
-            <div className="space-y-8">
-              
-              {/* Sender Information Section */}
-              <div>
-                <div className="flex items-center mb-4">
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-3">1</div>
-                  <h3 className="text-xl font-bold text-gray-800">Sender Information</h3>
-                </div>
+            <div className="p-5">
+              <div className="space-y-8">
                 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {renderInput("name", "Provider Name", "e.g., Marketing Team Brand")}
-                  {renderInput("from_name", "From Name", "e.g., Miraj from Margda")}
-                  {renderInput("from_email", "From Email", "name@domain.com", "email")}
-                  {renderInput("reply_email", "Reply-To Email", "reply@domain.com", "email")}
+                {/* Sender Information Section */}
+                <div>
+                  <div className="flex items-center mb-4">
+                    <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-3">1</div>
+                    <h3 className="text-md font-bold text-gray-800">Sender Information</h3>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {renderInput("name", "Provider Name", "e.g., Marketing Team Brand")}
+                    {renderInput("from_name", "From Name", "e.g., Miraj from Margda")}
+                    {renderInput("from_email", "From Email", "name@domain.com", "email")}
+                    {renderInput("reply_email", "Reply-To Email", "reply@domain.com", "email")}
+                  </div>
                 </div>
-              </div>
 
-              {/* Connection Settings Section */}
-              <div>
-                <div className="flex items-center mb-6">
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-3">2</div>
-                  <h3 className="text-xl font-bold text-gray-800">Connection Settings</h3>
-                </div>
-                
-                <div className="space-y-6">
-                  {/* Email Source Selection */}
-                  <div>
-                    <label htmlFor="source" className="block text-sm font-semibold text-gray-700 mb-3">
-                      Email Service Provider <span className="text-red-500">*</span>
-                    </label>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      {Object.entries(SOURCE_PROVIDERS).map(([key, provider]) => {
-                        const IconComponent = provider.icon;
-                        const isSelected = formData.source === key;
-                        return (
-                          <div
-                            key={key}
-                            onClick={() => handleInputChange({ target: { name: 'source', value: key } })}
-                            className={`cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 ${
-                              isSelected 
-                                ? 'border-blue-500 bg-blue-50 shadow-md' 
-                                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                            }`}
-                          >
-                            <div className="flex items-center">
-                              <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-3 ${
-                                isSelected ? provider.bgColor : 'bg-gray-100'
-                              }`}>
-                                <IconComponent className={`text-lg ${isSelected ? provider.color : 'text-gray-600'}`} />
-                              </div>
-                              <div>
-                                <p className={`font-semibold ${isSelected ? 'text-blue-800' : 'text-gray-800'}`}>
-                                  {provider.name}
-                                </p>
+                {/* Connection Settings Section */}
+                <div>
+                  <div className="flex items-center mb-6">
+                    <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-3">2</div>
+                    <h3 className="text-md font-bold text-gray-800">Connection Settings</h3>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    {/* Email Source Selection */}
+                    <div>
+                      <label htmlFor="source" className="block text-sm font-semibold text-gray-700 mb-2">
+                        Email Service Provider <span className="text-red-500">*</span>
+                      </label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {Object.entries(SOURCE_PROVIDERS).map(([key, provider]) => {
+                          const IconComponent = provider.icon;
+                          const isSelected = formData.source === key;
+                          return (
+                            <div
+                              key={key}
+                              onClick={() => handleInputChange({ target: { name: 'source', value: key } })}
+                              className={`cursor-pointer p-2 rounded-xl border-2 transition-all duration-200 ${
+                                isSelected 
+                                  ? 'border-blue-500 bg-blue-50 shadow-md' 
+                                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                              }`}
+                            >
+                              <div className="flex items-center">
+                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-3 ${
+                                  isSelected ? provider.bgColor : 'bg-gray-100'
+                                }`}>
+                                  <IconComponent className={`text-lg ${isSelected ? provider.color : 'text-gray-600'}`} />
+                                </div>
+                                <div>
+                                  <p className={`font-semibold ${isSelected ? 'text-blue-800' : 'text-gray-800'}`}>
+                                    {provider.name}
+                                  </p>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Provider-specific Configuration */}
-                  {formData.source === "A" ? (
-                    <div className="bg-orange-50 p-6 rounded-2xl border border-orange-200">
-                      <div className="flex items-center mb-4">
-                        <FaAws className="text-orange-600 text-xl mr-2" />
-                        <h4 className="text-lg font-semibold text-orange-800">AWS SES Configuration</h4>
-                      </div>
-                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {renderInput("aws_region", "AWS Region", "e.g., us-east-1")}
-                        {renderInput("aws_id", "AWS Access Key ID", "Your AWS Access Key")}
-                        {renderInput("aws_secret", "AWS Secret Access Key", "Your AWS Secret Key", "password")}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-blue-50 p-6 rounded-2xl border border-blue-200">
-                      <div className="flex items-center mb-4">
-                        <FaServer className="text-blue-600 text-xl mr-2" />
-                        <h4 className="text-lg font-semibold text-blue-800">SMTP Configuration</h4>
-                      </div>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {renderInput("smtp_host", "SMTP Host", "e.g., smtp.gmail.com")}
-                        {renderInput("smtp_port", "SMTP Port", "e.g., 465", "number")}
-                      </div>
-                      
-                      <div className="mt-6">
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Password <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <input
-                            type={showPassword ? "text" : "password"}
-                            name="password"
-                            value={formData.password}
-                            onChange={handleInputChange}
-                            placeholder={editMode ? "Enter new password" : "Your email or app password"}
-                            className={`w-full px-4 py-3 border-2 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none pr-12 ${
-                              validationErrors.password ? "border-red-300 bg-red-50" : "border-gray-200 hover:border-gray-300"
-                            }`}
-                          />
-                          <button
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute inset-y-0 right-0 px-4 flex items-center text-gray-500 hover:text-gray-700 transition-colors"
-                            type="button"
-                          >
-                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                          </button>
+                    {/* Provider-specific Configuration */}
+                    {formData.source === "A" ? (
+                      <div className="bg-orange-50 p-6 rounded-2xl border border-orange-200">
+                        <div className="flex items-center mb-4">
+                          <FaAws className="text-orange-600 text-xl mr-2" />
+                          <h4 className="text-lg font-semibold text-orange-800">AWS SES Configuration</h4>
                         </div>
-                        {validationErrors.password && (
-                          <p className="mt-2 text-sm text-red-600 flex items-center">
-                            <span className="mr-1">⚠</span>
-                            {validationErrors.password}
-                          </p>
-                        )}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                          {renderInput("aws_region", "AWS Region", "e.g., us-east-1")}
+                          {renderInput("aws_id", "AWS Access Key ID", "Your AWS Access Key")}
+                          {renderInput("aws_secret", "AWS Secret Access Key", "Your AWS Secret Key", "password")}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="bg-blue-50 p-6 rounded-2xl border border-blue-200">
+                        <div className="flex items-center mb-4">
+                          <FaServer className="text-blue-600 text-xl mr-2" />
+                          <h4 className="text-lg font-semibold text-blue-800">SMTP Configuration</h4>
+                        </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                          {renderInput("smtp_host", "SMTP Host", "e.g., smtp.gmail.com")}
+                          {renderInput("smtp_port", "SMTP Port", "e.g., 465", "number")}
+                        </div>
+                        
+                        <div className="mt-6">
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Password <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <input
+                              type={showPassword ? "text" : "password"}
+                              name="password"
+                              value={formData.password}
+                              onChange={handleInputChange}
+                              placeholder={editMode ? "Enter new password" : "Your email or app password"}
+                              className={`w-full px-4 py-3 border-2 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none pr-12 ${
+                                validationErrors.password ? "border-red-300 bg-red-50" : "border-gray-200 hover:border-gray-300"
+                              }`}
+                            />
+                            <button
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute inset-y-0 right-0 px-4 flex items-center text-gray-500 hover:text-gray-700 transition-colors"
+                              type="button"
+                            >
+                              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                            </button>
+                          </div>
+                          {validationErrors.password && (
+                            <p className="mt-2 text-sm text-red-600 flex items-center">
+                              <span className="mr-1">⚠</span>
+                              {validationErrors.password}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t border-gray-200 mt-8">
-              {editMode && (
-                <button
-                  onClick={() => {
-                    setEditMode(false);
-                    setEditCredentialId(null);
-                    setFormData(initialFormData);
-                    setValidationErrors({});
-                  }}
-                  disabled={loading}
-                  className="flex items-center justify-center px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-200 border-2 border-gray-200 hover:border-gray-300 disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-              )}
-              <button
-                onClick={editMode ? handleEditCredential : handleSave}
-                disabled={loading}
-                className="flex-1 flex items-center justify-center px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-              >
-                {loading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    {editMode ? "Updating..." : "Saving..."}
-                  </>
-                ) : (
-                  <>
-                    {editMode ? <FaEdit className="mr-2" /> : <FaPlus className="mr-2" />}
-                    {editMode ? "Update Provider" : "Save Provider"}
-                  </>
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t border-gray-200 mt-8">
+                {editMode && (
+                  <button
+                    onClick={() => {
+                      setEditMode(false);
+                      setEditCredentialId(null);
+                      setFormData(initialFormData);
+                      setValidationErrors({});
+                    }}
+                    disabled={loading}
+                    className="flex items-center justify-center px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all duration-200 border-2 border-gray-200 hover:border-gray-300 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
                 )}
-              </button>
+                <button
+                  onClick={editMode ? handleEditCredential : handleSave}
+                  disabled={loading}
+                  className="flex-1 flex items-center justify-center px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                >
+                  {loading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      {editMode ? "Updating..." : "Saving..."}
+                    </>
+                  ) : (
+                    <>
+                      {editMode ? <FaEdit className="mr-2" /> : <FaPlus className="mr-2" />}
+                      {editMode ? "Update Provider" : "Save Provider"}
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -636,13 +698,10 @@ const EmailCredentials = () => {
         <div className="bg-white rounded-3xl shadow-md border border-gray-200 overflow-hidden">
           <div className="bg-gradient-to-r from-gray-50 to-white p-6 border-b border-gray-200">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-800">Your Email Providers</h2>
-                <p className="text-gray-600 mt-1">Manage your configured email service providers</p>
-              </div>
-              
+             
               {credentials.length > 0 && (
-                <div className="flex items-center gap-4">
+                <div className="flex items-center justify-between gap-4 w-full">
+                  {/* Left: Show Records */}
                   <div className="flex items-center gap-2">
                     <label className="text-sm font-semibold text-gray-700">Show</label>
                     <select 
@@ -657,6 +716,7 @@ const EmailCredentials = () => {
                     <span className="text-sm font-semibold text-gray-700">records</span>
                   </div>
                   
+                  {/* Right: Search Bar */}
                   <div className="relative">
                     <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400" />
                     <input
@@ -671,7 +731,7 @@ const EmailCredentials = () => {
               )}
             </div>
           </div>
-
+          
           <div className="p-6">
             {credentials.length > 0 ? (
               <>

@@ -494,7 +494,7 @@ const SmsCampaign = () => {
 
 
        {/* Stats Cards */}
-{/* <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+<div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
   <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100">
     <div className="flex items-center">
       <div className="w-9 h-9 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -502,7 +502,7 @@ const SmsCampaign = () => {
       </div>
       <div className="ml-3">
         <p className="text-xs text-gray-600">Total Campaigns</p>
-        <p className="text-lg font-semibold text-gray-800">{totalCampaigns}</p>
+         <p className="text-lg font-bold text-gray-800">{campaigns.length}</p>
       </div>
     </div>
   </div>
@@ -514,7 +514,7 @@ const SmsCampaign = () => {
       </div>
       <div className="ml-3">
         <p className="text-xs text-gray-600">Messages Sent</p>
-        <p className="text-lg font-semibold text-gray-800">{totalSuccess.toLocaleString()}</p>
+       {campaigns.reduce((sum, campaign) => sum + (parseInt(campaign.smsSent) || 0), 0).toLocaleString()}
       </div>
     </div>
   </div>
@@ -526,7 +526,9 @@ const SmsCampaign = () => {
       </div>
       <div className="ml-3">
         <p className="text-xs text-gray-600">Success Rate</p>
-        <p className="text-lg font-semibold text-gray-800">{avgSuccess}%</p>
+        {campaigns.length > 0 
+            ? `${Math.round((campaigns.reduce((sum, campaign) => sum + (parseInt(campaign.smsSent) || 0), 0) / campaigns.reduce((sum, campaign) => sum + (parseInt(campaign.smsSent) || 0), 0)) * 100) || 0}%`
+            : '0%'}
       </div>
     </div>
   </div>
@@ -542,7 +544,7 @@ const SmsCampaign = () => {
       </div>
     </div>
   </div>
-</div> */}
+</div>
 
       </div>
 
@@ -623,7 +625,7 @@ const SmsCampaign = () => {
           </div>
 
           {/* Table Content */}
-          <div className="p-6">
+          <div className="p-5">
             {loading ? (
               <div className="flex items-center justify-center py-16">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mr-4"></div>
@@ -704,7 +706,7 @@ const SmsCampaign = () => {
                           </td>
                           <td className="px-6 py-4 text-center">
                             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800 font-medium">
-                              {campaign.success || "0"}
+                              {campaign.smsSent || "0"}
                             </span>
                           </td>
                           <td className="px-6 py-4">
@@ -785,7 +787,7 @@ const SmsCampaign = () => {
                       <div className="flex justify-between items-center pt-4 border-t border-gray-100">
                         <div className="text-center">
                           <p className="text-xs text-gray-500">Success</p>
-                          <p className="font-semibold text-purple-600">{campaign.success || "0"}</p>
+                          <p className="font-semibold text-purple-600">{campaign.smsSent || "0"}</p>
                         </div>
                       </div>
                     </div>

@@ -443,7 +443,7 @@ const ManageTasks = () => {
                   setIsModalOpen(true);
                 }}
                 disabled={isLoading}
-                className="inline-flex items-center px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50"
+                className="inline-flex items-center px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50"
               >
                 <FaPlus className="mr-2" size={16} />
                 Add New Task
@@ -528,10 +528,10 @@ const ManageTasks = () => {
                                   whileTap={{ scale: 0.9 }}
                                   onClick={() => handleEdit(item)}
                                   disabled={isLoading}
-                                  className="w-8 h-8 bg-indigo-100 hover:bg-indigo-200 rounded-full flex items-center justify-center transition-all disabled:opacity-50"
+                                  className="w-8 h-8 bg-blue-100 hover:bg-blue-200 rounded-full flex items-center justify-center transition-all disabled:opacity-50"
                                   title="Edit Task"
                                 >
-                                  <FiEdit className="text-indigo-600 text-sm" />
+                                  <FiEdit className="text-blue-600 text-sm" />
                                 </motion.button>
                                 <motion.button
                                   whileHover={{ scale: 1.1 }}
@@ -574,9 +574,9 @@ const ManageTasks = () => {
                           <button
                             onClick={() => handleEdit(item)}
                             disabled={isLoading}
-                            className="w-10 h-10 bg-indigo-100 hover:bg-indigo-200 rounded-xl flex items-center justify-center transition-all disabled:opacity-50"
+                            className="w-10 h-10 bg-blue-100 hover:bg-blue-200 rounded-xl flex items-center justify-center transition-all disabled:opacity-50"
                           >
-                            <FiEdit className="text-indigo-600" />
+                            <FiEdit className="text-blue-600" />
                           </button>
                           <button
                             onClick={() => handleDelete(item.taskID)}
@@ -662,13 +662,13 @@ const ManageTasks = () => {
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-6">
+              <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-2xl font-bold">
                       {editTask ? "Edit Task" : "Create New Task"}
                     </h2>
-                    <p className="text-indigo-100 mt-1">
+                    <p className="text-blue-100 mt-1">
                       {editTask ? "Update task information" : "Add a new task to your list"}
                     </p>
                   </div>
@@ -694,7 +694,7 @@ const ManageTasks = () => {
                       value={taskName}
                       onChange={handleInputChange}
                       placeholder="Enter task name"
-                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 focus:outline-none transition-all duration-200"
+                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none transition-all duration-200"
                       autoFocus
                       disabled={isLoading}
                     />
@@ -725,7 +725,7 @@ const ManageTasks = () => {
                     whileTap={{ scale: 0.98 }}
                     onClick={handleSubmit}
                     disabled={isLoading}
-                    className="flex-1 flex items-center justify-center px-8 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    className="flex-1 flex items-center justify-center px-8 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                   >
                     {isLoading ? (
                       <>

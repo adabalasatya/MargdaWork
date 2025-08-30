@@ -77,6 +77,7 @@ const EmailCampaign = () => {
 
       if (response.ok) {
         const data = await response.json();
+        console.log(data)
         setCampaigns(data.data || []);
       } else {
         setCampaigns([]);
@@ -523,7 +524,7 @@ const EmailCampaign = () => {
 
         
         {/* Stats Cards */}
-{/* <div className="grid grid-cols-1 md:grid-cols-4 py-1 px-4 gap-4 mt-4">
+<div className="grid grid-cols-1 md:grid-cols-4 py-1 px-4 gap-4 mt-4">
   
   <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100">
     <div className="flex items-center">
@@ -543,9 +544,9 @@ const EmailCampaign = () => {
         <FiMail className="text-green-600 text-lg" />
       </div>
       <div className="ml-3">
-        <p className="text-xs text-gray-600">Emails Sent</p>
+        <p className="text-xs text-gray-600">Total Sent</p>
         <p className="text-lg font-bold text-gray-800">
-          {campaigns.reduce((sum, campaign) => sum + (parseInt(campaign.emails) || 0), 0).toLocaleString()}
+          {campaigns.reduce((sum, campaign) => sum + (parseInt(campaign.emailsSent) || 0), 0).toLocaleString()}
         </p>
       </div>
     </div>
@@ -559,7 +560,7 @@ const EmailCampaign = () => {
       <div className="ml-3">
         <p className="text-xs text-gray-600">Total Opens</p>
         <p className="text-lg font-bold text-gray-800">
-          {campaigns.reduce((sum, campaign) => sum + (parseInt(campaign.opened) || 0), 0).toLocaleString()}
+          {campaigns.reduce((sum, campaign) => sum + (parseInt(campaign.emailsOpened) || 0), 0).toLocaleString()}
         </p>
       </div>
     </div>
@@ -574,13 +575,13 @@ const EmailCampaign = () => {
         <p className="text-xs text-gray-600">Open Rate</p>
         <p className="text-lg font-bold text-gray-800">
           {campaigns.length > 0 
-            ? `${Math.round((campaigns.reduce((sum, campaign) => sum + (parseInt(campaign.opened) || 0), 0) / campaigns.reduce((sum, campaign) => sum + (parseInt(campaign.emails) || 0), 0)) * 100) || 0}%`
+            ? `${Math.round((campaigns.reduce((sum, campaign) => sum + (parseInt(campaign.emailsOpened) || 0), 0) / campaigns.reduce((sum, campaign) => sum + (parseInt(campaign.emailsSent) || 0), 0)) * 100) || 0}%`
             : '0%'}
         </p>
       </div>
     </div>
   </div>
-</div> */}
+</div>
       </div>
 
       {/* Modal for Campaign Form */}
@@ -883,7 +884,7 @@ const EmailCampaign = () => {
           </div>
 
           {/* Table Content */}
-          <div className="p-6">
+          <div className="p-5">
             {loading ? (
               <div className="flex items-center justify-center py-16">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mr-4"></div>
@@ -922,10 +923,10 @@ const EmailCampaign = () => {
                         <th className="px-6 py-4 text-left font-semibold">ESP</th>
                         <th className="px-6 py-4 text-left font-semibold">Template</th>
                         <th className="px-6 py-4 text-left font-semibold">List</th>
-                        <th className="px-6 py-4 text-center font-semibold">Emails</th>
+                        <th className="px-6 py-4 text-center font-semibold">Sent</th>
                         <th className="px-6 py-4 text-center font-semibold">Opened</th>
-                        <th className="px-6 py-4 text-center font-semibold">Unsubscribe</th>
-                        <th className="px-6 py-4 text-center font-semibold">Bounce</th>
+                        {/* <th className="px-6 py-4 text-center font-semibold">Unsubscribe</th>
+                        <th className="px-6 py-4 text-center font-semibold">Bounce</th> */}
                         <th className="px-6 py-4 text-center font-semibold">Actions</th>
                       </tr>
                     </thead>
@@ -971,24 +972,24 @@ const EmailCampaign = () => {
                           </td>
                           <td className="px-6 py-4 text-center">
                             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800 font-medium">
-                              {campaign.emails || "0"}
+                              {campaign.emailsSent || "0"}
                             </span>
                           </td>
                           <td className="px-6 py-4 text-center">
                             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800 font-medium">
-                              {campaign.opened || "0"}
+                              {campaign.emailsOpened || "0"}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-center">
+                          {/* <td className="px-6 py-4 text-center">
                             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-yellow-100 text-yellow-800 font-medium">
-                              {campaign.unsubscribe || "0"}
+                              {campaign.emailsUnsub || "0"}
                             </span>
                           </td>
                           <td className="px-6 py-4 text-center">
                             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-red-100 text-red-800 font-medium">
                               {campaign.bounce || "0"}
                             </span>
-                          </td>
+                          </td> */}
                           <td className="px-6 py-4">
                             <div className="flex justify-center items-center gap-2">
                               <button
@@ -1068,16 +1069,16 @@ const EmailCampaign = () => {
                         <div className="flex gap-4">
                           <div className="text-center">
                             <p className="text-xs text-gray-500">Sent</p>
-                            <p className="font-semibold text-blue-600">{campaign.emails || "0"}</p>
+                            <p className="font-semibold text-blue-600">{campaign.emailsSent || "0"}</p>
                           </div>
                           <div className="text-center">
                             <p className="text-xs text-gray-500">Opens</p>
-                            <p className="font-semibold text-green-600">{campaign.opened || "0"}</p>
+                            <p className="font-semibold text-green-600">{campaign.emailsOpened || "0"}</p>
                           </div>
-                          <div className="text-center">
+                          {/* <div className="text-center">
                             <p className="text-xs text-gray-500">Bounces</p>
                             <p className="font-semibold text-red-600">{campaign.bounce || "0"}</p>
-                          </div>
+                          </div> */}
                         </div>
                       </div>
                     </div>

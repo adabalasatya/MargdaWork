@@ -126,7 +126,7 @@ const Sidebar = ({ toggleSidebar }) => {
     {
       name: "SMS/RCM Campaign",
       icon: <FaSms />,
-      color: "from-orange-500 to-orange-600",
+      color: "from-purple-500 to-violet-600",
       hoverColor: "hover:from-orange-500 hover:to-orange-600",
       items: [
         // { title: "SIM/API Credentials", link: "/work/sim-api-credentials", icon: <FaArrowAltCircleRight /> },
@@ -266,7 +266,7 @@ const Sidebar = ({ toggleSidebar }) => {
     const colorMap = {
       "from-blue-500 to-blue-600": "hover:bg-gradient-to-r hover:from-blue-500 hover:to-blue-600",
       "from-green-500 to-green-600": "hover:bg-gradient-to-r hover:from-green-500 hover:to-green-600",
-      "from-orange-500 to-orange-600": "hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-600",
+      "from-purple-500 to-violet-600": "hover:bg-gradient-to-r hover:from-purple-500 hover:to-violet-600",
       "from-indigo-500 to-indigo-600": "hover:bg-gradient-to-r hover:from-indigo-500 hover:to-indigo-600",
       "from-teal-500 to-teal-600": "hover:bg-gradient-to-r hover:from-teal-500 hover:to-teal-600",
       "from-rose-500 to-rose-600": "hover:bg-gradient-to-r hover:from-rose-500 hover:to-rose-600",
