@@ -19,7 +19,8 @@ import {
   FiCheckCircle,
   FiXCircle,
   FiTrendingUp,
-  FiInbox
+  FiInbox,
+  FiTrash2 
 } from "react-icons/fi";
 import { FaEnvelope, FaChartLine, FaEye, FaUsers, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import Link from "next/link";
@@ -246,6 +247,48 @@ const EmailReport = () => {
       console.log(error);
     }
   };
+
+  const handleDelete = async (emailsID) => {
+   if (!emailsID || emailsID.length === 0) {
+        addToast("Please select at least one data from the table", "error");
+        return;
+      }
+  
+      const result = await Swal.fire({
+        title: "Are you sure to delete?",
+        text: `Do you want to delete ${emailsID.length > 1 ? 'these email reports' : 'this email report'}?`,
+        icon: "error",
+        showCancelButton: true,
+        confirmButtonText: "Yes, delete it",
+        cancelButtonText: "Cancel",
+      });
+
+  try {
+    setLoading(true);
+    const response = await fetch(
+      "https://www.margda.in/miraj/work/email-campaign/delete-report",
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ emailsID }),
+      }
+    );
+
+    if (response.ok) {
+      // remove from state without reloading
+      setEmails((prev) => prev.filter((email) => email.emailsID !== emailsID));
+      addToast("Report deleted successfully!", "success");
+    } else {
+      addToast("Failed to delete report.", "error");
+    }
+  } catch (error) {
+    console.error(error);
+    addToast("Something went wrong.", "error");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const clearDateFilters = () => {
     setFromDate("");
@@ -496,6 +539,7 @@ const EmailReport = () => {
                         <th className="px-4 py-4 text-left font-semibold text-sm">Campaign</th>
                         <th className="px-4 py-4 text-center font-semibold text-sm">Opens</th>
                         <th className="px-4 py-4 text-center font-semibold text-sm">Status</th>
+                        <th className="px-4 py-4 text-center font-semibold text-sm">Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -520,10 +564,10 @@ const EmailReport = () => {
                                 </button>
                               ))}
                           </td>
-                          <td className="px-4 py-4 text-sm text-gray-700">{email.sender}</td>
-                          <td className="px-4 py-4 text-sm text-gray-700">{email.receiver}</td>
-                          <td className="px-4 py-4 text-sm text-gray-700">{email.subject || "N/A"}</td>
-                          <td className="px-4 py-4 text-sm">
+                          <td className="px-4 py-4 text-[12px] text-gray-700">{email.sender}</td>
+                          <td className="px-4 py-4 text-[12px] text-gray-700">{email.receiver}</td>
+                          <td className="px-4 py-4 text-[12px] text-gray-700">{email.subject || "N/A"}</td>
+                          <td className="px-4 py-4 text-[12px]">
                             <TruncatedMessage message={email.matter} maxLength={30} />
                           </td>
                           <td className="px-4 py-4 text-sm text-gray-600">
@@ -546,16 +590,26 @@ const EmailReport = () => {
                               {email.success ? (
                                 <>
                                   <FiCheckCircle className="mr-1" size={12} />
-                                  Success
                                 </>
                               ) : (
                                 <>
                                   <FiXCircle className="mr-1" size={12} />
-                                  Failed
                                 </>
                               )}
                             </span>
                           </td>
+
+                           {/* Delete Action */}
+      <td className="px-4 py-4 text-center">
+        <button
+          onClick={() => handleDelete(email.emailsID)}
+          className="text-red-600 hover:text-red-800 transition-colors"
+          title="Delete Report"
+        >
+          <FiTrash2 size={18} />
+        </button>
+      </td>
+
                         </tr>
                       ))}
                     </tbody>

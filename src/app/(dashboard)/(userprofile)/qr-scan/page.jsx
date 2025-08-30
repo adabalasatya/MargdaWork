@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { FiRefreshCw, FiSmartphone, FiUser, FiCheckCircle, FiAlertCircle } from "react-icons/fi";
+import { FiRefreshCw, FiSmartphone, FiUser, FiCheckCircle, FiAlertCircle, FiTrash2 } from "react-icons/fi";
 import Image from "next/image";
 import Loader from "@/app/component/Loader";
 import { useToast } from "@/app/component/customtoast/page";
@@ -74,7 +74,7 @@ const QrScanPage = () => {
   }, 3000);
 
   return () => clearInterval(interval);
-}, [userID]);
+}, [userID]);
 
   const getInstance = async () => {
     setLoading(true);
@@ -124,6 +124,35 @@ const QrScanPage = () => {
       }
     } catch (error) {
       console.error("Error fetching profiles:", error);
+    }
+  };
+
+  const removeAccount = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        "https://www.margda.in/miraj/whatsapp/scan/remove-account",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ userID }),
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        addToast("Account removed successfully", "success");
+        setProfile([]);
+        setQrCodeSrc(null);
+      } else {
+        addToast(data.message, "error");
+      }
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      addToast(error.message || "An error occurred", "error");
+      console.log(error);
     }
   };
 
@@ -196,18 +225,6 @@ const QrScanPage = () => {
                   <FiRefreshCw className="mr-2" />
                   {getBtnText}
                 </button>
-
-                {/* Instance ID */}
-                {/* {instanceId && (
-                  <div className="mt-4 p-3 bg-gray-50 rounded-xl border border-gray-200">
-                    <div className="text-left">
-                      <span className="font-semibold text-gray-700 block mb-1">Instance ID:</span>
-                      <p className="text-xs font-mono text-gray-800 bg-white p-2 rounded border">
-                        {instanceId}
-                      </p>
-                    </div>
-                  </div>
-                )} */}
               </div>
             </div>
 
@@ -288,18 +305,14 @@ const QrScanPage = () => {
                       </div>
                     </div>
 
-                    {/* Additional Info */}
-                    <div className="grid grid-cols-1 gap-3">
-                      <div className="bg-blue-50 rounded-xl p-3 border border-blue-200">
-                        <h4 className="font-semibold text-blue-800 mb-2 text-sm">Connection Status</h4>
-                        <p className="text-blue-700 text-xs">
-                          {profile.active 
-                            ? "Your WhatsApp is successfully connected and ready to use."
-                            : "Connection lost. Please scan the QR code again to reconnect."
-                          }
-                        </p>
-                      </div>
-                    </div>
+                    {/* Remove Account Button */}
+                    <button
+                      onClick={removeAccount}
+                      className="w-full py-3 px-4 bg-gradient-to-r from-red-600 to-red-700 text-white text-md font-semibold rounded-xl hover:from-red-700 hover:to-red-800 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center"
+                    >
+                      <FiTrash2 className="mr-2" />
+                      Remove Account
+                    </button>
                   </div>
                 ) : (
                   <div className="space-y-4">
