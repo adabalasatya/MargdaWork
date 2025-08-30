@@ -83,47 +83,33 @@ const SmsReport = () => {
 
   // Function to handle delete SMS
   const handleDeleteSms = async (smsID) => {
-     if (!smsID || smsID.length === 0) {
-        addToast("Please select at least one data from the table", "error");
-        return;
-      }
-  
-      const result = await Swal.fire({
-        title: "Are you sure to delete?",
-        text: `Do you want to delete ${smsID.length > 1 ? 'these sms reports' : 'this sms report'}?`,
-        icon: "error",
-        showCancelButton: true,
-        confirmButtonText: "Yes, delete it",
-        cancelButtonText: "Cancel",
-      });
-    {
-      try {
-        setLoading(true);
-        const response = await fetch(
-          "https://www.margda.in/miraj/work/sms-campaign/delete-sms",
-          {
-            method: "POST",
-            headers: {
-              "content-type": "application/json",
-            },
-            body: JSON.stringify({ smsID, userID }),
-          }
-        );
 
-        if (response.ok) {
-          addToast("SMS deleted successfully", "success");
-          fetchData(userID);
-        } else {
-          addToast("Failed to delete SMS", "error");
-        }
-      } catch (error) {
-        console.log(error);
-        addToast("Error deleting SMS", "error");
-      } finally {
-        setLoading(false);
+  try {
+    setLoading(true);
+    const response = await fetch(
+      "https://www.margda.in/miraj/work/sms-campaign/delete-report",
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ smsIDs:[smsID] }), // ✅ send only smsID
       }
+    );
+
+    if (response.ok) {
+      setSms((prev) => prev.filter((sms) => sms.smsID !== smsID));
+      addToast("SMS deleted successfully", "success");
+    } else {
+      addToast("Failed to delete SMS", "error");
     }
-  };
+  } catch (error) {
+    console.error(error);
+    addToast("Error deleting SMS", "error");
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Enhanced Message Modal Component
   const MessageModal = () => {

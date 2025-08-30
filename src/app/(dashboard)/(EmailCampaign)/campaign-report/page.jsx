@@ -249,38 +249,30 @@ const EmailReport = () => {
     }
   };
 
-  const handleDelete = async (emailsID) => {
-   if (!emailsID || emailsID.length === 0) {
-        addToast("Please select at least one data from the table", "error");
-        return;
-      }
-  
-      const result = await Swal.fire({
-        title: "Are you sure to delete?",
-        text: `Do you want to delete ${emailsID.length > 1 ? 'these email reports' : 'this email report'}?`,
-        icon: "error",
-        showCancelButton: true,
-        confirmButtonText: "Yes, delete it",
-        cancelButtonText: "Cancel",
-      });
+  const handleDelete = async (emailID) => {
 
   try {
     setLoading(true);
     const response = await fetch(
       "https://www.margda.in/miraj/work/email-campaign/delete-report",
       {
-        method: "POST",
+        method: "DELETE",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ emailsID }),
+        body: JSON.stringify({ emailIDs:[emailID] }),
       }
     );
 
+    const data = await response.json();
+
+  
+    console.log(data)
+
     if (response.ok) {
       // remove from state without reloading
-      setEmails((prev) => prev.filter((email) => email.emailsID !== emailsID));
+      setEmails((prev) => prev.filter((email) => email.emailsID !== emailID));
       addToast("Report deleted successfully!", "success");
     } else {
-      addToast("Failed to delete report.", "error");
+      console.log("Failed to delete report.", "error");
     }
   } catch (error) {
     console.error(error);
@@ -289,6 +281,7 @@ const EmailReport = () => {
     setLoading(false);
   }
 };
+
 
 
   const clearDateFilters = () => {
