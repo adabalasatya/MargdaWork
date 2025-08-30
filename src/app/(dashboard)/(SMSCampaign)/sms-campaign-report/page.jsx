@@ -322,7 +322,7 @@ const SmsReport = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-3xl shadow-md border border-gray-200 overflow-hidden">
           
           {/* Controls Section */}
           <div className="bg-gradient-to-r from-gray-50 to-white p-6 border-b border-gray-200">
