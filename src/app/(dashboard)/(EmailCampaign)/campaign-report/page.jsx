@@ -30,6 +30,7 @@ import { IoMdClose } from "react-icons/io";
 import Loader from "@/app/component/Loader";
 import { useToast } from "@/app/component/customtoast/page";
 import AddToTask from "@/app/(dashboard)/(EmailCampaign)/addtotaskemail/page";
+import Swal from 'sweetalert2'; 
 
 const EmailReport = () => {
   const router = useRouter();

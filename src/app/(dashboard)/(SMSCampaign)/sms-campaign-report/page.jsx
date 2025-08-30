@@ -28,6 +28,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Loader from "@/app/component/Loader";
 import { useToast } from "@/app/component/customtoast/page";
 import AddToTask from "@/app/(dashboard)/(SMSCampaign)/addtotasksms/page";
+import Swal from 'sweetalert2'; 
 
 const SmsReport = () => {
   const router = useRouter();
